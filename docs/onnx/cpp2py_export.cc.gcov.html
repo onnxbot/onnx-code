@@ -1,0 +1,318 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - onnx-coverage.info - onnx/cpp2py_export.cc</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">onnx</a> - cpp2py_export.cc<span style="font-size: 80%;"> (source / <a href="cpp2py_export.cc.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">onnx-coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">145</td>
+            <td class="headerCovTableEntry">158</td>
+            <td class="headerCovTableEntryHi">91.8 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-05-11 14:21:51</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">15</td>
+            <td class="headerCovTableEntry">19</td>
+            <td class="headerCovTableEntryMed">78.9 %</td>
+          </tr>
+          <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : #include &lt;pybind11/pybind11.h&gt;</a>
+<span class="lineNum">       2 </span>            : #include &lt;pybind11/stl.h&gt;
+<span class="lineNum">       3 </span>            : #include &lt;climits&gt;
+<span class="lineNum">       4 </span>            : #include &lt;limits&gt;
+<span class="lineNum">       5 </span>            : #include &lt;unordered_map&gt;
+<span class="lineNum">       6 </span>            : 
+<span class="lineNum">       7 </span>            : #include &quot;onnx/checker.h&quot;
+<span class="lineNum">       8 </span>            : #include &quot;onnx/defs/schema.h&quot;
+<span class="lineNum">       9 </span>            : #include &quot;onnx/optimizer/optimize.h&quot;
+<span class="lineNum">      10 </span>            : #include &quot;onnx/py_utils.h&quot;
+<span class="lineNum">      11 </span>            : #include &quot;onnx/shape_inference/implementation.h&quot;
+<span class="lineNum">      12 </span>            : 
+<span class="lineNum">      13 </span>            : namespace ONNX_NAMESPACE {
+<span class="lineNum">      14 </span>            : 
+<span class="lineNum">      15 </span>            : namespace py = pybind11;
+<a name="16"><span class="lineNum">      16 </span>            : using namespace pybind11::literals;</a>
+<span class="lineNum">      17 </span>            : 
+<span class="lineNum">      18 </span><span class="lineCov">         11 : PYBIND11_MODULE(onnx_cpp2py_export, onnx_cpp2py_export) {</span>
+<span class="lineNum">      19 </span><span class="lineCov">          2 :   onnx_cpp2py_export.doc() = &quot;Python interface to onnx&quot;;</span>
+<span class="lineNum">      20 </span>            : 
+<span class="lineNum">      21 </span>            :   // Submodule `schema`
+<span class="lineNum">      22 </span><span class="lineCov">          1 :   auto defs = onnx_cpp2py_export.def_submodule(&quot;defs&quot;);</span>
+<span class="lineNum">      23 </span><span class="lineCov">          3 :   defs.doc() = &quot;Schema submodule&quot;;</span>
+<span class="lineNum">      24 </span>            : 
+<span class="lineNum">      25 </span><span class="lineCov">          1 :   py::class_&lt;OpSchema&gt; op_schema(defs, &quot;OpSchema&quot;);</span>
+<span class="lineNum">      26 </span><span class="lineCov">          1 :   op_schema.def_property_readonly(&quot;file&quot;, &amp;OpSchema::file)</span>
+<span class="lineNum">      27 </span><span class="lineCov">          1 :       .def_property_readonly(&quot;line&quot;, &amp;OpSchema::line)</span>
+<span class="lineNum">      28 </span><span class="lineCov">          1 :       .def_property_readonly(&quot;support_level&quot;, &amp;OpSchema::support_level)</span>
+<span class="lineNum">      29 </span><span class="lineCov">          1 :       .def_property_readonly(</span>
+<span class="lineNum">      30 </span><span class="lineCov">          1 :           &quot;doc&quot;, &amp;OpSchema::doc, py::return_value_policy::reference)</span>
+<span class="lineNum">      31 </span><span class="lineCov">          1 :       .def_property_readonly(&quot;since_version&quot;, &amp;OpSchema::since_version)</span>
+<span class="lineNum">      32 </span><span class="lineCov">          1 :       .def_property_readonly(&quot;domain&quot;, &amp;OpSchema::domain)</span>
+<span class="lineNum">      33 </span><span class="lineCov">          1 :       .def_property_readonly(&quot;name&quot;, &amp;OpSchema::Name)</span>
+<span class="lineNum">      34 </span><span class="lineCov">          1 :       .def_property_readonly(&quot;min_input&quot;, &amp;OpSchema::min_input)</span>
+<span class="lineNum">      35 </span><span class="lineCov">          1 :       .def_property_readonly(&quot;max_input&quot;, &amp;OpSchema::max_input)</span>
+<span class="lineNum">      36 </span><span class="lineCov">          1 :       .def_property_readonly(&quot;min_output&quot;, &amp;OpSchema::min_output)</span>
+<span class="lineNum">      37 </span><span class="lineCov">          1 :       .def_property_readonly(&quot;max_output&quot;, &amp;OpSchema::max_output)</span>
+<span class="lineNum">      38 </span><span class="lineCov">          1 :       .def_property_readonly(&quot;attributes&quot;, &amp;OpSchema::attributes)</span>
+<span class="lineNum">      39 </span><span class="lineCov">          1 :       .def_property_readonly(&quot;inputs&quot;, &amp;OpSchema::inputs)</span>
+<span class="lineNum">      40 </span><span class="lineCov">          1 :       .def_property_readonly(&quot;outputs&quot;, &amp;OpSchema::outputs)</span>
+<span class="lineNum">      41 </span><span class="lineCov">          1 :       .def_property_readonly(</span>
+<span class="lineNum">      42 </span><span class="lineCov">          1 :           &quot;type_constraints&quot;, &amp;OpSchema::typeConstraintParams)</span>
+<a name="43"><span class="lineNum">      43 </span><span class="lineCov">          1 :       .def_static(</span></a>
+<span class="lineNum">      44 </span>            :           &quot;is_infinite&quot;,
+<span class="lineNum">      45 </span><span class="lineNoCov">          0 :           [](int v) { return v == std::numeric_limits&lt;int&gt;::max(); });</span>
+<span class="lineNum">      46 </span>            : 
+<span class="lineNum">      47 </span><span class="lineCov">          2 :   py::class_&lt;OpSchema::Attribute&gt;(op_schema, &quot;Attribute&quot;)</span>
+<span class="lineNum">      48 </span><span class="lineCov">          1 :       .def_readonly(&quot;name&quot;, &amp;OpSchema::Attribute::name)</span>
+<a name="49"><span class="lineNum">      49 </span><span class="lineCov">          1 :       .def_readonly(&quot;description&quot;, &amp;OpSchema::Attribute::description)</span></a>
+<span class="lineNum">      50 </span><span class="lineCov">          1 :       .def_readonly(&quot;type&quot;, &amp;OpSchema::Attribute::type)</span>
+<span class="lineNum">      51 </span><span class="lineCov">          1 :       .def_property_readonly(&quot;_default_value&quot;, [](OpSchema::Attribute* attr) -&gt; py::bytes {</span>
+<span class="lineNum">      52 </span><span class="lineCov">          1 :           std::string out;</span>
+<span class="lineNum">      53 </span><span class="lineCov">          1 :           attr-&gt;default_value.SerializeToString(&amp;out);</span>
+<span class="lineNum">      54 </span><span class="lineCov">          1 :           return out;</span>
+<span class="lineNum">      55 </span><span class="lineCov">          1 :       })</span>
+<span class="lineNum">      56 </span><span class="lineCov">          1 :       .def_readonly(&quot;required&quot;, &amp;OpSchema::Attribute::required);</span>
+<span class="lineNum">      57 </span>            : 
+<span class="lineNum">      58 </span><span class="lineCov">          2 :   py::class_&lt;OpSchema::TypeConstraintParam&gt;(op_schema, &quot;TypeConstraintParam&quot;)</span>
+<span class="lineNum">      59 </span><span class="lineCov">          1 :       .def_readonly(</span>
+<span class="lineNum">      60 </span>            :           &quot;type_param_str&quot;, &amp;OpSchema::TypeConstraintParam::type_param_str)
+<span class="lineNum">      61 </span><span class="lineCov">          1 :       .def_readonly(&quot;description&quot;, &amp;OpSchema::TypeConstraintParam::description)</span>
+<span class="lineNum">      62 </span><span class="lineCov">          1 :       .def_readonly(</span>
+<span class="lineNum">      63 </span>            :           &quot;allowed_type_strs&quot;,
+<span class="lineNum">      64 </span>            :           &amp;OpSchema::TypeConstraintParam::allowed_type_strs);
+<span class="lineNum">      65 </span>            : 
+<span class="lineNum">      66 </span><span class="lineCov">          2 :   py::enum_&lt;OpSchema::FormalParameterOption&gt;(op_schema, &quot;FormalParameterOption&quot;)</span>
+<span class="lineNum">      67 </span><span class="lineCov">          1 :       .value(&quot;Single&quot;, OpSchema::Single)</span>
+<span class="lineNum">      68 </span><span class="lineCov">          1 :       .value(&quot;Optional&quot;, OpSchema::Optional)</span>
+<span class="lineNum">      69 </span><span class="lineCov">          1 :       .value(&quot;Variadic&quot;, OpSchema::Variadic);</span>
+<span class="lineNum">      70 </span>            : 
+<span class="lineNum">      71 </span><span class="lineCov">          2 :   py::class_&lt;OpSchema::FormalParameter&gt;(op_schema, &quot;FormalParameter&quot;)</span>
+<span class="lineNum">      72 </span><span class="lineCov">          1 :       .def_property_readonly(&quot;name&quot;, &amp;OpSchema::FormalParameter::GetName)</span>
+<span class="lineNum">      73 </span><span class="lineCov">          1 :       .def_property_readonly(&quot;types&quot;, &amp;OpSchema::FormalParameter::GetTypes)</span>
+<span class="lineNum">      74 </span><span class="lineCov">          1 :       .def_property_readonly(&quot;typeStr&quot;, &amp;OpSchema::FormalParameter::GetTypeStr)</span>
+<span class="lineNum">      75 </span><span class="lineCov">          1 :       .def_property_readonly(</span>
+<span class="lineNum">      76 </span><span class="lineCov">          1 :           &quot;description&quot;, &amp;OpSchema::FormalParameter::GetDescription)</span>
+<span class="lineNum">      77 </span><span class="lineCov">          1 :       .def_property_readonly(&quot;option&quot;, &amp;OpSchema::FormalParameter::GetOption);</span>
+<span class="lineNum">      78 </span>            : 
+<span class="lineNum">      79 </span><span class="lineCov">          2 :   py::enum_&lt;AttributeProto::AttributeType&gt;(op_schema, &quot;AttrType&quot;)</span>
+<span class="lineNum">      80 </span><span class="lineCov">          1 :       .value(&quot;FLOAT&quot;, AttributeProto::FLOAT)</span>
+<span class="lineNum">      81 </span><span class="lineCov">          1 :       .value(&quot;INT&quot;, AttributeProto::INT)</span>
+<span class="lineNum">      82 </span><span class="lineCov">          1 :       .value(&quot;STRING&quot;, AttributeProto::STRING)</span>
+<span class="lineNum">      83 </span><span class="lineCov">          1 :       .value(&quot;TENSOR&quot;, AttributeProto::TENSOR)</span>
+<span class="lineNum">      84 </span><span class="lineCov">          1 :       .value(&quot;GRAPH&quot;, AttributeProto::GRAPH)</span>
+<span class="lineNum">      85 </span><span class="lineCov">          1 :       .value(&quot;FLOATS&quot;, AttributeProto::FLOATS)</span>
+<span class="lineNum">      86 </span><span class="lineCov">          1 :       .value(&quot;INTS&quot;, AttributeProto::INTS)</span>
+<span class="lineNum">      87 </span><span class="lineCov">          1 :       .value(&quot;STRINGS&quot;, AttributeProto::STRINGS)</span>
+<span class="lineNum">      88 </span><span class="lineCov">          1 :       .value(&quot;TENSORS&quot;, AttributeProto::TENSORS)</span>
+<span class="lineNum">      89 </span><span class="lineCov">          1 :       .value(&quot;GRAPHS&quot;, AttributeProto::GRAPHS);</span>
+<span class="lineNum">      90 </span>            : 
+<span class="lineNum">      91 </span><span class="lineCov">          2 :   py::enum_&lt;OpSchema::SupportType&gt;(op_schema, &quot;SupportType&quot;)</span>
+<span class="lineNum">      92 </span><span class="lineCov">          1 :       .value(&quot;COMMON&quot;, OpSchema::SupportType::COMMON)</span>
+<span class="lineNum">      93 </span><span class="lineCov">          1 :       .value(&quot;EXPERIMENTAL&quot;, OpSchema::SupportType::EXPERIMENTAL);</span>
+<span class="lineNum">      94 </span>            : 
+<a name="95"><span class="lineNum">      95 </span><span class="lineCov">          2 :   defs.def(</span></a>
+<span class="lineNum">      96 </span>            :       &quot;has_schema&quot;,
+<span class="lineNum">      97 </span>            :       [](const std::string&amp; op_type, const std::string&amp; domain) -&gt; bool {
+<span class="lineNum">      98 </span><span class="lineCov">          4 :         return OpSchemaRegistry::Schema(op_type, domain) != nullptr;</span>
+<span class="lineNum">      99 </span>            :       },
+<span class="lineNum">     100 </span><span class="lineCov">          2 :       &quot;op_type&quot;_a,</span>
+<span class="lineNum">     101 </span><span class="lineCov">          2 :       &quot;domain&quot;_a = ONNX_DOMAIN);</span>
+<a name="102"><span class="lineNum">     102 </span><span class="lineCov">          1 :   defs.def(</span></a>
+<span class="lineNum">     103 </span>            :       &quot;schema_version_map&quot;,
+<span class="lineNum">     104 </span>            :       []() -&gt; std::unordered_map&lt;std::string, std::pair&lt;int, int&gt;&gt; {
+<span class="lineNum">     105 </span><span class="lineCov">        126 :         return OpSchemaRegistry::DomainToVersionRange::Instance().Map();</span>
+<span class="lineNum">     106 </span>            :       });
+<a name="107"><span class="lineNum">     107 </span><span class="lineCov">          2 :   defs.def(</span></a>
+<span class="lineNum">     108 </span>            :           &quot;get_schema&quot;,
+<span class="lineNum">     109 </span>            :           [](const std::string&amp; op_type,
+<span class="lineNum">     110 </span>            :              const int max_inclusive_version,
+<span class="lineNum">     111 </span>            :              const std::string&amp; domain) -&gt; OpSchema {
+<span class="lineNum">     112 </span><span class="lineNoCov">          0 :             const auto* schema =</span>
+<span class="lineNum">     113 </span><span class="lineNoCov">          0 :                 OpSchemaRegistry::Schema(op_type, max_inclusive_version, domain);</span>
+<span class="lineNum">     114 </span><span class="lineNoCov">          0 :             if (!schema) {</span>
+<span class="lineNum">     115 </span><span class="lineNoCov">          0 :               throw std::runtime_error(</span>
+<span class="lineNum">     116 </span><span class="lineNoCov">          0 :                   &quot;No schema registered for '&quot; + op_type + &quot;'!&quot;);</span>
+<span class="lineNum">     117 </span>            :             }
+<span class="lineNum">     118 </span><span class="lineNoCov">          0 :             return *schema;</span>
+<span class="lineNum">     119 </span><span class="lineNoCov">          0 :           },</span>
+<span class="lineNum">     120 </span><span class="lineCov">          2 :           &quot;op_type&quot;_a,</span>
+<span class="lineNum">     121 </span><span class="lineCov">          2 :           &quot;max_inclusive_version&quot;_a,</span>
+<span class="lineNum">     122 </span><span class="lineCov">          2 :           &quot;domain&quot;_a = ONNX_DOMAIN)</span>
+<a name="123"><span class="lineNum">     123 </span><span class="lineCov">          1 :       .def(</span></a>
+<span class="lineNum">     124 </span>            :           &quot;get_schema&quot;,
+<span class="lineNum">     125 </span>            :           [](const std::string&amp; op_type,
+<span class="lineNum">     126 </span>            :              const std::string&amp; domain) -&gt; OpSchema {
+<span class="lineNum">     127 </span><span class="lineCov">          3 :             const auto* schema = OpSchemaRegistry::Schema(op_type, domain);</span>
+<span class="lineNum">     128 </span><span class="lineCov">          3 :             if (!schema) {</span>
+<span class="lineNum">     129 </span><span class="lineNoCov">          0 :               throw std::runtime_error(</span>
+<span class="lineNum">     130 </span><span class="lineNoCov">          0 :                   &quot;No schema registered for '&quot; + op_type + &quot;'!&quot;);</span>
+<span class="lineNum">     131 </span>            :             }
+<span class="lineNum">     132 </span><span class="lineCov">          3 :             return *schema;</span>
+<span class="lineNum">     133 </span><span class="lineNoCov">          0 :           },</span>
+<span class="lineNum">     134 </span><span class="lineCov">          2 :           &quot;op_type&quot;_a,</span>
+<a name="135"><span class="lineNum">     135 </span><span class="lineCov">          2 :           &quot;domain&quot;_a = ONNX_DOMAIN);</span></a>
+<span class="lineNum">     136 </span>            : 
+<span class="lineNum">     137 </span><span class="lineCov">          1 :   defs.def(&quot;get_all_schemas&quot;, []() -&gt; const std::vector&lt;OpSchema&gt; {</span>
+<span class="lineNum">     138 </span><span class="lineNoCov">          0 :     return OpSchemaRegistry::get_all_schemas();</span>
+<a name="139"><span class="lineNum">     139 </span>            :   });</a>
+<span class="lineNum">     140 </span>            : 
+<span class="lineNum">     141 </span><span class="lineCov">          1 :   defs.def(&quot;get_all_schemas_with_history&quot;, []() -&gt; const std::vector&lt;OpSchema&gt; {</span>
+<span class="lineNum">     142 </span><span class="lineNoCov">          0 :     return OpSchemaRegistry::get_all_schemas_with_history();</span>
+<span class="lineNum">     143 </span>            :   });
+<span class="lineNum">     144 </span>            : 
+<span class="lineNum">     145 </span>            :   // Submodule `checker`
+<span class="lineNum">     146 </span><span class="lineCov">          1 :   auto checker = onnx_cpp2py_export.def_submodule(&quot;checker&quot;);</span>
+<span class="lineNum">     147 </span><span class="lineCov">          3 :   checker.doc() = &quot;Checker submodule&quot;;</span>
+<span class="lineNum">     148 </span>            : 
+<span class="lineNum">     149 </span><span class="lineCov">          1 :   py::class_&lt;checker::CheckerContext&gt; checker_context(</span>
+<span class="lineNum">     150 </span><span class="lineCov">          1 :       checker, &quot;CheckerContext&quot;);</span>
+<span class="lineNum">     151 </span><span class="lineCov">          2 :   checker_context.def(py::init&lt;&gt;())</span>
+<span class="lineNum">     152 </span><span class="lineCov">          1 :       .def_property(</span>
+<span class="lineNum">     153 </span>            :           &quot;ir_version&quot;,
+<span class="lineNum">     154 </span><span class="lineCov">          1 :           &amp;checker::CheckerContext::get_ir_version,</span>
+<span class="lineNum">     155 </span><span class="lineCov">          1 :           &amp;checker::CheckerContext::set_ir_version)</span>
+<span class="lineNum">     156 </span><span class="lineCov">          1 :       .def_property(</span>
+<span class="lineNum">     157 </span>            :           &quot;opset_imports&quot;,
+<span class="lineNum">     158 </span><span class="lineCov">          1 :           &amp;checker::CheckerContext::get_opset_imports,</span>
+<span class="lineNum">     159 </span><span class="lineCov">          1 :           &amp;checker::CheckerContext::set_opset_imports);</span>
+<span class="lineNum">     160 </span>            : 
+<span class="lineNum">     161 </span><span class="lineCov">          1 :   py::register_exception&lt;checker::ValidationError&gt;(checker, &quot;ValidationError&quot;);</span>
+<span class="lineNum">     162 </span>            : 
+<a name="163"><span class="lineNum">     163 </span><span class="lineCov">          1 :   checker.def(</span></a>
+<span class="lineNum">     164 </span>            :       &quot;check_value_info&quot;,
+<span class="lineNum">     165 </span>            :       [](const py::bytes&amp; bytes, const checker::CheckerContext&amp; ctx) -&gt; void {
+<span class="lineNum">     166 </span><span class="lineCov">          2 :         ValueInfoProto proto{};</span>
+<span class="lineNum">     167 </span><span class="lineCov">          2 :         ParseProtoFromPyBytes(&amp;proto, bytes);</span>
+<span class="lineNum">     168 </span><span class="lineCov">          2 :         checker::check_value_info(proto, ctx);</span>
+<span class="lineNum">     169 </span><span class="lineCov">          2 :       });</span>
+<span class="lineNum">     170 </span>            : 
+<a name="171"><span class="lineNum">     171 </span><span class="lineCov">          1 :   checker.def(</span></a>
+<span class="lineNum">     172 </span>            :       &quot;check_tensor&quot;,
+<span class="lineNum">     173 </span>            :       [](const py::bytes&amp; bytes, const checker::CheckerContext&amp; ctx) -&gt; void {
+<span class="lineNum">     174 </span><span class="lineCov">          5 :         TensorProto proto{};</span>
+<span class="lineNum">     175 </span><span class="lineCov">          5 :         ParseProtoFromPyBytes(&amp;proto, bytes);</span>
+<span class="lineNum">     176 </span><span class="lineCov">          5 :         checker::check_tensor(proto, ctx);</span>
+<span class="lineNum">     177 </span><span class="lineCov">          8 :       });</span>
+<span class="lineNum">     178 </span>            : 
+<a name="179"><span class="lineNum">     179 </span><span class="lineCov">          1 :   checker.def(</span></a>
+<span class="lineNum">     180 </span>            :       &quot;check_attribute&quot;,
+<span class="lineNum">     181 </span>            :       [](const py::bytes&amp; bytes, const checker::CheckerContext&amp; ctx) -&gt; void {
+<span class="lineNum">     182 </span><span class="lineCov">        217 :         AttributeProto proto{};</span>
+<span class="lineNum">     183 </span><span class="lineCov">        217 :         ParseProtoFromPyBytes(&amp;proto, bytes);</span>
+<span class="lineNum">     184 </span><span class="lineCov">        434 :         checker::check_attribute(proto, ctx, checker::LexicalScopeContext());</span>
+<span class="lineNum">     185 </span><span class="lineCov">        423 :       });</span>
+<span class="lineNum">     186 </span>            : 
+<a name="187"><span class="lineNum">     187 </span><span class="lineCov">          1 :   checker.def(</span></a>
+<span class="lineNum">     188 </span>            :       &quot;check_node&quot;,
+<span class="lineNum">     189 </span>            :       [](const py::bytes&amp; bytes, const checker::CheckerContext&amp; ctx) -&gt; void {
+<span class="lineNum">     190 </span><span class="lineCov">          4 :         NodeProto proto{};</span>
+<span class="lineNum">     191 </span><span class="lineCov">          4 :         ParseProtoFromPyBytes(&amp;proto, bytes);</span>
+<span class="lineNum">     192 </span><span class="lineCov">          4 :         checker::LexicalScopeContext lex_ctx;</span>
+<span class="lineNum">     193 </span><span class="lineCov">          4 :         checker::check_node(proto, ctx, lex_ctx);</span>
+<span class="lineNum">     194 </span><span class="lineCov">          6 :       });</span>
+<span class="lineNum">     195 </span>            : 
+<a name="196"><span class="lineNum">     196 </span><span class="lineCov">          1 :   checker.def(</span></a>
+<span class="lineNum">     197 </span>            :       &quot;check_graph&quot;,
+<span class="lineNum">     198 </span>            :       [](const py::bytes&amp; bytes, const checker::CheckerContext&amp; ctx) -&gt; void {
+<span class="lineNum">     199 </span><span class="lineCov">          7 :         GraphProto proto{};</span>
+<span class="lineNum">     200 </span><span class="lineCov">          7 :         ParseProtoFromPyBytes(&amp;proto, bytes);</span>
+<span class="lineNum">     201 </span><span class="lineCov">          7 :         checker::LexicalScopeContext lex_ctx;</span>
+<span class="lineNum">     202 </span><span class="lineCov">          7 :         checker::check_graph(proto, ctx, lex_ctx);</span>
+<a name="203"><span class="lineNum">     203 </span><span class="lineCov">         13 :       });</span></a>
+<span class="lineNum">     204 </span>            : 
+<span class="lineNum">     205 </span><span class="lineCov">          1 :   checker.def(&quot;check_model&quot;, [](const py::bytes&amp; bytes) -&gt; void {</span>
+<span class="lineNum">     206 </span><span class="lineCov">        484 :     ModelProto proto{};</span>
+<span class="lineNum">     207 </span><span class="lineCov">        484 :     ParseProtoFromPyBytes(&amp;proto, bytes);</span>
+<span class="lineNum">     208 </span><span class="lineCov">        484 :     checker::check_model(proto);</span>
+<span class="lineNum">     209 </span><span class="lineCov">        485 :   });</span>
+<span class="lineNum">     210 </span>            : 
+<span class="lineNum">     211 </span>            :   // Submodule `optimizer`
+<span class="lineNum">     212 </span><span class="lineCov">          1 :   auto optimizer = onnx_cpp2py_export.def_submodule(&quot;optimizer&quot;);</span>
+<span class="lineNum">     213 </span><span class="lineCov">          3 :   optimizer.doc() = &quot;Optimizer submodule&quot;;</span>
+<span class="lineNum">     214 </span>            : 
+<a name="215"><span class="lineNum">     215 </span><span class="lineCov">          1 :   optimizer.def(</span></a>
+<span class="lineNum">     216 </span>            :       &quot;optimize&quot;,
+<span class="lineNum">     217 </span>            :       [](const py::bytes&amp; bytes, const std::vector&lt;std::string&gt;&amp; names) {
+<span class="lineNum">     218 </span><span class="lineCov">         20 :         ModelProto proto{};</span>
+<span class="lineNum">     219 </span><span class="lineCov">         20 :         ParseProtoFromPyBytes(&amp;proto, bytes);</span>
+<span class="lineNum">     220 </span><span class="lineCov">         20 :         auto const result = optimization::Optimize(std::move(proto), names);</span>
+<span class="lineNum">     221 </span><span class="lineCov">         20 :         std::string out;</span>
+<span class="lineNum">     222 </span><span class="lineCov">         20 :         result.SerializeToString(&amp;out);</span>
+<span class="lineNum">     223 </span><span class="lineCov">         20 :         return py::bytes(out);</span>
+<span class="lineNum">     224 </span><span class="lineCov">         20 :       });</span>
+<span class="lineNum">     225 </span>            : 
+<span class="lineNum">     226 </span>            :   // Submodule `shape_inference`
+<span class="lineNum">     227 </span><span class="lineCov">          1 :   auto shape_inference = onnx_cpp2py_export.def_submodule(&quot;shape_inference&quot;);</span>
+<span class="lineNum">     228 </span><span class="lineCov">          3 :   shape_inference.doc() = &quot;Shape Inference submodule&quot;;</span>
+<span class="lineNum">     229 </span>            : 
+<a name="230"><span class="lineNum">     230 </span><span class="lineCov">          1 :   shape_inference.def(</span></a>
+<span class="lineNum">     231 </span>            :     &quot;infer_shapes&quot;,
+<span class="lineNum">     232 </span>            :     [](const py::bytes&amp; bytes) {
+<span class="lineNum">     233 </span><span class="lineCov">        461 :       ModelProto proto{};</span>
+<span class="lineNum">     234 </span><span class="lineCov">        461 :       ParseProtoFromPyBytes(&amp;proto, bytes);</span>
+<span class="lineNum">     235 </span><span class="lineCov">        461 :       shape_inference::InferShapes(proto);</span>
+<span class="lineNum">     236 </span><span class="lineCov">        459 :       std::string out;</span>
+<span class="lineNum">     237 </span><span class="lineCov">        459 :       proto.SerializeToString(&amp;out);</span>
+<span class="lineNum">     238 </span><span class="lineCov">        459 :       return py::bytes(out);</span>
+<span class="lineNum">     239 </span><span class="lineCov">        465 :     });</span>
+<span class="lineNum">     240 </span><span class="lineCov">          1 : }</span>
+<span class="lineNum">     241 </span>            : 
+<span class="lineNum">     242 </span>            : } // namespace ONNX_NAMESPACE
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

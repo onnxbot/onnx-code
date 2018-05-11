@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - onnx-coverage.info - onnx/common/assertions.h</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">onnx/common</a> - assertions.h<span style="font-size: 80%;"> (source / <a href="assertions.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">onnx-coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-05-11 14:21:51</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : // ATTENTION: The code in this file is highly EXPERIMENTAL.</a>
+<span class="lineNum">       2 </span>            : // Adventurous users should note that the APIs will probably change.
+<span class="lineNum">       3 </span>            : 
+<span class="lineNum">       4 </span>            : #pragma once
+<span class="lineNum">       5 </span>            : 
+<span class="lineNum">       6 </span>            : #include &lt;exception&gt;
+<span class="lineNum">       7 </span>            : #include &lt;string&gt;
+<span class="lineNum">       8 </span>            : 
+<a name="9"><span class="lineNum">       9 </span>            : namespace ONNX_NAMESPACE {</a>
+<span class="lineNum">      10 </span>            : 
+<span class="lineNum">      11 </span><span class="lineNoCov">          0 : struct assert_error final : public std::exception {</span>
+<span class="lineNum">      12 </span>            : private:
+<a name="13"><span class="lineNum">      13 </span>            :   const std::string msg_;</a>
+<a name="14"><span class="lineNum">      14 </span>            : public:</a>
+<span class="lineNum">      15 </span><span class="lineNoCov">          0 :   explicit assert_error(std::string msg) : msg_(std::move(msg)) {}</span>
+<span class="lineNum">      16 </span><span class="lineNoCov">          0 :   const char* what() const noexcept override { return msg_.c_str(); }</span>
+<span class="lineNum">      17 </span>            : };
+<span class="lineNum">      18 </span>            : 
+<span class="lineNum">      19 </span>            : [[noreturn]]
+<span class="lineNum">      20 </span>            : void barf(const char *fmt, ...);
+<span class="lineNum">      21 </span>            : 
+<span class="lineNum">      22 </span>            : } // namespace ONNX_NAMESPACE
+<span class="lineNum">      23 </span>            : 
+<span class="lineNum">      24 </span>            : #if defined(__GNUC__) || defined(__ICL) || defined(__clang__)
+<span class="lineNum">      25 </span>            : #define ONNX_EXPECT(x, y) (__builtin_expect((x), (y)))
+<span class="lineNum">      26 </span>            : #else
+<span class="lineNum">      27 </span>            : #define ONNX_EXPECT(x, y) (x)
+<span class="lineNum">      28 </span>            : #endif
+<span class="lineNum">      29 </span>            : 
+<span class="lineNum">      30 </span>            : #define ONNX_ASSERT(cond) \
+<span class="lineNum">      31 </span>            :   if (ONNX_EXPECT(!(cond), 0)) { \
+<span class="lineNum">      32 </span>            :     ::ONNX_NAMESPACE::barf(&quot;%s:%u: %s: Assertion `%s` failed.&quot;, __FILE__, __LINE__, __func__, #cond); \
+<span class="lineNum">      33 </span>            :   }
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span>            : // The trailing ' ' argument is a hack to deal with the extra comma when ... is empty.
+<span class="lineNum">      36 </span>            : // Another way to solve this is ##__VA_ARGS__ in _ONNX_ASSERTM, but this is a non-portable
+<span class="lineNum">      37 </span>            : // extension we shouldn't use.
+<span class="lineNum">      38 </span>            : #define ONNX_ASSERTM(...) _ONNX_ASSERTM(__VA_ARGS__, &quot; &quot;)
+<span class="lineNum">      39 </span>            : 
+<span class="lineNum">      40 </span>            : // Note: msg must be a string literal
+<span class="lineNum">      41 </span>            : #define _ONNX_ASSERTM(cond, msg, ...) \
+<span class="lineNum">      42 </span>            :   if (ONNX_EXPECT(!(cond), 0)) { \
+<span class="lineNum">      43 </span>            :     ::ONNX_NAMESPACE::barf(&quot;%s:%u: %s: Assertion `%s` failed: &quot; msg, __FILE__, __LINE__, __func__, #cond, __VA_ARGS__); \
+<span class="lineNum">      44 </span>            :   }
+<span class="lineNum">      45 </span>            : 
+<span class="lineNum">      46 </span>            : #define ONNX_EXPECTM(...) _ONNX_EXPECTM(__VA_ARGS__, &quot; &quot;)
+<span class="lineNum">      47 </span>            : 
+<span class="lineNum">      48 </span>            : // Note: msg must be a string literal
+<span class="lineNum">      49 </span>            : #define _ONNX_EXPECTM(cond, msg, ...) \
+<span class="lineNum">      50 </span>            :   if (ONNX_EXPECT(!(cond), 0)) { \
+<span class="lineNum">      51 </span>            :     ::ONNX_NAMESPACE::barf(&quot;%s:%u: %s: &quot; msg, __FILE__, __LINE__, __func__, __VA_ARGS__); \
+<span class="lineNum">      52 </span>            :   }
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

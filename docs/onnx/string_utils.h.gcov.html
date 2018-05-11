@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - onnx-coverage.info - onnx/string_utils.h</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">onnx</a> - string_utils.h<span style="font-size: 80%;"> (source / <a href="string_utils.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">onnx-coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">11</td>
+            <td class="headerCovTableEntry">11</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-05-11 14:21:51</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">63</td>
+            <td class="headerCovTableEntry">231</td>
+            <td class="headerCovTableEntryLo">27.3 %</td>
+          </tr>
+          <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : #pragma once</a>
+<span class="lineNum">       2 </span>            : 
+<span class="lineNum">       3 </span>            : #include &lt;sstream&gt;
+<span class="lineNum">       4 </span>            : #include &lt;string&gt;
+<span class="lineNum">       5 </span>            : 
+<span class="lineNum">       6 </span>            : namespace ONNX_NAMESPACE {
+<span class="lineNum">       7 </span>            : 
+<span class="lineNum">       8 </span>            : #if defined(__ANDROID__)
+<span class="lineNum">       9 </span>            : template &lt;typename T&gt;
+<span class="lineNum">      10 </span>            : std::string to_string(T value) {
+<span class="lineNum">      11 </span>            :   std::ostringstream os;
+<span class="lineNum">      12 </span>            :   os &lt;&lt; value;
+<span class="lineNum">      13 </span>            :   return os.str();
+<span class="lineNum">      14 </span>            : }
+<span class="lineNum">      15 </span>            : #else
+<span class="lineNum">      16 </span>            : using std::to_string;
+<span class="lineNum">      17 </span>            : #endif // defined(__ANDROID__)
+<span class="lineNum">      18 </span>            : 
+<span class="lineNum">      19 </span>            : inline void MakeStringInternal(std::stringstream&amp; /*ss*/) {}
+<a name="20"><span class="lineNum">      20 </span>            : </a>
+<span class="lineNum">      21 </span>            : template &lt;typename T&gt;
+<span class="lineNum">      22 </span>            : inline void MakeStringInternal(std::stringstream&amp; ss, const T&amp; t) {
+<span class="lineNum">      23 </span><span class="lineCov">        339 :   ss &lt;&lt; t;</span>
+<span class="lineNum">      24 </span><span class="lineCov">        339 : }</span>
+<span class="lineNum">      25 </span>            : 
+<a name="26"><span class="lineNum">      26 </span>            : template &lt;typename T, typename... Args&gt;</a>
+<span class="lineNum">      27 </span>            : inline void
+<span class="lineNum">      28 </span>            : MakeStringInternal(std::stringstream&amp; ss, const T&amp; t, const Args&amp;... args) {
+<span class="lineNum">      29 </span><span class="lineCov">        230 :   MakeStringInternal(ss, t);</span>
+<span class="lineNum">      30 </span><span class="lineCov">        230 :   MakeStringInternal(ss, args...);</span>
+<span class="lineNum">      31 </span><span class="lineCov">        230 : }</span>
+<a name="32"><span class="lineNum">      32 </span>            : </a>
+<span class="lineNum">      33 </span>            : template &lt;typename... Args&gt;
+<span class="lineNum">      34 </span>            : std::string MakeString(const Args&amp;... args) {
+<span class="lineNum">      35 </span><span class="lineCov">        109 :   std::stringstream ss;</span>
+<span class="lineNum">      36 </span><span class="lineCov">        109 :   MakeStringInternal(ss, args...);</span>
+<span class="lineNum">      37 </span><span class="lineCov">        109 :   return std::string(ss.str());</span>
+<span class="lineNum">      38 </span><span class="lineCov">        109 : }</span>
+<span class="lineNum">      39 </span>            : 
+<a name="40"><span class="lineNum">      40 </span>            : // Specializations for already-a-string types.</a>
+<span class="lineNum">      41 </span>            : template &lt;&gt;
+<span class="lineNum">      42 </span>            : inline std::string MakeString(const std::string&amp; str) {
+<a name="43"><span class="lineNum">      43 </span><span class="lineCov">          1 :   return str;</span></a>
+<span class="lineNum">      44 </span>            : }
+<span class="lineNum">      45 </span>            : inline std::string MakeString(const char* c_str) {
+<span class="lineNum">      46 </span><span class="lineCov">          1 :   return std::string(c_str);</span>
+<span class="lineNum">      47 </span>            : }
+<span class="lineNum">      48 </span>            : } // namespace ONNX_NAMESPACE
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

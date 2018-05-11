@@ -1,0 +1,1155 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - onnx-coverage.info - onnx/common/ir.h</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">onnx/common</a> - ir.h<span style="font-size: 80%;"> (source / <a href="ir.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">onnx-coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">244</td>
+            <td class="headerCovTableEntry">298</td>
+            <td class="headerCovTableEntryMed">81.9 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-05-11 14:21:51</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">151</td>
+            <td class="headerCovTableEntry">233</td>
+            <td class="headerCovTableEntryLo">64.8 %</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : // ATTENTION: The code in this file is highly EXPERIMENTAL.</a>
+<span class="lineNum">       2 </span>            : // Adventurous users should note that the APIs will probably change.
+<span class="lineNum">       3 </span>            : 
+<span class="lineNum">       4 </span>            : #pragma once
+<span class="lineNum">       5 </span>            : 
+<span class="lineNum">       6 </span>            : #include &lt;atomic&gt;
+<span class="lineNum">       7 </span>            : #include &lt;algorithm&gt;
+<span class="lineNum">       8 </span>            : #include &lt;cstdint&gt;
+<span class="lineNum">       9 </span>            : #include &lt;functional&gt;
+<span class="lineNum">      10 </span>            : #include &lt;iostream&gt;
+<span class="lineNum">      11 </span>            : #include &lt;memory&gt;
+<span class="lineNum">      12 </span>            : #include &lt;sstream&gt;
+<span class="lineNum">      13 </span>            : #include &lt;stdint.h&gt;
+<span class="lineNum">      14 </span>            : #include &lt;string&gt;
+<span class="lineNum">      15 </span>            : #include &lt;unordered_set&gt;
+<span class="lineNum">      16 </span>            : #include &lt;vector&gt;
+<span class="lineNum">      17 </span>            : 
+<span class="lineNum">      18 </span>            : #include &quot;onnx/string_utils.h&quot;
+<span class="lineNum">      19 </span>            : #include &quot;onnx/common/array_ref.h&quot;
+<span class="lineNum">      20 </span>            : #include &quot;onnx/common/assertions.h&quot;
+<span class="lineNum">      21 </span>            : #include &quot;onnx/common/interned_strings.h&quot;
+<span class="lineNum">      22 </span>            : #include &quot;onnx/common/graph_node_list.h&quot;
+<span class="lineNum">      23 </span>            : #include &quot;onnx/common/tensor.h&quot;
+<span class="lineNum">      24 </span>            : 
+<span class="lineNum">      25 </span>            : 
+<span class="lineNum">      26 </span>            : #define ONNX_DISALLOW_COPY_AND_ASSIGN(TypeName) \
+<span class="lineNum">      27 </span>            :   TypeName(const TypeName&amp;) = delete; \
+<span class="lineNum">      28 </span>            :   void operator=(const TypeName&amp;) = delete
+<span class="lineNum">      29 </span>            : 
+<span class="lineNum">      30 </span>            : 
+<span class="lineNum">      31 </span>            : namespace ONNX_NAMESPACE {
+<span class="lineNum">      32 </span>            : 
+<span class="lineNum">      33 </span>            : // Graph represents one &quot;function&quot; of computation.
+<span class="lineNum">      34 </span>            : // It uses a simple ownership model where the graph owns all the nodes inside it.
+<span class="lineNum">      35 </span>            : // All references inside the graph are raw pointers.
+<span class="lineNum">      36 </span>            : // Destroying the Graph will invalidate any pointers to nodes in the graph.
+<span class="lineNum">      37 </span>            : struct Graph;
+<span class="lineNum">      38 </span>            : 
+<span class="lineNum">      39 </span>            : 
+<span class="lineNum">      40 </span>            : // Node is the base class of the IR graph. It represents one computation
+<span class="lineNum">      41 </span>            : // and dependencies on a list of Values. The &quot;prim-ops&quot;, so to speak.
+<span class="lineNum">      42 </span>            : struct Node;
+<span class="lineNum">      43 </span>            : 
+<span class="lineNum">      44 </span>            : 
+<span class="lineNum">      45 </span>            : // A Value represents an input or output to node that is either a
+<span class="lineNum">      46 </span>            : // Tensor or an opaque Handle object, as determined by type().
+<span class="lineNum">      47 </span>            : struct Value;
+<span class="lineNum">      48 </span>            : 
+<span class="lineNum">      49 </span>            : 
+<span class="lineNum">      50 </span>            : class ResourceGuard final {
+<span class="lineNum">      51 </span>            :   std::function&lt;void()&gt; destructor_;
+<span class="lineNum">      52 </span>            :   bool released_;
+<span class="lineNum">      53 </span>            : 
+<span class="lineNum">      54 </span>            : public:
+<span class="lineNum">      55 </span>            :   ResourceGuard(std::function&lt;void()&gt; destructor)
+<span class="lineNum">      56 </span>            :     : destructor_(std::move(destructor))
+<span class="lineNum">      57 </span>            :     , released_(false) {}
+<span class="lineNum">      58 </span>            : 
+<span class="lineNum">      59 </span>            :   ~ResourceGuard() {
+<span class="lineNum">      60 </span>            :     if (!released_) destructor_();
+<span class="lineNum">      61 </span>            :   }
+<span class="lineNum">      62 </span>            : 
+<span class="lineNum">      63 </span>            :   void release() {
+<span class="lineNum">      64 </span>            :     released_ = true;
+<span class="lineNum">      65 </span>            :   }
+<span class="lineNum">      66 </span>            : };
+<a name="67"><span class="lineNum">      67 </span>            : </a>
+<a name="68"><span class="lineNum">      68 </span>            : </a>
+<span class="lineNum">      69 </span><span class="lineCov">       1472 : struct Dimension final {</span>
+<span class="lineNum">      70 </span><span class="lineCov">        208 :   Dimension(int dim)</span>
+<a name="71"><span class="lineNum">      71 </span><span class="lineCov">        416 :     : is_int(true), dim(dim) {</span></a>
+<span class="lineNum">      72 </span><span class="lineCov">        416 :   }</span>
+<span class="lineNum">      73 </span>            :   Dimension(std::string param)
+<span class="lineNum">      74 </span><span class="lineNoCov">          0 :     : is_int(false), dim(-1), param(std::move(param)) {</span>
+<span class="lineNum">      75 </span><span class="lineNoCov">          0 :   }</span>
+<span class="lineNum">      76 </span>            : 
+<span class="lineNum">      77 </span>            :   bool is_int;
+<span class="lineNum">      78 </span>            :   int64_t dim;
+<span class="lineNum">      79 </span>            :   std::string param;
+<span class="lineNum">      80 </span>            : };
+<span class="lineNum">      81 </span>            : 
+<span class="lineNum">      82 </span>            : 
+<span class="lineNum">      83 </span>            : enum class AttributeKind : uint8_t {
+<span class="lineNum">      84 </span>            :   // float, float list, int, int list, string, string list,
+<span class="lineNum">      85 </span>            :   // tensor, tensor list, subgraph, subgraph list
+<span class="lineNum">      86 </span>            :   f, fs, i, is, s, ss, t, ts, g, gs
+<span class="lineNum">      87 </span>            : };
+<span class="lineNum">      88 </span>            : 
+<span class="lineNum">      89 </span>            : 
+<span class="lineNum">      90 </span>            : static inline const char * toString(AttributeKind kind) {
+<span class="lineNum">      91 </span>            :   static constexpr const char* names[] = {&quot;f&quot;,&quot;fs&quot;, &quot;i&quot;, &quot;is&quot;, &quot;s&quot;, &quot;ss&quot;, &quot;t&quot;, &quot;ts&quot;, &quot;g&quot;, &quot;gs&quot;};
+<span class="lineNum">      92 </span>            :   ONNX_ASSERT(size_t(kind) &lt; sizeof(names) / sizeof(AttributeKind));
+<span class="lineNum">      93 </span>            :   return names[int(kind)];
+<span class="lineNum">      94 </span>            : }
+<span class="lineNum">      95 </span>            : 
+<a name="96"><span class="lineNum">      96 </span>            : </a>
+<span class="lineNum">      97 </span>            : struct AttributeValue {
+<span class="lineNum">      98 </span>            :   AttributeValue(Symbol name)
+<span class="lineNum">      99 </span><span class="lineCov">         65 :   : name(name) {}</span>
+<span class="lineNum">     100 </span>            :   using Ptr = std::unique_ptr&lt;AttributeValue&gt;;
+<span class="lineNum">     101 </span>            :   Symbol name;
+<a name="102"><span class="lineNum">     102 </span>            :   virtual AttributeKind kind() const = 0;</a>
+<span class="lineNum">     103 </span>            :   virtual Ptr clone() const = 0;
+<span class="lineNum">     104 </span><span class="lineCov">         65 :   virtual ~AttributeValue() = default;</span>
+<span class="lineNum">     105 </span>            : };
+<span class="lineNum">     106 </span>            : 
+<a name="107"><span class="lineNum">     107 </span>            : </a>
+<span class="lineNum">     108 </span>            : template&lt;typename T, AttributeKind Kind&gt;
+<span class="lineNum">     109 </span><span class="lineCov">        129 : struct ScalarAttributeValue final : public AttributeValue {</span>
+<a name="110"><span class="lineNum">     110 </span>            :   using ConstructorType = const T &amp;;</a>
+<span class="lineNum">     111 </span>            :   using ValueType = T;
+<a name="112"><span class="lineNum">     112 </span>            :   ScalarAttributeValue(Symbol name, ConstructorType value_)</a>
+<span class="lineNum">     113 </span><span class="lineCov">        103 :   : AttributeValue(name), value_(value_) {}</span>
+<span class="lineNum">     114 </span>            :   ValueType &amp; value() {
+<a name="115"><span class="lineNum">     115 </span><span class="lineCov">         54 :     return value_;</span></a>
+<span class="lineNum">     116 </span>            :   }
+<span class="lineNum">     117 </span>            :   virtual Ptr clone() const override {
+<a name="118"><span class="lineNum">     118 </span><span class="lineNoCov">          0 :     return Ptr(new ScalarAttributeValue(name, value_));</span></a>
+<span class="lineNum">     119 </span><span class="lineNoCov">          0 :   }</span>
+<span class="lineNum">     120 </span><span class="lineCov">         62 :   virtual AttributeKind kind() const override { return Kind; }</span>
+<span class="lineNum">     121 </span>            : 
+<span class="lineNum">     122 </span>            : private:
+<span class="lineNum">     123 </span>            :   ValueType value_;
+<span class="lineNum">     124 </span>            : };
+<span class="lineNum">     125 </span>            : 
+<a name="126"><span class="lineNum">     126 </span>            : </a>
+<span class="lineNum">     127 </span>            : template&lt;typename T, AttributeKind Kind&gt;
+<span class="lineNum">     128 </span><span class="lineCov">         66 : struct VectorAttributeValue final : public AttributeValue {</span>
+<a name="129"><span class="lineNum">     129 </span>            :   using ConstructorType = const std::vector&lt;T&gt; &amp;&amp;;</a>
+<span class="lineNum">     130 </span>            :   using ValueType = std::vector&lt;T&gt;;
+<a name="131"><span class="lineNum">     131 </span>            :   VectorAttributeValue(Symbol name, ConstructorType value_)</a>
+<span class="lineNum">     132 </span><span class="lineCov">         66 :   : AttributeValue(name), value_(std::move(value_)) {}</span>
+<span class="lineNum">     133 </span>            :   ValueType &amp; value() {
+<a name="134"><span class="lineNum">     134 </span><span class="lineCov">         22 :     return value_;</span></a>
+<a name="135"><span class="lineNum">     135 </span>            :   }</a>
+<span class="lineNum">     136 </span><span class="lineCov">         21 :   virtual AttributeKind kind() const override { return Kind; }</span>
+<span class="lineNum">     137 </span>            :   virtual std::unique_ptr&lt;AttributeValue&gt; clone() const override {
+<span class="lineNum">     138 </span><span class="lineNoCov">          0 :     auto copy = value_;</span>
+<span class="lineNum">     139 </span><span class="lineNoCov">          0 :     return Ptr(new VectorAttributeValue(name, std::move(copy)));</span>
+<span class="lineNum">     140 </span><span class="lineNoCov">          0 :   }</span>
+<span class="lineNum">     141 </span>            : private:
+<span class="lineNum">     142 </span>            :   ValueType value_;
+<span class="lineNum">     143 </span>            : };
+<span class="lineNum">     144 </span>            : 
+<span class="lineNum">     145 </span>            : 
+<span class="lineNum">     146 </span>            : using FloatAttr = ScalarAttributeValue&lt;double,AttributeKind::f&gt;;
+<span class="lineNum">     147 </span>            : using FloatsAttr = VectorAttributeValue&lt;double,AttributeKind::fs&gt;;
+<span class="lineNum">     148 </span>            : using IntAttr = ScalarAttributeValue&lt;int64_t,AttributeKind::i&gt;;
+<span class="lineNum">     149 </span>            : using IntsAttr = VectorAttributeValue&lt;int64_t,AttributeKind::is&gt;;
+<span class="lineNum">     150 </span>            : using StringAttr = ScalarAttributeValue&lt;std::string,AttributeKind::s&gt;;
+<span class="lineNum">     151 </span>            : using StringsAttr = VectorAttributeValue&lt;std::string,AttributeKind::ss&gt;;
+<span class="lineNum">     152 </span>            : using TensorAttr = ScalarAttributeValue&lt;Tensor,AttributeKind::t&gt;;
+<span class="lineNum">     153 </span>            : using TensorsAttr = VectorAttributeValue&lt;Tensor,AttributeKind::ts&gt;;
+<span class="lineNum">     154 </span>            : using GraphAttr = ScalarAttributeValue&lt;std::shared_ptr&lt;Graph&gt;,AttributeKind::g&gt;;
+<span class="lineNum">     155 </span>            : using GraphsAttr = VectorAttributeValue&lt;std::shared_ptr&lt;Graph&gt;,AttributeKind::gs&gt;;
+<span class="lineNum">     156 </span>            : 
+<span class="lineNum">     157 </span>            : 
+<span class="lineNum">     158 </span>            : // CRTP so that Node which inherits Attributes can be return for
+<span class="lineNum">     159 </span>            : // method chaining e.g:
+<span class="lineNum">     160 </span>            : // Node * n = g-&gt;create(kSelect)-&gt;set_i(kOffset,3)-&gt;set_f(kValue,3.5);
+<a name="161"><span class="lineNum">     161 </span>            : // we return Derived* pointers because Nodes are normally held as pointers.</a>
+<a name="162"><span class="lineNum">     162 </span>            : template&lt;typename Derived&gt;</a>
+<a name="163"><span class="lineNum">     163 </span><span class="lineCov">        167 : struct Attributes {</span></a>
+<span class="lineNum">     164 </span><span class="lineCov">        167 :   Attributes() {}</span>
+<span class="lineNum">     165 </span>            :   void copyAttributes(const Attributes &amp; rhs) {
+<span class="lineNum">     166 </span><span class="lineNoCov">          0 :     values_.clear();</span>
+<span class="lineNum">     167 </span><span class="lineNoCov">          0 :     values_.reserve(rhs.values_.size());</span>
+<span class="lineNum">     168 </span><span class="lineNoCov">          0 :     for(auto &amp; i : rhs.values_) {</span>
+<span class="lineNum">     169 </span><span class="lineNoCov">          0 :       values_.push_back(i-&gt;clone());</span>
+<a name="170"><span class="lineNum">     170 </span>            :     }</a>
+<span class="lineNum">     171 </span><span class="lineNoCov">          0 :   }</span>
+<span class="lineNum">     172 </span>            :   bool hasAttribute(Symbol name) const {
+<a name="173"><span class="lineNum">     173 </span><span class="lineCov">         38 :     return find(name,false) != values_.end();</span></a>
+<span class="lineNum">     174 </span>            :   }
+<span class="lineNum">     175 </span>            :   AttributeKind kindOf(Symbol name) const {
+<span class="lineNum">     176 </span><span class="lineCov">         83 :     return (*find(name,true))-&gt;kind();</span>
+<span class="lineNum">     177 </span>            :   }
+<span class="lineNum">     178 </span>            :   Derived* removeAttribute(Symbol name) {
+<span class="lineNum">     179 </span>            :     values_.erase(find(name,true));
+<span class="lineNum">     180 </span>            :     return This();
+<span class="lineNum">     181 </span>            :   }
+<span class="lineNum">     182 </span>            :   bool hasAttributes() const {
+<span class="lineNum">     183 </span>            :     return values_.size() &gt; 0;
+<a name="184"><span class="lineNum">     184 </span>            :   }</a>
+<span class="lineNum">     185 </span>            :   // The names are returned in order, since name actually is the index.
+<span class="lineNum">     186 </span>            :   std::vector&lt;Symbol&gt; attributeNames() const {
+<span class="lineNum">     187 </span><span class="lineCov">        133 :     std::vector&lt;Symbol&gt; names;</span>
+<span class="lineNum">     188 </span><span class="lineCov">        133 :     names.reserve(values_.size());</span>
+<span class="lineNum">     189 </span><span class="lineCov">        598 :     for(auto &amp; a : values_)</span>
+<span class="lineNum">     190 </span><span class="lineCov">         83 :       names.push_back(a-&gt;name);</span>
+<span class="lineNum">     191 </span><span class="lineCov">        133 :     return names;</span>
+<span class="lineNum">     192 </span><span class="lineCov">        266 :   }</span>
+<span class="lineNum">     193 </span>            : 
+<span class="lineNum">     194 </span>            :   #define CREATE_ACCESSOR(Kind, method) \
+<span class="lineNum">     195 </span>            :   Derived* method##_(Symbol name, Kind##Attr::ConstructorType v) { \
+<span class="lineNum">     196 </span>            :     return set&lt;Kind##Attr&gt;(name,std::forward&lt;Kind##Attr::ConstructorType&gt;(v)); \
+<span class="lineNum">     197 </span>            :   } \
+<span class="lineNum">     198 </span>            :   const Kind##Attr::ValueType&amp; method(Symbol name) const { \
+<a name="199"><span class="lineNum">     199 </span>            :     return get&lt;Kind##Attr&gt;(name); \</a>
+<a name="200"><span class="lineNum">     200 </span>            :   }</a>
+<a name="201"><span class="lineNum">     201 </span><span class="lineNoCov">          0 :   CREATE_ACCESSOR(Float,f)</span></a>
+<a name="202"><span class="lineNum">     202 </span><span class="lineNoCov">          0 :   CREATE_ACCESSOR(Floats,fs)</span></a>
+<a name="203"><span class="lineNum">     203 </span><span class="lineNoCov">          0 :   CREATE_ACCESSOR(String,s)</span></a>
+<a name="204"><span class="lineNum">     204 </span><span class="lineCov">          4 :   CREATE_ACCESSOR(Strings,ss)</span></a>
+<a name="205"><span class="lineNum">     205 </span><span class="lineCov">         40 :   CREATE_ACCESSOR(Int,i)</span></a>
+<a name="206"><span class="lineNum">     206 </span><span class="lineCov">         40 :   CREATE_ACCESSOR(Ints,is)</span></a>
+<a name="207"><span class="lineNum">     207 </span><span class="lineCov">         33 :   CREATE_ACCESSOR(Tensor,t)</span></a>
+<a name="208"><span class="lineNum">     208 </span><span class="lineNoCov">          0 :   CREATE_ACCESSOR(Tensors,ts)</span></a>
+<span class="lineNum">     209 </span><span class="lineCov">         24 :   CREATE_ACCESSOR(Graph,g)</span>
+<span class="lineNum">     210 </span><span class="lineNoCov">          0 :   CREATE_ACCESSOR(Graphs,gs)</span>
+<span class="lineNum">     211 </span>            : 
+<span class="lineNum">     212 </span>            :   #undef CREATE_ACCESSOR
+<a name="213"><span class="lineNum">     213 </span>            : </a>
+<span class="lineNum">     214 </span>            : private:
+<span class="lineNum">     215 </span>            :   Derived* This() {
+<span class="lineNum">     216 </span><span class="lineCov">         65 :     return static_cast&lt;Derived*&gt;(this);</span>
+<a name="217"><span class="lineNum">     217 </span>            :   }</a>
+<span class="lineNum">     218 </span>            :   template&lt;typename T&gt;
+<span class="lineNum">     219 </span>            :   Derived* set(Symbol name, typename T::ConstructorType v) {
+<span class="lineNum">     220 </span><span class="lineCov">         65 :     auto it = find(name, false);</span>
+<span class="lineNum">     221 </span><span class="lineCov">        130 :     auto nv = AVPtr(new T(name, std::forward&lt;typename T::ConstructorType&gt;(v)));</span>
+<span class="lineNum">     222 </span><span class="lineCov">         65 :     if(it == values_.end()) {</span>
+<span class="lineNum">     223 </span><span class="lineCov">         61 :       values_.push_back(std::move(nv));</span>
+<span class="lineNum">     224 </span><span class="lineCov">         61 :     } else {</span>
+<span class="lineNum">     225 </span><span class="lineCov">          4 :       *it = std::move(nv);</span>
+<span class="lineNum">     226 </span>            :     }
+<span class="lineNum">     227 </span><span class="lineCov">         65 :     return This();</span>
+<a name="228"><span class="lineNum">     228 </span><span class="lineCov">         65 :   }</span></a>
+<span class="lineNum">     229 </span>            :   template&lt;typename T&gt;
+<span class="lineNum">     230 </span>            :   typename T::ValueType &amp; get(Symbol name) const {
+<span class="lineNum">     231 </span><span class="lineCov">         76 :     auto it = find(name, true);</span>
+<span class="lineNum">     232 </span><span class="lineCov">         76 :     T* child = static_cast&lt;T*&gt;(it-&gt;get());</span>
+<span class="lineNum">     233 </span><span class="lineCov">         76 :     return child-&gt;value();</span>
+<span class="lineNum">     234 </span>            :   }
+<span class="lineNum">     235 </span>            :   using AVPtr = AttributeValue::Ptr;
+<span class="lineNum">     236 </span>            :   // NB: For determinism, we use a vector rather than a hash map.  This does
+<span class="lineNum">     237 </span>            :   // mean that lookups are O(n), so you shouldn't use Attributes to store
+<span class="lineNum">     238 </span>            :   // a big pile of messages.
+<a name="239"><span class="lineNum">     239 </span>            :   std::vector&lt;AVPtr&gt; values_;</a>
+<a name="240"><span class="lineNum">     240 </span>            :   using iterator = std::vector&lt;AVPtr&gt;::iterator;</a>
+<span class="lineNum">     241 </span>            :   iterator find(Symbol name, bool required) {
+<span class="lineNum">     242 </span><span class="lineCov">         65 :     auto it = std::find_if(values_.begin(), values_.end(),[&amp;](const AVPtr &amp; v) {</span>
+<span class="lineNum">     243 </span><span class="lineCov">         17 :       return v-&gt;name == name;</span>
+<span class="lineNum">     244 </span>            :     });
+<span class="lineNum">     245 </span><span class="lineCov">        130 :     ONNX_ASSERT(!required || it != values_.end());</span>
+<span class="lineNum">     246 </span><span class="lineCov">         65 :     return it;</span>
+<a name="247"><span class="lineNum">     247 </span>            :   }</a>
+<a name="248"><span class="lineNum">     248 </span>            :   using const_iterator = std::vector&lt;AVPtr&gt;::const_iterator;</a>
+<span class="lineNum">     249 </span>            :   const_iterator find(Symbol name, bool required) const {
+<span class="lineNum">     250 </span><span class="lineCov">        197 :     auto it = std::find_if(values_.begin(), values_.end(),[&amp;](const AVPtr &amp; v) {</span>
+<span class="lineNum">     251 </span><span class="lineCov">        227 :       return v-&gt;name == name;</span>
+<span class="lineNum">     252 </span>            :     });
+<span class="lineNum">     253 </span><span class="lineCov">        553 :     ONNX_ASSERTM(!required || it != values_.end(),</span>
+<span class="lineNum">     254 </span>            :         &quot;%s:%u: %s: required undefined attribute '%s'&quot;, __FILE__, __LINE__, __func__, name.toString());
+<span class="lineNum">     255 </span><span class="lineCov">        197 :     return it;</span>
+<span class="lineNum">     256 </span>            :   }
+<span class="lineNum">     257 </span>            : };
+<span class="lineNum">     258 </span>            : 
+<span class="lineNum">     259 </span>            : 
+<span class="lineNum">     260 </span>            : 
+<span class="lineNum">     261 </span>            : // Each use is represented by this type, see Node::uses()
+<span class="lineNum">     262 </span>            : // 'user' is the consumer of the value, offset is the index into
+<a name="263"><span class="lineNum">     263 </span>            : // 'user's input this where the produces will be found.</a>
+<span class="lineNum">     264 </span>            : struct Use final {
+<span class="lineNum">     265 </span>            :   Use(Node * user, size_t offset)
+<span class="lineNum">     266 </span><span class="lineCov">        368 :   : user(user), offset(offset) {}</span>
+<span class="lineNum">     267 </span>            :   Node * user;
+<span class="lineNum">     268 </span>            :   size_t offset;
+<a name="269"><span class="lineNum">     269 </span>            : };</a>
+<span class="lineNum">     270 </span>            : 
+<span class="lineNum">     271 </span>            : static inline bool operator==(const Use &amp; a, const Use &amp; b) {
+<span class="lineNum">     272 </span><span class="lineCov">        101 :   return a.user == b.user &amp;&amp; a.offset == b.offset;</span>
+<span class="lineNum">     273 </span>            : }
+<span class="lineNum">     274 </span>            : 
+<span class="lineNum">     275 </span>            : 
+<span class="lineNum">     276 </span>            : // the list types are intentionally simple, but we type-def
+<span class="lineNum">     277 </span>            : // them here so if we need to change them, refactoring will be easier
+<span class="lineNum">     278 </span>            : using node_list = std::vector&lt;Node*&gt;;
+<span class="lineNum">     279 </span>            : using value_list = std::vector&lt;Value*&gt;;
+<span class="lineNum">     280 </span>            : using use_list = std::vector&lt;Use&gt;;
+<span class="lineNum">     281 </span>            : using NodeKind = Symbol;
+<a name="282"><span class="lineNum">     282 </span>            : </a>
+<span class="lineNum">     283 </span>            : 
+<span class="lineNum">     284 </span><span class="lineCov">        296 : struct Value final {</span>
+<span class="lineNum">     285 </span>            :   ONNX_DISALLOW_COPY_AND_ASSIGN(Value);
+<span class="lineNum">     286 </span>            :   Value(Node * node_, size_t offset_);
+<span class="lineNum">     287 </span>            : 
+<span class="lineNum">     288 </span>            : private:
+<span class="lineNum">     289 </span>            :   friend struct Node;
+<span class="lineNum">     290 </span>            :   friend struct Graph;
+<span class="lineNum">     291 </span>            :   Node * node_;
+<span class="lineNum">     292 </span>            :   size_t offset_;
+<span class="lineNum">     293 </span>            :   size_t unique_ = 0;          // unique id
+<span class="lineNum">     294 </span>            :   size_t stage_ = 0;           // 0-forward, 1-backward, 2-double-backward,...
+<span class="lineNum">     295 </span>            :   use_list uses_;
+<span class="lineNum">     296 </span>            :   bool has_unique_name_;
+<span class="lineNum">     297 </span>            :   std::string unique_name_;
+<span class="lineNum">     298 </span>            :   ONNX_NAMESPACE::TensorProto_DataType elem_type_;
+<span class="lineNum">     299 </span>            :   std::vector&lt;Dimension&gt; sizes_;
+<a name="300"><span class="lineNum">     300 </span>            : </a>
+<span class="lineNum">     301 </span>            : public:
+<span class="lineNum">     302 </span>            :   Value* setElemType(ONNX_NAMESPACE::TensorProto_DataType elem_type) {
+<span class="lineNum">     303 </span><span class="lineCov">        183 :     elem_type_ = elem_type;</span>
+<a name="304"><span class="lineNum">     304 </span><span class="lineCov">        183 :     return this;</span></a>
+<span class="lineNum">     305 </span>            :   }
+<span class="lineNum">     306 </span>            :   ONNX_NAMESPACE::TensorProto_DataType elemType() const {
+<a name="307"><span class="lineNum">     307 </span><span class="lineCov">        143 :     return elem_type_;</span></a>
+<span class="lineNum">     308 </span>            :   }
+<span class="lineNum">     309 </span>            :   Value* setSizes(std::vector&lt;Dimension&gt; sizes) {
+<span class="lineNum">     310 </span><span class="lineCov">        105 :     sizes_ = std::move(sizes);</span>
+<a name="311"><span class="lineNum">     311 </span><span class="lineCov">        105 :     return this;</span></a>
+<span class="lineNum">     312 </span>            :   }
+<span class="lineNum">     313 </span>            :   const std::vector&lt;Dimension&gt;&amp; sizes() const {
+<a name="314"><span class="lineNum">     314 </span><span class="lineCov">        165 :     return sizes_;</span></a>
+<span class="lineNum">     315 </span>            :   }
+<span class="lineNum">     316 </span>            :   size_t unique() const {
+<a name="317"><span class="lineNum">     317 </span><span class="lineCov">          4 :     return unique_;</span></a>
+<span class="lineNum">     318 </span>            :   }
+<span class="lineNum">     319 </span>            :   bool has_unique_name() const {
+<a name="320"><span class="lineNum">     320 </span><span class="lineCov">        386 :     return has_unique_name_;</span></a>
+<span class="lineNum">     321 </span>            :   }
+<span class="lineNum">     322 </span>            :   std::string uniqueName() const {
+<span class="lineNum">     323 </span><span class="lineCov">        285 :     if(has_unique_name())</span>
+<span class="lineNum">     324 </span><span class="lineCov">        281 :       return unique_name_;</span>
+<a name="325"><span class="lineNum">     325 </span><span class="lineCov">          4 :     return ONNX_NAMESPACE::to_string(unique());</span></a>
+<span class="lineNum">     326 </span><span class="lineCov">        285 :   }</span>
+<span class="lineNum">     327 </span>            :   Value* setUniqueName(std::string name) {
+<span class="lineNum">     328 </span><span class="lineCov">        168 :     has_unique_name_ = true;</span>
+<span class="lineNum">     329 </span><span class="lineCov">        168 :     unique_name_ = std::move(name);</span>
+<span class="lineNum">     330 </span><span class="lineCov">        168 :     return this;</span>
+<span class="lineNum">     331 </span>            :   }
+<span class="lineNum">     332 </span>            :   Value* setStage(size_t s) {
+<span class="lineNum">     333 </span>            :     stage_ = s;
+<span class="lineNum">     334 </span>            :     return this;
+<span class="lineNum">     335 </span>            :   }
+<span class="lineNum">     336 </span>            :   size_t stage() const {
+<a name="337"><span class="lineNum">     337 </span>            :     return stage_;</a>
+<span class="lineNum">     338 </span>            :   }
+<span class="lineNum">     339 </span>            :   Node* node() {
+<span class="lineNum">     340 </span><span class="lineCov">        362 :     return node_;</span>
+<span class="lineNum">     341 </span>            :   }
+<span class="lineNum">     342 </span>            :   size_t offset() const {
+<span class="lineNum">     343 </span>            :     return offset_;
+<span class="lineNum">     344 </span>            :   }
+<span class="lineNum">     345 </span>            :   const Node * node() const {
+<span class="lineNum">     346 </span>            :     return node_;
+<span class="lineNum">     347 </span>            :   }
+<span class="lineNum">     348 </span>            :   Graph * owningGraph();
+<a name="349"><span class="lineNum">     349 </span>            :   const Graph * owningGraph() const;</a>
+<span class="lineNum">     350 </span>            :   // TODO: make this more const correct
+<span class="lineNum">     351 </span>            :   const use_list &amp; uses() const {
+<span class="lineNum">     352 </span><span class="lineCov">         51 :     return uses_;</span>
+<span class="lineNum">     353 </span>            :   }
+<span class="lineNum">     354 </span>            : 
+<span class="lineNum">     355 </span>            :   // Replaces all uses of this node with 'newValue'.
+<span class="lineNum">     356 </span>            :   //
+<span class="lineNum">     357 </span>            :   // Given:   %3 = f(%1, %2)
+<span class="lineNum">     358 </span>            :   //          %4 = g(%3)
+<span class="lineNum">     359 </span>            :   //          %5 = h(%3, %3)
+<span class="lineNum">     360 </span>            :   // Execute: %3.replaceAllUsesWith(%6)
+<span class="lineNum">     361 </span>            :   // Result:  %3 = f(%1, %2)
+<span class="lineNum">     362 </span>            :   //          %4 = g(%6)
+<span class="lineNum">     363 </span>            :   //          %5 = h(%6, %6)
+<a name="364"><span class="lineNum">     364 </span>            :   void replaceAllUsesWith(Value * newValue);</a>
+<span class="lineNum">     365 </span>            : 
+<span class="lineNum">     366 </span>            :   Value* copyMetadata(Value * from) {
+<span class="lineNum">     367 </span><span class="lineCov">          1 :     setElemType(from-&gt;elemType());</span>
+<span class="lineNum">     368 </span><span class="lineCov">          2 :     setSizes(from-&gt;sizes());</span>
+<span class="lineNum">     369 </span><span class="lineCov">          1 :     if (from-&gt;has_unique_name()) {</span>
+<span class="lineNum">     370 </span><span class="lineCov">          2 :       setUniqueName(from-&gt;uniqueName());</span>
+<span class="lineNum">     371 </span><span class="lineCov">          1 :     }</span>
+<span class="lineNum">     372 </span><span class="lineCov">          1 :     return this;</span>
+<span class="lineNum">     373 </span><span class="lineNoCov">          0 :   }</span>
+<span class="lineNum">     374 </span>            : 
+<span class="lineNum">     375 </span>            : };
+<span class="lineNum">     376 </span>            : 
+<span class="lineNum">     377 </span>            : 
+<span class="lineNum">     378 </span>            : struct Node : public Attributes&lt;Node&gt; {
+<span class="lineNum">     379 </span>            :   ONNX_DISALLOW_COPY_AND_ASSIGN(Node);
+<span class="lineNum">     380 </span>            :   friend struct Graph;
+<span class="lineNum">     381 </span>            :   friend struct Value;
+<span class="lineNum">     382 </span>            :   friend graph_node_list;
+<span class="lineNum">     383 </span>            :   friend const_graph_node_list;
+<span class="lineNum">     384 </span>            :   friend graph_node_list_iterator;
+<span class="lineNum">     385 </span>            :   friend const_graph_node_list_iterator;
+<span class="lineNum">     386 </span>            : 
+<span class="lineNum">     387 </span>            : private:
+<span class="lineNum">     388 </span>            :   // each node but Return/Param
+<span class="lineNum">     389 </span>            :   // is associated with exactly one place in the node list...
+<span class="lineNum">     390 </span>            :   // of the graph_
+<span class="lineNum">     391 </span>            :   // this circular is a doubly-linked list, the Return node is used as the sentinel for the beginning and end of the list
+<span class="lineNum">     392 </span>            :   // such that the list never has null pointers
+<span class="lineNum">     393 </span>            :   // next_in_graph[0] is next pointer
+<span class="lineNum">     394 </span>            :   // next_in_graph[1] is prev pointer
+<span class="lineNum">     395 </span>            :   // using an array to allow the same iterator class for forward and reverse node lists
+<span class="lineNum">     396 </span>            :   // This list represents a topological sort
+<a name="397"><span class="lineNum">     397 </span>            : </a>
+<a name="398"><span class="lineNum">     398 </span><span class="lineCov">        167 :   Node* next_in_graph[2] = { nullptr, nullptr };</span></a>
+<a name="399"><span class="lineNum">     399 </span><span class="lineCov">        434 :   Node* &amp; next() { return next_in_graph[kNextDirection]; }</span></a>
+<a name="400"><span class="lineNum">     400 </span><span class="lineCov">        433 :   Node* &amp; prev() { return next_in_graph[kPrevDirection]; }</span></a>
+<span class="lineNum">     401 </span><span class="lineCov">        982 :   Node* const &amp; next() const { return next_in_graph[kNextDirection]; }</span>
+<span class="lineNum">     402 </span><span class="lineCov">        221 :   Node* const &amp; prev() const { return next_in_graph[kPrevDirection]; }</span>
+<span class="lineNum">     403 </span>            : 
+<span class="lineNum">     404 </span>            :   const NodeKind kind_;
+<span class="lineNum">     405 </span>            :   std::vector&lt;Value*&gt; inputs_;
+<span class="lineNum">     406 </span>            :   std::vector&lt;Value*&gt; outputs_;
+<span class="lineNum">     407 </span>            :   Graph* graph_;
+<span class="lineNum">     408 </span>            :   size_t stage_;
+<span class="lineNum">     409 </span>            :   bool has_name_;
+<span class="lineNum">     410 </span>            :   std::string name_;
+<span class="lineNum">     411 </span>            :   bool has_doc_string_;
+<span class="lineNum">     412 </span>            :   std::string doc_string_;
+<span class="lineNum">     413 </span>            : 
+<span class="lineNum">     414 </span>            : protected:
+<span class="lineNum">     415 </span>            :   Node(Graph * graph_, NodeKind kind_); //defined after graph
+<a name="416"><span class="lineNum">     416 </span>            : </a>
+<span class="lineNum">     417 </span>            : public:
+<span class="lineNum">     418 </span>            :   bool has_name() {
+<a name="419"><span class="lineNum">     419 </span><span class="lineCov">         56 :     return has_name_;</span></a>
+<span class="lineNum">     420 </span>            :   }
+<span class="lineNum">     421 </span>            :   const std::string&amp; name() {
+<a name="422"><span class="lineNum">     422 </span><span class="lineNoCov">          0 :     return name_;</span></a>
+<span class="lineNum">     423 </span>            :   }
+<span class="lineNum">     424 </span>            :   void setName(std::string name) {
+<span class="lineNum">     425 </span><span class="lineNoCov">          0 :     has_name_ = true;</span>
+<a name="426"><span class="lineNum">     426 </span><span class="lineNoCov">          0 :     name_ = std::move(name);</span></a>
+<span class="lineNum">     427 </span><span class="lineNoCov">          0 :   }</span>
+<span class="lineNum">     428 </span>            :   bool has_doc_string() const {
+<a name="429"><span class="lineNum">     429 </span><span class="lineCov">         56 :     return has_doc_string_;</span></a>
+<span class="lineNum">     430 </span>            :   }
+<span class="lineNum">     431 </span>            :   const std::string&amp; docString() {
+<a name="432"><span class="lineNum">     432 </span><span class="lineNoCov">          0 :     return doc_string_;</span></a>
+<span class="lineNum">     433 </span>            :   }
+<span class="lineNum">     434 </span>            :   void setDocString(std::string doc_string) {
+<span class="lineNum">     435 </span><span class="lineNoCov">          0 :     has_doc_string_ = true;</span>
+<a name="436"><span class="lineNum">     436 </span><span class="lineNoCov">          0 :     doc_string_ = std::move(doc_string);</span></a>
+<span class="lineNum">     437 </span><span class="lineNoCov">          0 :   }</span>
+<span class="lineNum">     438 </span>            :   NodeKind kind() const {
+<a name="439"><span class="lineNum">     439 </span><span class="lineCov">        520 :     return kind_;</span></a>
+<span class="lineNum">     440 </span>            :   }
+<span class="lineNum">     441 </span>            :   Graph * owningGraph() {
+<span class="lineNum">     442 </span><span class="lineCov">        197 :     return graph_;</span>
+<span class="lineNum">     443 </span>            :   }
+<span class="lineNum">     444 </span>            :   const Graph * owningGraph() const {
+<span class="lineNum">     445 </span>            :     return graph_;
+<span class="lineNum">     446 </span>            :   }
+<span class="lineNum">     447 </span>            :   size_t stage() const {
+<a name="448"><span class="lineNum">     448 </span>            :     return stage_;</a>
+<span class="lineNum">     449 </span>            :   }
+<span class="lineNum">     450 </span>            :   Node* setStage(size_t s) {
+<span class="lineNum">     451 </span><span class="lineCov">         28 :     stage_ = s;</span>
+<span class="lineNum">     452 </span><span class="lineCov">         28 :     return this;</span>
+<span class="lineNum">     453 </span>            :   }
+<span class="lineNum">     454 </span>            :   // NB: This returns an ArrayRef; that means that it will
+<span class="lineNum">     455 </span>            :   // get invalidated if you resize inputs (e.g., using addInput)
+<span class="lineNum">     456 </span>            :   // We can't return a std::vector&lt;Node*&gt;&amp; because there's no
+<span class="lineNum">     457 </span>            :   // way to soundly cast to std::vector&lt;const Node*&gt; (an insane
+<a name="458"><span class="lineNum">     458 </span>            :   // implementation of std::vector could make this representationally</a>
+<span class="lineNum">     459 </span>            :   // different.)
+<span class="lineNum">     460 </span>            :   ArrayRef&lt;Value*&gt; inputs() {
+<span class="lineNum">     461 </span><span class="lineCov">        319 :     return inputs_;</span>
+<span class="lineNum">     462 </span>            :   }
+<span class="lineNum">     463 </span>            :   ArrayRef&lt;const Value*&gt; inputs() const {
+<span class="lineNum">     464 </span>            :     // Vectors are not convertible in const-ness of elements, but
+<span class="lineNum">     465 </span>            :     // raw pointers are.
+<span class="lineNum">     466 </span>            :     return {inputs_.data(), inputs_.size()};
+<span class="lineNum">     467 </span>            :   }
+<span class="lineNum">     468 </span>            :   // NB: This returns an ArrayRef; that means that it will
+<span class="lineNum">     469 </span>            :   // get invalidated if you resize inputs (e.g., using addInput)
+<span class="lineNum">     470 </span>            :   // We can't return a std::vector&lt;Node*&gt;&amp; because there's no
+<span class="lineNum">     471 </span>            :   // way to soundly cast to std::vector&lt;const Node*&gt; (an insane
+<a name="472"><span class="lineNum">     472 </span>            :   // implementation of std::vector could make this representationally</a>
+<span class="lineNum">     473 </span>            :   // different.)
+<span class="lineNum">     474 </span>            :   ArrayRef&lt;Value*&gt; outputs() {
+<span class="lineNum">     475 </span><span class="lineCov">        348 :     return outputs_;</span>
+<span class="lineNum">     476 </span>            :   }
+<span class="lineNum">     477 </span>            :   ArrayRef&lt;const Value*&gt; outputs() const {
+<span class="lineNum">     478 </span>            :     // Vectors are not convertible in const-ness of elements, but
+<span class="lineNum">     479 </span>            :     // raw pointers are.
+<span class="lineNum">     480 </span>            :     return {outputs_.data(), outputs_.size()};
+<span class="lineNum">     481 </span>            :   }
+<span class="lineNum">     482 </span>            :   bool hasUses() const {
+<span class="lineNum">     483 </span>            :     for(auto o : outputs()) {
+<span class="lineNum">     484 </span>            :       if(o-&gt;uses().size() &gt; 0)
+<span class="lineNum">     485 </span>            :         return true;
+<span class="lineNum">     486 </span>            :     }
+<a name="487"><span class="lineNum">     487 </span>            :     return false;</a>
+<span class="lineNum">     488 </span>            :   }
+<span class="lineNum">     489 </span>            :   void replaceAllUsesWith(Node * n) {
+<span class="lineNum">     490 </span><span class="lineCov">          6 :     ONNX_ASSERT(outputs().size() == n-&gt;outputs().size());</span>
+<span class="lineNum">     491 </span><span class="lineCov">          6 :     size_t nOutputs = outputs().size();</span>
+<span class="lineNum">     492 </span><span class="lineCov">         24 :     for(size_t i = 0; i &lt; nOutputs; i++) {</span>
+<span class="lineNum">     493 </span><span class="lineCov">          6 :       outputs()[i]-&gt;replaceAllUsesWith(n-&gt;outputs()[i]);</span>
+<span class="lineNum">     494 </span><span class="lineCov">          6 :     }</span>
+<span class="lineNum">     495 </span><span class="lineCov">          6 :   }</span>
+<a name="496"><span class="lineNum">     496 </span>            :   // lots of things like chunk have a single input or single output, so we have a</a>
+<span class="lineNum">     497 </span>            :   // helper to make accessing it easier
+<span class="lineNum">     498 </span>            :   Value * input() {
+<span class="lineNum">     499 </span><span class="lineCov">         30 :     ONNX_ASSERT(inputs_.size() == 1);</span>
+<a name="500"><span class="lineNum">     500 </span><span class="lineCov">         30 :     return inputs_.at(0);</span></a>
+<span class="lineNum">     501 </span>            :   }
+<span class="lineNum">     502 </span>            :   Value * output() {
+<span class="lineNum">     503 </span><span class="lineCov">         27 :     ONNX_ASSERT(outputs_.size() == 1);</span>
+<span class="lineNum">     504 </span><span class="lineCov">         27 :     return outputs_.at(0);</span>
+<span class="lineNum">     505 </span>            :   }
+<span class="lineNum">     506 </span>            :   const Value * input() const {
+<span class="lineNum">     507 </span>            :     ONNX_ASSERT(inputs_.size() == 1);
+<span class="lineNum">     508 </span>            :     return inputs_.at(0);
+<span class="lineNum">     509 </span>            :   }
+<span class="lineNum">     510 </span>            :   // Access a particular input.  This is a checked index.
+<span class="lineNum">     511 </span>            :   Value * input(size_t i) {
+<span class="lineNum">     512 </span>            :     return inputs_.at(i);
+<span class="lineNum">     513 </span>            :   }
+<span class="lineNum">     514 </span>            :   const Value * input(size_t i) const {
+<span class="lineNum">     515 </span>            :     return inputs_.at(i);
+<span class="lineNum">     516 </span>            :   }
+<span class="lineNum">     517 </span>            : 
+<span class="lineNum">     518 </span>            :   // Graphs
+<span class="lineNum">     519 </span>            : 
+<span class="lineNum">     520 </span>            :   // Note [Topological invariant]
+<span class="lineNum">     521 </span>            :   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+<span class="lineNum">     522 </span>            :   // We always maintain an up-to-date topological ordering of all nodes via
+<span class="lineNum">     523 </span>            :   // the next()/prev() links.  All transformations to graphs must preserve
+<span class="lineNum">     524 </span>            :   // this topological ordering: for example, it is only valid to 'addInput'
+<span class="lineNum">     525 </span>            :   // with an input which is topologically before the current node.
+<span class="lineNum">     526 </span>            :   //
+<span class="lineNum">     527 </span>            :   // Usually, it is obvious whether or not topological order is maintained;
+<span class="lineNum">     528 </span>            :   // for example, if you are adding nodes to the end of the topsort, it's
+<span class="lineNum">     529 </span>            :   // impossible for them to refer to inputs that are not in the topsort.
+<span class="lineNum">     530 </span>            :   // If it is not obvious, please comment accordingly.
+<span class="lineNum">     531 </span>            : 
+<span class="lineNum">     532 </span>            :   // Add 'node' as an input to 'this' at the end of existing
+<span class="lineNum">     533 </span>            :   // arguments.  Returns the added node for ease of chaining.
+<span class="lineNum">     534 </span>            :   //
+<span class="lineNum">     535 </span>            :   // Given:   %3 = f(%1, %2)
+<a name="536"><span class="lineNum">     536 </span>            :   // Execute: %3.addInput(%4)</a>
+<span class="lineNum">     537 </span>            :   // Result:  %3 = f(%1, %2, %4)
+<span class="lineNum">     538 </span>            :   Value* addInput(Value * node) {
+<span class="lineNum">     539 </span><span class="lineCov">        143 :     ONNX_ASSERT(graph_ == node-&gt;owningGraph());</span>
+<span class="lineNum">     540 </span><span class="lineCov">        143 :     node-&gt;uses_.emplace_back(this, inputs_.size());</span>
+<span class="lineNum">     541 </span><span class="lineCov">        143 :     inputs_.push_back(node);</span>
+<span class="lineNum">     542 </span><span class="lineCov">        143 :     return node;</span>
+<span class="lineNum">     543 </span>            :   }
+<span class="lineNum">     544 </span>            : 
+<span class="lineNum">     545 </span>            :   // Replace the input of 'this' at position 'i' with
+<span class="lineNum">     546 </span>            :   // 'newValue', returning the old node.
+<span class="lineNum">     547 </span>            :   //
+<span class="lineNum">     548 </span>            :   // Given:   %3 = f(%1, %2)
+<a name="549"><span class="lineNum">     549 </span>            :   // Execute: %3.replaceInput(1, %4)</a>
+<span class="lineNum">     550 </span>            :   // Result:  %3 = f(%1, %4)
+<span class="lineNum">     551 </span>            :   Value * replaceInput(size_t i, Value * newValue) {
+<span class="lineNum">     552 </span><span class="lineCov">          8 :     ONNX_ASSERT(newValue-&gt;owningGraph() == graph_);</span>
+<span class="lineNum">     553 </span><span class="lineCov">          8 :     Value * old = dropInput(i);</span>
+<span class="lineNum">     554 </span><span class="lineCov">          8 :     inputs_[i] = newValue;</span>
+<span class="lineNum">     555 </span><span class="lineCov">          8 :     newValue-&gt;uses_.emplace_back(this, i);</span>
+<span class="lineNum">     556 </span><span class="lineCov">          8 :     return old;</span>
+<span class="lineNum">     557 </span>            :   }
+<span class="lineNum">     558 </span>            : 
+<span class="lineNum">     559 </span>            :   // Replace all occurrences of 'from' in the inputs of this
+<span class="lineNum">     560 </span>            :   // node with 'to'. Corresponds to llvm's replaceUsesOfWith.
+<span class="lineNum">     561 </span>            :   //
+<span class="lineNum">     562 </span>            :   // Given:   %3 = f(%1, %2, %1)
+<span class="lineNum">     563 </span>            :   // Execute: %3.replaceInputWith(%1, %4)
+<span class="lineNum">     564 </span>            :   // Result:  %3 = f(%4, %2, %4)
+<span class="lineNum">     565 </span>            :   void replaceInputWith(Value * from, Value * to) {
+<span class="lineNum">     566 </span>            :     ONNX_ASSERT(from-&gt;owningGraph() == graph_);
+<span class="lineNum">     567 </span>            :     ONNX_ASSERT(to-&gt;owningGraph() == graph_);
+<span class="lineNum">     568 </span>            :     size_t i = 0;
+<span class="lineNum">     569 </span>            :     for(auto input : inputs()) {
+<span class="lineNum">     570 </span>            :       if(input == from)
+<span class="lineNum">     571 </span>            :         replaceInput(i, to);
+<span class="lineNum">     572 </span>            :       i++;
+<span class="lineNum">     573 </span>            :     }
+<a name="574"><span class="lineNum">     574 </span>            :   }</a>
+<span class="lineNum">     575 </span>            : 
+<span class="lineNum">     576 </span>            :   Value* addOutput() {
+<span class="lineNum">     577 </span><span class="lineCov">        340 :     outputs_.push_back(new Value(this, outputs_.size()));</span>
+<span class="lineNum">     578 </span><span class="lineCov">        170 :     return outputs_.back();</span>
+<span class="lineNum">     579 </span><span class="lineNoCov">          0 :   }</span>
+<span class="lineNum">     580 </span>            : 
+<span class="lineNum">     581 </span>            :   void eraseOutput(size_t i);
+<span class="lineNum">     582 </span>            : 
+<span class="lineNum">     583 </span>            :   // Insert unattached 'this' node after 'n' in the topological order.
+<span class="lineNum">     584 </span>            :   // Returns this (for chaining).
+<span class="lineNum">     585 </span>            :   //
+<span class="lineNum">     586 </span>            :   // Given:   %3 = f(%1, %2)
+<span class="lineNum">     587 </span>            :   //          %4 = g(%3)
+<span class="lineNum">     588 </span>            :   // and unattached: %5 = h(%1)
+<span class="lineNum">     589 </span>            :   // Execute: %5.insertBefore(%4)
+<span class="lineNum">     590 </span>            :   // Result:  %3 = f(%1, %2)
+<a name="591"><span class="lineNum">     591 </span>            :   //          %5 = h(%1)</a>
+<span class="lineNum">     592 </span>            :   //          %4 = g(%3)
+<span class="lineNum">     593 </span>            :   Node* insertBefore(Node * n) {
+<span class="lineNum">     594 </span><span class="lineCov">        112 :     ONNX_ASSERT(n-&gt;inGraphList());</span>
+<span class="lineNum">     595 </span><span class="lineCov">        112 :     insertAfter(n-&gt;prev());</span>
+<span class="lineNum">     596 </span><span class="lineCov">        112 :     return this;</span>
+<span class="lineNum">     597 </span>            :   }
+<span class="lineNum">     598 </span>            : 
+<span class="lineNum">     599 </span>            :   // Insert unattached 'this' node after 'n' in the topological order.
+<span class="lineNum">     600 </span>            :   // Returns this (for chaining).
+<span class="lineNum">     601 </span>            :   //
+<span class="lineNum">     602 </span>            :   // Given: %3 = f(%1, %2)
+<span class="lineNum">     603 </span>            :   //        %4 = g(%3)
+<span class="lineNum">     604 </span>            :   // and unattached: %5 = h(%1)
+<span class="lineNum">     605 </span>            :   // Execute: %5.insertAfter(%4)
+<span class="lineNum">     606 </span>            :   // Result:  %3 = f(%1, %2)
+<a name="607"><span class="lineNum">     607 </span>            :   //          %4 = g(%3)</a>
+<span class="lineNum">     608 </span>            :   //          %5 = h(%1)
+<span class="lineNum">     609 </span>            :   Node* insertAfter(Node * n) {
+<span class="lineNum">     610 </span><span class="lineCov">        336 :     ONNX_ASSERT(!inGraphList() &amp;&amp; n-&gt;inGraphList());</span>
+<span class="lineNum">     611 </span><span class="lineCov">        112 :     Node * next = n-&gt;next();</span>
+<span class="lineNum">     612 </span><span class="lineCov">        112 :     n-&gt;next() = this;</span>
+<span class="lineNum">     613 </span><span class="lineCov">        112 :     this-&gt;prev() = n;</span>
+<span class="lineNum">     614 </span><span class="lineCov">        112 :     this-&gt;next() = next;</span>
+<span class="lineNum">     615 </span><span class="lineCov">        112 :     next-&gt;prev() = this;</span>
+<span class="lineNum">     616 </span><span class="lineCov">        112 :     return this;</span>
+<span class="lineNum">     617 </span>            :   }
+<span class="lineNum">     618 </span>            : 
+<span class="lineNum">     619 </span>            :   // Move 'this' (already in the graph) after 'n' in the topological order.
+<span class="lineNum">     620 </span>            :   //
+<span class="lineNum">     621 </span>            :   // Given: %2 = f(%1)
+<span class="lineNum">     622 </span>            :   //        %3 = g(%1)
+<span class="lineNum">     623 </span>            :   // Execute: %2.moveAfter(%3)
+<span class="lineNum">     624 </span>            :   // Result: %3 = g(%1)
+<span class="lineNum">     625 </span>            :   //         %2 = f(%1)
+<span class="lineNum">     626 </span>            :   //
+<span class="lineNum">     627 </span>            :   void moveAfter(Node * n) {
+<span class="lineNum">     628 </span>            :     removeFromList();
+<span class="lineNum">     629 </span>            :     insertAfter(n);
+<span class="lineNum">     630 </span>            :   }
+<span class="lineNum">     631 </span>            : 
+<span class="lineNum">     632 </span>            :   // Move a node 'n' (already in the graph) before 'this' in the topological order.
+<span class="lineNum">     633 </span>            :   //
+<span class="lineNum">     634 </span>            :   // Given: %2 = f(%1)
+<span class="lineNum">     635 </span>            :   //        %3 = g(%1)
+<span class="lineNum">     636 </span>            :   // Execute: %3.moveBefore(%2)
+<a name="637"><span class="lineNum">     637 </span>            :   // Result: %3 = g(%1)</a>
+<span class="lineNum">     638 </span>            :   //         %2 = f(%1)
+<span class="lineNum">     639 </span>            :   void moveBefore(Node * n) {
+<span class="lineNum">     640 </span><span class="lineCov">          1 :     removeFromList();</span>
+<span class="lineNum">     641 </span><span class="lineCov">          1 :     insertBefore(n);</span>
+<span class="lineNum">     642 </span><span class="lineCov">          1 :   }</span>
+<span class="lineNum">     643 </span>            : 
+<span class="lineNum">     644 </span>            :   // Remove the input at 'i' from this node.
+<span class="lineNum">     645 </span>            :   //
+<span class="lineNum">     646 </span>            :   // WARNING: This is O(n) in the number of inputs, so avoid repeatedly calling
+<span class="lineNum">     647 </span>            :   // removeInput.
+<span class="lineNum">     648 </span>            :   //
+<span class="lineNum">     649 </span>            :   // Given: %3 = f(%1, %2)
+<a name="650"><span class="lineNum">     650 </span>            :   // Execute: %3.removeInput(1)</a>
+<span class="lineNum">     651 </span>            :   // Result: %3 = f(%1)
+<span class="lineNum">     652 </span>            :   void removeInput(size_t i) {
+<span class="lineNum">     653 </span><span class="lineNoCov">          0 :     dropInput(i);</span>
+<span class="lineNum">     654 </span>            :     // everything after this input shifts left,
+<span class="lineNum">     655 </span>            :     // so we need to update their use offsets to match
+<span class="lineNum">     656 </span><span class="lineNoCov">          0 :     for(size_t j = i+1; j &lt; inputs_.size(); j++) {</span>
+<span class="lineNum">     657 </span><span class="lineNoCov">          0 :       auto it = findUseForInput(j);</span>
+<span class="lineNum">     658 </span><span class="lineNoCov">          0 :       it-&gt;offset--;</span>
+<span class="lineNum">     659 </span><span class="lineNoCov">          0 :     }</span>
+<span class="lineNum">     660 </span><span class="lineNoCov">          0 :     inputs_.erase(inputs_.begin() + i);</span>
+<span class="lineNum">     661 </span><span class="lineNoCov">          0 :   }</span>
+<span class="lineNum">     662 </span>            : 
+<span class="lineNum">     663 </span>            :   // Remove all inputs from a node.
+<span class="lineNum">     664 </span>            :   //
+<span class="lineNum">     665 </span>            :   // Given: %3 = f(%1, %2)
+<a name="666"><span class="lineNum">     666 </span>            :   // Execute: %3.removeAllInputs()</a>
+<span class="lineNum">     667 </span>            :   // Result: %3 = f()
+<span class="lineNum">     668 </span>            :   void removeAllInputs() {
+<span class="lineNum">     669 </span><span class="lineCov">         94 :     for(size_t i = 0; i &lt; inputs().size(); ++i)</span>
+<span class="lineNum">     670 </span><span class="lineCov">         25 :       dropInput(i);</span>
+<span class="lineNum">     671 </span><span class="lineCov">         22 :     inputs_.clear();</span>
+<span class="lineNum">     672 </span><span class="lineCov">         22 :   }</span>
+<a name="673"><span class="lineNum">     673 </span>            : </a>
+<span class="lineNum">     674 </span>            :   // Check whether this node is before node n in the graph.
+<span class="lineNum">     675 </span>            :   bool isBefore(Node* n) {
+<span class="lineNum">     676 </span><span class="lineCov">          2 :     if (n == nullptr || this == n) {</span>
+<span class="lineNum">     677 </span>            :       // Bail out early.
+<span class="lineNum">     678 </span><span class="lineNoCov">          0 :       return false;</span>
+<span class="lineNum">     679 </span>            :     }
+<span class="lineNum">     680 </span><span class="lineCov">          1 :     ONNX_ASSERT(n-&gt;inGraphList());</span>
+<span class="lineNum">     681 </span><span class="lineCov">          1 :     Node* p = next();</span>
+<span class="lineNum">     682 </span><span class="lineCov">          2 :     while (p != nullptr) {</span>
+<span class="lineNum">     683 </span><span class="lineCov">          1 :       if (p == n) {</span>
+<span class="lineNum">     684 </span><span class="lineCov">          1 :         return true;</span>
+<span class="lineNum">     685 </span>            :       }
+<span class="lineNum">     686 </span><span class="lineNoCov">          0 :       p = next();</span>
+<span class="lineNum">     687 </span>            :     }
+<span class="lineNum">     688 </span><span class="lineNoCov">          0 :     return false;</span>
+<span class="lineNum">     689 </span><span class="lineCov">          1 :   }</span>
+<span class="lineNum">     690 </span>            : 
+<span class="lineNum">     691 </span>            :   // iterators of the node list starting at this node
+<span class="lineNum">     692 </span>            :   // useful for resuming a search starting at this node
+<span class="lineNum">     693 </span>            :   graph_node_list_iterator iterator();
+<span class="lineNum">     694 </span>            :   graph_node_list_iterator reverseIterator();
+<span class="lineNum">     695 </span>            :   const_graph_node_list_iterator iterator() const;
+<span class="lineNum">     696 </span>            :   const_graph_node_list_iterator reverseIterator() const;
+<span class="lineNum">     697 </span>            : 
+<span class="lineNum">     698 </span>            :   // Remove 'this' from the instruction list and deallocate it.
+<span class="lineNum">     699 </span>            :   //
+<span class="lineNum">     700 </span>            :   // Invariant: no outputs of 'this' may have any uses.
+<span class="lineNum">     701 </span>            :   //
+<span class="lineNum">     702 </span>            :   // Given: %2 = f(%1)
+<span class="lineNum">     703 </span>            :   //        %3 = g(%1)
+<span class="lineNum">     704 </span>            :   // Execute: %2.destroy()
+<span class="lineNum">     705 </span>            :   // Result: %3 = g(%1)
+<span class="lineNum">     706 </span>            :   void destroy();
+<span class="lineNum">     707 </span>            : 
+<span class="lineNum">     708 </span>            :   // Dynamically cast this node to the subclass indicated by the
+<span class="lineNum">     709 </span>            :   // template variable, returning nullptr if the cast is invalid..
+<span class="lineNum">     710 </span>            :   //
+<span class="lineNum">     711 </span>            :   // Example usage: if(auto s = n.cast&lt;Select&gt;()) { ... }
+<span class="lineNum">     712 </span>            :   //
+<span class="lineNum">     713 </span>            :   // TODO: Make this const correct
+<span class="lineNum">     714 </span>            :   template&lt;typename T&gt;
+<span class="lineNum">     715 </span>            :   T* cast() {
+<span class="lineNum">     716 </span>            :     if(T::Kind == kind())
+<span class="lineNum">     717 </span>            :       return static_cast&lt;T*&gt;(this);
+<span class="lineNum">     718 </span>            :     return nullptr;
+<span class="lineNum">     719 </span>            :   }
+<span class="lineNum">     720 </span>            :   template&lt;typename T&gt;
+<span class="lineNum">     721 </span>            :   T* expect() {
+<span class="lineNum">     722 </span>            :     ONNX_ASSERTM(T::Kind == kind(), &quot;expected a %s but found a %s&quot;, T::Kind.toString(), kind().toString());
+<span class="lineNum">     723 </span>            :     return static_cast&lt;T*&gt;(this);
+<a name="724"><span class="lineNum">     724 </span>            :   }</a>
+<span class="lineNum">     725 </span>            : 
+<span class="lineNum">     726 </span><span class="lineCov">        501 :   virtual ~Node() = default;</span>
+<span class="lineNum">     727 </span>            : 
+<a name="728"><span class="lineNum">     728 </span>            : private:</a>
+<span class="lineNum">     729 </span>            :   // Lookup iterator in use list of _input i_ that corresponds to its use of _this_
+<span class="lineNum">     730 </span>            :   use_list::iterator findUseForInput(size_t i) {
+<span class="lineNum">     731 </span><span class="lineCov">         33 :     auto &amp; input_uses = inputs_[i]-&gt;uses_;</span>
+<span class="lineNum">     732 </span>            :     // O(N) on the use list, but unless we get nodes with +100 uses
+<span class="lineNum">     733 </span>            :     // vector traversal still is probably faster than linked list
+<span class="lineNum">     734 </span><span class="lineCov">         33 :     auto use_it = std::find(input_uses.begin(), input_uses.end(), Use(this, i));</span>
+<span class="lineNum">     735 </span><span class="lineCov">         33 :     ONNX_ASSERT(use_it != input_uses.end());</span>
+<span class="lineNum">     736 </span><span class="lineCov">         33 :     return use_it;</span>
+<span class="lineNum">     737 </span>            :   }
+<span class="lineNum">     738 </span>            : 
+<span class="lineNum">     739 </span>            :   // remove the use of input i, this sets input i to nullptr, but
+<a name="740"><span class="lineNum">     740 </span>            :   // is only used internally to Node before setting it to a new value</a>
+<span class="lineNum">     741 </span>            :   // or erasing the entry from the list.
+<span class="lineNum">     742 </span>            :   Value* dropInput(size_t i) {
+<span class="lineNum">     743 </span><span class="lineCov">         33 :     ONNX_ASSERT(i &lt; inputs_.size());</span>
+<span class="lineNum">     744 </span><span class="lineCov">         33 :     auto input_node = inputs_[i];</span>
+<span class="lineNum">     745 </span><span class="lineCov">         33 :     auto use_it = findUseForInput(i);</span>
+<span class="lineNum">     746 </span><span class="lineCov">         33 :     input_node-&gt;uses_.erase(use_it);</span>
+<span class="lineNum">     747 </span><span class="lineCov">         33 :     inputs_[i] = nullptr;</span>
+<span class="lineNum">     748 </span><span class="lineCov">         33 :     return input_node;</span>
+<a name="749"><span class="lineNum">     749 </span>            :   }</a>
+<span class="lineNum">     750 </span>            : 
+<span class="lineNum">     751 </span>            :   bool inGraphList() const {
+<span class="lineNum">     752 </span><span class="lineCov">       1203 :     ONNX_ASSERT(next() != nullptr || prev() == nullptr);</span>
+<a name="753"><span class="lineNum">     753 </span><span class="lineCov">        491 :     return next() != nullptr;</span></a>
+<span class="lineNum">     754 </span>            :   }
+<span class="lineNum">     755 </span>            :   void removeFromList() {
+<span class="lineNum">     756 </span><span class="lineCov">         23 :     ONNX_ASSERT(inGraphList());</span>
+<span class="lineNum">     757 </span><span class="lineCov">         23 :     Node * next = this-&gt;next();</span>
+<span class="lineNum">     758 </span><span class="lineCov">         23 :     Node * prev = this-&gt;prev();</span>
+<span class="lineNum">     759 </span><span class="lineCov">         23 :     prev-&gt;next() = next;</span>
+<span class="lineNum">     760 </span><span class="lineCov">         23 :     next-&gt;prev() = prev;</span>
+<span class="lineNum">     761 </span><span class="lineCov">         23 :     this-&gt;next() = nullptr;</span>
+<span class="lineNum">     762 </span><span class="lineCov">         23 :     this-&gt;prev() = nullptr;</span>
+<span class="lineNum">     763 </span><span class="lineCov">         23 :   }</span>
+<span class="lineNum">     764 </span>            : 
+<span class="lineNum">     765 </span>            : protected:
+<span class="lineNum">     766 </span>            :   // subclasses must override
+<span class="lineNum">     767 </span>            :   // this function is used by createClone to initialize a new version
+<span class="lineNum">     768 </span>            :   // of a node in another graph. It should allocate a new instance of the same
+<a name="769"><span class="lineNum">     769 </span>            :   // concrete type as 'this', but in graph 'g' which might be different</a>
+<span class="lineNum">     770 </span>            :   // than graph_
+<span class="lineNum">     771 </span>            :   virtual Node * allocNewInstance(Graph * g) {
+<span class="lineNum">     772 </span><span class="lineNoCov">          0 :     return new Node(g, kind());</span>
+<span class="lineNum">     773 </span><span class="lineNoCov">          0 :   }</span>
+<span class="lineNum">     774 </span>            :   // create a copy of all properties of Node s into this.
+<span class="lineNum">     775 </span>            :   // subclasses should extend if they have additional information to copy.
+<span class="lineNum">     776 </span>            :   // 'this' will be allocated with s-&gt;allocNewInstance(g) so it should have
+<span class="lineNum">     777 </span>            :   // the same concrete type as 's'
+<span class="lineNum">     778 </span>            :   //
+<a name="779"><span class="lineNum">     779 </span>            :   // NB: This does NOT clone stages.  You're expected to set the stage correctly</a>
+<span class="lineNum">     780 </span>            :   // if you are going to preserve it.
+<span class="lineNum">     781 </span>            :   virtual void cloneFrom(Node * s) {
+<span class="lineNum">     782 </span><span class="lineNoCov">          0 :     copyAttributes(*s);</span>
+<span class="lineNum">     783 </span><span class="lineNoCov">          0 :   }</span>
+<span class="lineNum">     784 </span>            : };
+<span class="lineNum">     785 </span>            : 
+<span class="lineNum">     786 </span>            : struct Graph final {
+<span class="lineNum">     787 </span>            : ONNX_DISALLOW_COPY_AND_ASSIGN(Graph);
+<span class="lineNum">     788 </span>            : friend struct Node;
+<span class="lineNum">     789 </span>            : friend struct Value;
+<span class="lineNum">     790 </span>            : 
+<span class="lineNum">     791 </span>            : private:
+<span class="lineNum">     792 </span>            :   // only used to keep track of allocated nodes
+<span class="lineNum">     793 </span>            :   // actual representation of Graph is done with
+<span class="lineNum">     794 </span>            :   // inputs, outputs, nodes
+<span class="lineNum">     795 </span>            : 
+<span class="lineNum">     796 </span>            :   std::unordered_set&lt;const Node*&gt; all_nodes;
+<span class="lineNum">     797 </span>            :   std::unordered_set&lt;const Value*&gt; all_values;
+<span class="lineNum">     798 </span>            :   size_t next_unique_;
+<span class="lineNum">     799 </span>            : 
+<span class="lineNum">     800 </span>            :   size_t new_node_stage_;
+<span class="lineNum">     801 </span>            : 
+<span class="lineNum">     802 </span>            :   // holds outputs in a way that can be reflected
+<span class="lineNum">     803 </span>            :   // as a Use object
+<span class="lineNum">     804 </span>            :   // also used as the beginning/end of the circular node list to avoid
+<span class="lineNum">     805 </span>            :   // having corner cases where the list is empty.
+<span class="lineNum">     806 </span>            :   Node * const output_;
+<span class="lineNum">     807 </span>            :   Node * const input_;
+<span class="lineNum">     808 </span>            : 
+<span class="lineNum">     809 </span>            :   std::vector&lt;Tensor&gt; initializers_;
+<span class="lineNum">     810 </span>            :   std::vector&lt;std::string&gt; initializer_names_;
+<span class="lineNum">     811 </span>            : 
+<span class="lineNum">     812 </span>            :   bool has_name_;
+<span class="lineNum">     813 </span>            :   std::string name_;
+<span class="lineNum">     814 </span>            :   bool has_doc_string_;
+<span class="lineNum">     815 </span>            :   std::string doc_string_;
+<a name="816"><span class="lineNum">     816 </span>            : </a>
+<span class="lineNum">     817 </span>            : public:
+<span class="lineNum">     818 </span><span class="lineCov">        112 :   Graph()</span>
+<span class="lineNum">     819 </span><span class="lineCov">         28 :   : next_unique_(0)</span>
+<span class="lineNum">     820 </span><span class="lineCov">         28 :   , new_node_stage_(0)</span>
+<span class="lineNum">     821 </span><span class="lineCov">        112 :   , output_(initOutput(create(kReturn, 0)))</span>
+<span class="lineNum">     822 </span><span class="lineCov">         84 :   , input_(create(kParam, 0))</span>
+<span class="lineNum">     823 </span><span class="lineCov">         28 :   , has_name_(false)</span>
+<a name="824"><span class="lineNum">     824 </span><span class="lineCov">         84 :   , has_doc_string_(false) {}</span></a>
+<span class="lineNum">     825 </span>            : 
+<span class="lineNum">     826 </span>            :   bool has_doc_string() {
+<a name="827"><span class="lineNum">     827 </span><span class="lineCov">         28 :     return has_doc_string_;</span></a>
+<span class="lineNum">     828 </span>            :   }
+<span class="lineNum">     829 </span>            :   const std::string&amp; docString() {
+<a name="830"><span class="lineNum">     830 </span><span class="lineNoCov">          0 :     return doc_string_;</span></a>
+<span class="lineNum">     831 </span>            :   }
+<span class="lineNum">     832 </span>            :   void setDocString(std::string doc_string) {
+<span class="lineNum">     833 </span><span class="lineNoCov">          0 :     has_doc_string_ = true;</span>
+<a name="834"><span class="lineNum">     834 </span><span class="lineNoCov">          0 :     doc_string_ = std::move(doc_string);</span></a>
+<span class="lineNum">     835 </span><span class="lineNoCov">          0 :   }</span>
+<span class="lineNum">     836 </span>            :   void addInitializer(Tensor initializer, std::string name) {
+<span class="lineNum">     837 </span><span class="lineNoCov">          0 :     initializers_.push_back(std::move(initializer));</span>
+<a name="838"><span class="lineNum">     838 </span><span class="lineNoCov">          0 :     initializer_names_.push_back(std::move(name));</span></a>
+<span class="lineNum">     839 </span><span class="lineNoCov">          0 :   }</span>
+<span class="lineNum">     840 </span>            :   void clearInitializers() {
+<span class="lineNum">     841 </span><span class="lineCov">          1 :     initializers_.clear();</span>
+<a name="842"><span class="lineNum">     842 </span><span class="lineCov">          1 :     initializer_names_.clear();</span></a>
+<span class="lineNum">     843 </span><span class="lineCov">          1 :   }</span>
+<span class="lineNum">     844 </span>            :   const std::vector&lt;Tensor&gt;&amp; initializers() {
+<a name="845"><span class="lineNum">     845 </span><span class="lineCov">         28 :     return initializers_;</span></a>
+<span class="lineNum">     846 </span>            :   }
+<span class="lineNum">     847 </span>            :   const std::vector&lt;std::string&gt;&amp; initializer_names() {
+<a name="848"><span class="lineNum">     848 </span><span class="lineCov">          4 :     return initializer_names_;</span></a>
+<span class="lineNum">     849 </span>            :   }
+<span class="lineNum">     850 </span>            :   ArrayRef&lt;Value*&gt; inputs() {
+<span class="lineNum">     851 </span><span class="lineCov">         39 :     return input_-&gt;outputs();</span>
+<span class="lineNum">     852 </span>            :   }
+<span class="lineNum">     853 </span>            :   ArrayRef&lt;const Value*&gt; inputs() const {
+<span class="lineNum">     854 </span>            :     const auto &amp; inputs = input_-&gt;outputs();
+<a name="855"><span class="lineNum">     855 </span>            :     return {inputs.data(), inputs.size()};</a>
+<span class="lineNum">     856 </span>            :   }
+<span class="lineNum">     857 </span>            :   ArrayRef&lt;Value*&gt; outputs() {
+<span class="lineNum">     858 </span><span class="lineCov">        127 :     return output_-&gt;inputs();</span>
+<span class="lineNum">     859 </span>            :   }
+<span class="lineNum">     860 </span>            :   ArrayRef&lt;const Value*&gt; outputs() const {
+<a name="861"><span class="lineNum">     861 </span>            :     return static_cast&lt;const Node*&gt;(output_)-&gt;inputs();</a>
+<span class="lineNum">     862 </span>            :   }
+<span class="lineNum">     863 </span>            :   graph_node_list nodes() {
+<span class="lineNum">     864 </span><span class="lineCov">        191 :     return graph_node_list(output_, kNextDirection);</span>
+<span class="lineNum">     865 </span>            :   }
+<span class="lineNum">     866 </span>            :   const_graph_node_list nodes() const {
+<span class="lineNum">     867 </span>            :     return const_graph_node_list(output_, kNextDirection);
+<span class="lineNum">     868 </span>            :   }
+<span class="lineNum">     869 </span>            :   // These invocations of begin() on output of function are OK
+<a name="870"><span class="lineNum">     870 </span>            :   // because graph_node_list is non-owning, so it doesn't matter</a>
+<span class="lineNum">     871 </span>            :   // if it immediately dies after the invocation.
+<span class="lineNum">     872 </span>            :   graph_node_list_iterator begin() {
+<span class="lineNum">     873 </span><span class="lineCov">         20 :     return nodes().begin();</span>
+<span class="lineNum">     874 </span>            :   }
+<span class="lineNum">     875 </span>            :   const_graph_node_list_iterator begin() const {
+<a name="876"><span class="lineNum">     876 </span>            :     return nodes().begin();</a>
+<span class="lineNum">     877 </span>            :   }
+<span class="lineNum">     878 </span>            :   graph_node_list_iterator end() {
+<span class="lineNum">     879 </span><span class="lineCov">         97 :     return nodes().end();</span>
+<span class="lineNum">     880 </span>            :   }
+<span class="lineNum">     881 </span>            :   const_graph_node_list_iterator end() const {
+<span class="lineNum">     882 </span>            :     return nodes().end();
+<span class="lineNum">     883 </span>            :   }
+<span class="lineNum">     884 </span>            :   graph_node_list_iterator rbegin() {
+<span class="lineNum">     885 </span>            :     return nodes().rbegin();
+<span class="lineNum">     886 </span>            :   }
+<span class="lineNum">     887 </span>            :   const_graph_node_list_iterator rbegin() const {
+<span class="lineNum">     888 </span>            :     return nodes().rbegin();
+<span class="lineNum">     889 </span>            :   }
+<span class="lineNum">     890 </span>            :   graph_node_list_iterator rend() {
+<span class="lineNum">     891 </span>            :     return nodes().rend();
+<span class="lineNum">     892 </span>            :   }
+<span class="lineNum">     893 </span>            :   const_graph_node_list_iterator rend() const {
+<a name="894"><span class="lineNum">     894 </span>            :     return nodes().rend();</a>
+<span class="lineNum">     895 </span>            :   }
+<span class="lineNum">     896 </span>            :   Node * return_node() {
+<span class="lineNum">     897 </span><span class="lineNoCov">          0 :     return output_;</span>
+<span class="lineNum">     898 </span>            :   }
+<span class="lineNum">     899 </span>            :   const Node * return_node() const {
+<span class="lineNum">     900 </span>            :     return output_;
+<a name="901"><span class="lineNum">     901 </span>            :   }</a>
+<span class="lineNum">     902 </span>            : 
+<span class="lineNum">     903 </span>            :   Value * addInput() {
+<a name="904"><span class="lineNum">     904 </span><span class="lineCov">         57 :     return input_-&gt;addOutput();</span></a>
+<span class="lineNum">     905 </span>            :   }
+<span class="lineNum">     906 </span>            :   void eraseInput(size_t i) {
+<span class="lineNum">     907 </span><span class="lineNoCov">          0 :     input_-&gt;eraseOutput(i);</span>
+<span class="lineNum">     908 </span><span class="lineNoCov">          0 :   }</span>
+<span class="lineNum">     909 </span>            :   void advanceStage() {
+<span class="lineNum">     910 </span>            :     new_node_stage_++;
+<span class="lineNum">     911 </span>            :   }
+<span class="lineNum">     912 </span>            :   void setStage(size_t new_stage) {
+<span class="lineNum">     913 </span>            :     new_node_stage_ = new_stage;
+<span class="lineNum">     914 </span>            :   }
+<span class="lineNum">     915 </span>            :   size_t stage() const {
+<span class="lineNum">     916 </span>            :     return new_node_stage_;
+<span class="lineNum">     917 </span>            :   }
+<span class="lineNum">     918 </span>            :   ResourceGuard setStageTemporary(size_t s) {
+<span class="lineNum">     919 </span>            :     auto prev_stage = new_node_stage_;
+<span class="lineNum">     920 </span>            :     new_node_stage_ = s;
+<span class="lineNum">     921 </span>            :     return ResourceGuard([prev_stage, this]() { this-&gt;new_node_stage_ = prev_stage; });
+<a name="922"><span class="lineNum">     922 </span>            :   }</a>
+<span class="lineNum">     923 </span>            : 
+<span class="lineNum">     924 </span>            :   size_t registerOutput(Value * n) {
+<span class="lineNum">     925 </span><span class="lineCov">         38 :     output_-&gt;addInput(n);</span>
+<span class="lineNum">     926 </span><span class="lineCov">         38 :     return outputs().size() - 1;</span>
+<a name="927"><span class="lineNum">     927 </span>            :   }</a>
+<span class="lineNum">     928 </span>            : 
+<span class="lineNum">     929 </span>            :   Node * create(NodeKind kind, size_t num_outputs=1) {
+<span class="lineNum">     930 </span>            :     // NB: Node constructor adds node to all_nodes
+<span class="lineNum">     931 </span><span class="lineCov">        334 :     auto n = new Node(this, kind);</span>
+<span class="lineNum">     932 </span><span class="lineCov">        560 :     for(size_t i = 0; i &lt; num_outputs; i++)</span>
+<span class="lineNum">     933 </span><span class="lineCov">        113 :       n-&gt;addOutput();</span>
+<span class="lineNum">     934 </span><span class="lineCov">        167 :     return n;</span>
+<span class="lineNum">     935 </span><span class="lineNoCov">          0 :   }</span>
+<span class="lineNum">     936 </span>            : 
+<span class="lineNum">     937 </span>            :   Node * create(NodeKind kind, ArrayRef&lt;Value*&gt; inputs, size_t num_outputs=1) {
+<span class="lineNum">     938 </span>            :     auto n = create(kind, num_outputs);
+<span class="lineNum">     939 </span>            :     for(auto i : inputs)
+<span class="lineNum">     940 </span>            :       n-&gt;addInput(i);
+<span class="lineNum">     941 </span>            :     return n;
+<a name="942"><span class="lineNum">     942 </span>            :   }</a>
+<span class="lineNum">     943 </span>            : 
+<span class="lineNum">     944 </span>            :   Node * appendNode(Node * n) {
+<span class="lineNum">     945 </span><span class="lineCov">        327 :     ONNX_ASSERT(n-&gt;graph_ == this &amp;&amp; !n-&gt;inGraphList());</span>
+<span class="lineNum">     946 </span><span class="lineCov">        109 :     n-&gt;insertBefore(output_);</span>
+<span class="lineNum">     947 </span><span class="lineCov">        109 :     return n;</span>
+<span class="lineNum">     948 </span>            :   }
+<span class="lineNum">     949 </span>            : 
+<span class="lineNum">     950 </span>            :   Node * prependNode(Node * n) {
+<span class="lineNum">     951 </span>            :     ONNX_ASSERT(n-&gt;graph_ == this &amp;&amp; !n-&gt;inGraphList());
+<span class="lineNum">     952 </span>            :     n-&gt;insertAfter(output_);
+<span class="lineNum">     953 </span>            :     return n;
+<a name="954"><span class="lineNum">     954 </span>            :   }</a>
+<span class="lineNum">     955 </span>            : 
+<span class="lineNum">     956 </span><span class="lineCov">         28 :   ~Graph() {</span>
+<span class="lineNum">     957 </span><span class="lineCov">       1099 :     for (const Node * n : all_nodes)</span>
+<span class="lineNum">     958 </span><span class="lineCov">        290 :       delete n;</span>
+<span class="lineNum">     959 </span><span class="lineCov">       1120 :     for (const Value * v : all_values)</span>
+<span class="lineNum">     960 </span><span class="lineCov">        296 :       delete v;</span>
+<span class="lineNum">     961 </span><span class="lineCov">         56 :   }</span>
+<span class="lineNum">     962 </span>            : 
+<span class="lineNum">     963 </span>            :   std::string toString() const {
+<span class="lineNum">     964 </span>            :     std::ostringstream oss;
+<span class="lineNum">     965 </span>            :     oss &lt;&lt; *this;
+<span class="lineNum">     966 </span>            :     return oss.str();
+<a name="967"><span class="lineNum">     967 </span>            :   }</a>
+<span class="lineNum">     968 </span>            : 
+<span class="lineNum">     969 </span>            :   bool has_name() const {
+<span class="lineNum">     970 </span><span class="lineCov">         28 :     return has_name_;</span>
+<a name="971"><span class="lineNum">     971 </span>            :   }</a>
+<span class="lineNum">     972 </span>            : 
+<span class="lineNum">     973 </span>            :   const std::string&amp; name() const {
+<span class="lineNum">     974 </span><span class="lineCov">         28 :     return name_;</span>
+<a name="975"><span class="lineNum">     975 </span>            :   }</a>
+<span class="lineNum">     976 </span>            : 
+<span class="lineNum">     977 </span>            :   void setName(std::string name) {
+<span class="lineNum">     978 </span><span class="lineCov">         28 :     has_name_ = true;</span>
+<span class="lineNum">     979 </span><span class="lineCov">         28 :     name_ = name;</span>
+<span class="lineNum">     980 </span><span class="lineCov">         28 :   }</span>
+<span class="lineNum">     981 </span>            : 
+<span class="lineNum">     982 </span>            :   friend std::ostream&amp; operator&lt;&lt;(std::ostream &amp; out, const Graph &amp; g);
+<span class="lineNum">     983 </span>            : 
+<span class="lineNum">     984 </span>            : private:
+<a name="985"><span class="lineNum">     985 </span>            : </a>
+<span class="lineNum">     986 </span>            :   // should only be called in the constructor
+<span class="lineNum">     987 </span>            :   Node* initOutput(Node* p) {
+<span class="lineNum">     988 </span><span class="lineCov">         28 :     p-&gt;next() = p;</span>
+<span class="lineNum">     989 </span><span class="lineCov">         28 :     p-&gt;prev() = p;</span>
+<span class="lineNum">     990 </span><span class="lineCov">         28 :     p-&gt;setStage(std::numeric_limits&lt;size_t&gt;::max());</span>
+<span class="lineNum">     991 </span><span class="lineCov">         28 :     return p;</span>
+<a name="992"><span class="lineNum">     992 </span>            :   }</a>
+<span class="lineNum">     993 </span>            : 
+<span class="lineNum">     994 </span>            :   void freeNode(Node * n) {
+<span class="lineNum">     995 </span><span class="lineCov">         22 :     auto it = all_nodes.find(n);</span>
+<span class="lineNum">     996 </span><span class="lineCov">         22 :     ONNX_ASSERT(it != all_nodes.end());</span>
+<span class="lineNum">     997 </span><span class="lineCov">         44 :     delete *it;</span>
+<a name="998"><span class="lineNum">     998 </span><span class="lineCov">         22 :     all_nodes.erase(it);</span></a>
+<span class="lineNum">     999 </span><span class="lineCov">         22 :   }</span>
+<span class="lineNum">    1000 </span>            :   void freeValue(Value * v) {
+<span class="lineNum">    1001 </span><span class="lineCov">         22 :     auto it = all_values.find(v);</span>
+<span class="lineNum">    1002 </span><span class="lineCov">         22 :     ONNX_ASSERT(it != all_values.end());</span>
+<span class="lineNum">    1003 </span><span class="lineCov">         22 :     all_values.erase(it);</span>
+<span class="lineNum">    1004 </span><span class="lineCov">         22 :   }</span>
+<a name="1005"><span class="lineNum">    1005 </span>            : };</a>
+<span class="lineNum">    1006 </span>            : 
+<span class="lineNum">    1007 </span><span class="lineCov">        510 : inline Value::Value(Node * node_, size_t offset_)</span>
+<span class="lineNum">    1008 </span><span class="lineCov">        170 : : node_(node_),</span>
+<span class="lineNum">    1009 </span><span class="lineCov">        170 :   offset_(offset_),</span>
+<span class="lineNum">    1010 </span><span class="lineCov">        170 :   unique_(node_-&gt;graph_-&gt;next_unique_++),</span>
+<span class="lineNum">    1011 </span><span class="lineCov">        170 :   stage_(node_-&gt;graph_-&gt;new_node_stage_),</span>
+<span class="lineNum">    1012 </span><span class="lineCov">        170 :   has_unique_name_(false),</span>
+<span class="lineNum">    1013 </span><span class="lineCov">        340 :   elem_type_(ONNX_NAMESPACE::TensorProto_DataType_UNDEFINED) {</span>
+<span class="lineNum">    1014 </span><span class="lineCov">        340 :   node_-&gt;graph_-&gt;all_values.emplace(this);</span>
+<a name="1015"><span class="lineNum">    1015 </span><span class="lineCov">        340 : }</span></a>
+<span class="lineNum">    1016 </span>            : 
+<span class="lineNum">    1017 </span>            : inline Graph * Value::owningGraph() {
+<span class="lineNum">    1018 </span><span class="lineCov">        175 :   return node()-&gt;owningGraph();</span>
+<span class="lineNum">    1019 </span>            : }
+<span class="lineNum">    1020 </span>            : 
+<span class="lineNum">    1021 </span>            : inline const Graph * Value::owningGraph() const {
+<span class="lineNum">    1022 </span>            :   return node()-&gt;owningGraph();
+<a name="1023"><span class="lineNum">    1023 </span>            : }</a>
+<span class="lineNum">    1024 </span>            : 
+<span class="lineNum">    1025 </span>            : inline void Value::replaceAllUsesWith(Value * newValue) {
+<span class="lineNum">    1026 </span><span class="lineCov">         12 :   ONNX_ASSERT(owningGraph() == newValue-&gt;owningGraph());</span>
+<span class="lineNum">    1027 </span><span class="lineCov">         84 :   for(auto u : uses()) {</span>
+<span class="lineNum">    1028 </span><span class="lineCov">         15 :     u.user-&gt;inputs_[u.offset] = newValue;</span>
+<span class="lineNum">    1029 </span><span class="lineCov">         15 :     newValue-&gt;uses_.push_back(u);</span>
+<span class="lineNum">    1030 </span>            :   }
+<span class="lineNum">    1031 </span><span class="lineCov">         12 :   uses_.clear();</span>
+<a name="1032"><span class="lineNum">    1032 </span><span class="lineCov">         12 : }</span></a>
+<span class="lineNum">    1033 </span>            : 
+<span class="lineNum">    1034 </span><span class="lineCov">        668 : inline Node::Node(Graph * graph_, NodeKind kind_) :</span>
+<span class="lineNum">    1035 </span><span class="lineCov">        167 :   kind_(kind_),</span>
+<span class="lineNum">    1036 </span><span class="lineCov">        167 :   graph_(graph_),</span>
+<span class="lineNum">    1037 </span><span class="lineCov">        167 :   stage_(graph_-&gt;new_node_stage_),</span>
+<span class="lineNum">    1038 </span><span class="lineCov">        167 :   has_name_(false),</span>
+<span class="lineNum">    1039 </span><span class="lineCov">        668 :   has_doc_string_(false) {</span>
+<span class="lineNum">    1040 </span><span class="lineCov">        334 :   graph_-&gt;all_nodes.emplace(this);</span>
+<a name="1041"><span class="lineNum">    1041 </span><span class="lineCov">        334 : }</span></a>
+<span class="lineNum">    1042 </span>            : 
+<span class="lineNum">    1043 </span>            : inline void Node::eraseOutput(size_t i) {
+<span class="lineNum">    1044 </span><span class="lineCov">         22 :   ONNX_ASSERT(i &lt; outputs_.size());</span>
+<span class="lineNum">    1045 </span><span class="lineCov">         22 :   ONNX_ASSERT(outputs_[i]-&gt;uses().size() == 0);</span>
+<span class="lineNum">    1046 </span><span class="lineCov">         22 :   Value * n = outputs_[i];</span>
+<span class="lineNum">    1047 </span><span class="lineCov">         22 :   outputs_.erase(outputs_.begin() + i);</span>
+<span class="lineNum">    1048 </span><span class="lineCov">         22 :   owningGraph()-&gt;freeValue(n);</span>
+<span class="lineNum">    1049 </span><span class="lineCov">         44 :   for(size_t j = i; j &lt; outputs_.size(); j++) {</span>
+<span class="lineNum">    1050 </span><span class="lineNoCov">          0 :     outputs_[j]-&gt;offset_--;</span>
+<span class="lineNum">    1051 </span><span class="lineNoCov">          0 :   }</span>
+<a name="1052"><span class="lineNum">    1052 </span><span class="lineCov">         22 : }</span></a>
+<span class="lineNum">    1053 </span>            : 
+<span class="lineNum">    1054 </span>            : inline void Node::destroy() {
+<span class="lineNum">    1055 </span><span class="lineCov">         22 :   ONNX_ASSERT(inGraphList());</span>
+<span class="lineNum">    1056 </span><span class="lineCov">         88 :   while(outputs().size() &gt; 0)</span>
+<span class="lineNum">    1057 </span><span class="lineCov">         22 :     eraseOutput(outputs().size() - 1);</span>
+<span class="lineNum">    1058 </span><span class="lineCov">         22 :   removeAllInputs();</span>
+<span class="lineNum">    1059 </span><span class="lineCov">         22 :   removeFromList();</span>
+<span class="lineNum">    1060 </span><span class="lineCov">         22 :   graph_-&gt;freeNode(this);</span>
+<span class="lineNum">    1061 </span><span class="lineCov">         22 : }</span>
+<span class="lineNum">    1062 </span>            : 
+<span class="lineNum">    1063 </span>            : /************* All nodes not required to be defined before Graph **************/
+<span class="lineNum">    1064 </span>            : 
+<span class="lineNum">    1065 </span>            : inline graph_node_list_iterator Node::iterator() {
+<span class="lineNum">    1066 </span>            :   return graph_node_list_iterator(this, 0);
+<span class="lineNum">    1067 </span>            : }
+<span class="lineNum">    1068 </span>            : inline graph_node_list_iterator Node::reverseIterator() {
+<span class="lineNum">    1069 </span>            :   return iterator().reverse();
+<span class="lineNum">    1070 </span>            : }
+<span class="lineNum">    1071 </span>            : inline const_graph_node_list_iterator Node::iterator() const {
+<span class="lineNum">    1072 </span>            :   return const_graph_node_list_iterator(this, 0);
+<span class="lineNum">    1073 </span>            : }
+<span class="lineNum">    1074 </span>            : inline const_graph_node_list_iterator Node::reverseIterator() const {
+<span class="lineNum">    1075 </span>            :   return iterator().reverse();
+<span class="lineNum">    1076 </span>            : }
+<span class="lineNum">    1077 </span>            : 
+<span class="lineNum">    1078 </span>            : 
+<span class="lineNum">    1079 </span>            : } // namespace ONNX_NAMESPACE
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

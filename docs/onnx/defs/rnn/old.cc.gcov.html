@@ -1,0 +1,281 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - onnx-coverage.info - onnx/defs/rnn/old.cc</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">onnx/defs/rnn</a> - old.cc<span style="font-size: 80%;"> (source / <a href="old.cc.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">onnx-coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">69</td>
+            <td class="headerCovTableEntry">69</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-05-11 14:21:51</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : #include &quot;onnx/defs/schema.h&quot;</a>
+<span class="lineNum">       2 </span>            : 
+<span class="lineNum">       3 </span>            : using namespace ONNX_NAMESPACE;
+<span class="lineNum">       4 </span>            : 
+<a name="5"><span class="lineNum">       5 </span>            : namespace ONNX_NAMESPACE {</a>
+<a name="6"><span class="lineNum">       6 </span>            : </a>
+<span class="lineNum">       7 </span>            : std::function&lt;void(OpSchema&amp;)&gt; RNNDocGeneratorOld(const char* /*name*/) {
+<span class="lineNum">       8 </span><span class="lineCov">          1 :   return [=](OpSchema&amp; schema) {</span>
+<span class="lineNum">       9 </span><span class="lineCov">          3 :     schema.Attr(</span>
+<span class="lineNum">      10 </span><span class="lineCov">          1 :         &quot;direction&quot;,</span>
+<span class="lineNum">      11 </span><span class="lineCov">          1 :         &quot;Specify if the RNN is forward, reverse, or bidirectional. &quot;</span>
+<span class="lineNum">      12 </span>            :         &quot;Must be one of forward (default), reverse, or bidirectional.&quot;,
+<span class="lineNum">      13 </span>            :         AttributeProto::STRING,
+<span class="lineNum">      14 </span><span class="lineCov">          1 :         std::string(&quot;foward&quot;));</span>
+<span class="lineNum">      15 </span><span class="lineCov">          3 :     schema.Attr(</span>
+<span class="lineNum">      16 </span><span class="lineCov">          1 :         &quot;hidden_size&quot;,</span>
+<span class="lineNum">      17 </span><span class="lineCov">          1 :         &quot;Number of neurons in the hidden layer&quot;,</span>
+<span class="lineNum">      18 </span>            :         AttributeProto::INT,
+<span class="lineNum">      19 </span>            :         OPTIONAL);
+<span class="lineNum">      20 </span><span class="lineCov">          3 :     schema.Attr(</span>
+<span class="lineNum">      21 </span><span class="lineCov">          1 :         &quot;activation_alpha&quot;,</span>
+<span class="lineNum">      22 </span><span class="lineCov">          1 :         &quot;Optional scaling values used by some activation functions. The values &quot;</span>
+<span class="lineNum">      23 </span>            :         &quot;are consumed in the order of activation functions, for example (f, g, h) &quot;
+<span class="lineNum">      24 </span>            :         &quot;in LSTM.&quot;,
+<span class="lineNum">      25 </span>            :         AttributeProto::FLOATS,
+<span class="lineNum">      26 </span>            :         OPTIONAL);
+<span class="lineNum">      27 </span><span class="lineCov">          3 :     schema.Attr(</span>
+<span class="lineNum">      28 </span><span class="lineCov">          1 :         &quot;activation_beta&quot;,</span>
+<span class="lineNum">      29 </span><span class="lineCov">          1 :         &quot;Optional scaling values used by some activation functions. The values &quot;</span>
+<span class="lineNum">      30 </span>            :         &quot;are consumed in the order of activation functions, for example (f, g, h) &quot;
+<span class="lineNum">      31 </span>            :         &quot;in LSTM.&quot;,
+<span class="lineNum">      32 </span>            :         AttributeProto::FLOATS,
+<span class="lineNum">      33 </span>            :         OPTIONAL);
+<span class="lineNum">      34 </span><span class="lineCov">          3 :     schema.Attr(</span>
+<span class="lineNum">      35 </span><span class="lineCov">          1 :         &quot;output_sequence&quot;,</span>
+<span class="lineNum">      36 </span><span class="lineCov">          1 :         &quot;The sequence output for the hidden is optional if 0. Default 0.&quot;,</span>
+<span class="lineNum">      37 </span>            :         AttributeProto::INT,
+<span class="lineNum">      38 </span><span class="lineCov">          1 :         static_cast&lt;int64_t&gt;(0));</span>
+<span class="lineNum">      39 </span><span class="lineCov">          3 :     schema.Attr(</span>
+<span class="lineNum">      40 </span><span class="lineCov">          1 :         &quot;clip&quot;,</span>
+<span class="lineNum">      41 </span><span class="lineCov">          1 :         &quot;Cell clip threshold. Clipping bounds the elements of a tensor &quot;</span>
+<span class="lineNum">      42 </span>            :         &quot;in the range of [-threshold, +threshold] and is applied to the input &quot;
+<span class="lineNum">      43 </span>            :         &quot;of activations. No clip if not specified.&quot;,
+<span class="lineNum">      44 </span>            :         AttributeProto::FLOAT,
+<span class="lineNum">      45 </span>            :         OPTIONAL);
+<span class="lineNum">      46 </span><span class="lineCov">          3 :     schema.Input(</span>
+<span class="lineNum">      47 </span>            :         0,
+<span class="lineNum">      48 </span><span class="lineCov">          1 :         &quot;X&quot;,</span>
+<span class="lineNum">      49 </span><span class="lineCov">          1 :         &quot;The input sequences packed (and potentially padded) into one 3-D &quot;</span>
+<span class="lineNum">      50 </span>            :         &quot;tensor with the shape of `[seq_length, batch_size, input_size]`.&quot;,
+<span class="lineNum">      51 </span><span class="lineCov">          1 :         &quot;T&quot;);</span>
+<span class="lineNum">      52 </span><span class="lineCov">          3 :     schema.Input(</span>
+<span class="lineNum">      53 </span>            :         4,
+<span class="lineNum">      54 </span><span class="lineCov">          1 :         &quot;sequence_lens&quot;,</span>
+<span class="lineNum">      55 </span><span class="lineCov">          1 :         &quot;Optional tensor specifying lengths of the sequences in a batch. &quot;</span>
+<span class="lineNum">      56 </span>            :         &quot;If not specified - assumed all sequences in the batch to have &quot;
+<span class="lineNum">      57 </span>            :         &quot;length `seq_length`. It has shape `[batch_size]`.&quot;,
+<span class="lineNum">      58 </span><span class="lineCov">          1 :         &quot;T1&quot;,</span>
+<span class="lineNum">      59 </span>            :         OpSchema::Optional);
+<span class="lineNum">      60 </span><span class="lineCov">          3 :     schema.Input(</span>
+<span class="lineNum">      61 </span>            :         5,
+<span class="lineNum">      62 </span><span class="lineCov">          1 :         &quot;initial_h&quot;,</span>
+<span class="lineNum">      63 </span><span class="lineCov">          1 :         &quot;Optional initial value of the hidden. If not specified - assumed &quot;</span>
+<span class="lineNum">      64 </span>            :         &quot;to be 0. It has shape `[num_directions, batch_size, hidden_size]`.&quot;,
+<span class="lineNum">      65 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">      66 </span>            :         OpSchema::Optional);
+<span class="lineNum">      67 </span><span class="lineCov">          3 :     schema.Output(</span>
+<span class="lineNum">      68 </span>            :         0,
+<span class="lineNum">      69 </span><span class="lineCov">          1 :         &quot;Y&quot;,</span>
+<span class="lineNum">      70 </span><span class="lineCov">          1 :         &quot;A tensor that concats all the intermediate output values of the hidden. &quot;</span>
+<span class="lineNum">      71 </span>            :         &quot;It has shape `[seq_length, num_directions, batch_size, hidden_size]`. &quot;
+<span class="lineNum">      72 </span>            :         &quot;It is optional if `output_sequence` is 0.&quot;,
+<span class="lineNum">      73 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">      74 </span>            :         OpSchema::Optional);
+<span class="lineNum">      75 </span><span class="lineCov">          3 :     schema.Output(</span>
+<span class="lineNum">      76 </span>            :         1,
+<span class="lineNum">      77 </span><span class="lineCov">          1 :         &quot;Y_h&quot;,</span>
+<span class="lineNum">      78 </span><span class="lineCov">          1 :         &quot;The last output value of the hidden. It has shape &quot;</span>
+<span class="lineNum">      79 </span>            :         &quot;`[num_directions, batch_size, hidden_size]`.&quot;,
+<span class="lineNum">      80 </span><span class="lineCov">          1 :         &quot;T&quot;);</span>
+<span class="lineNum">      81 </span><span class="lineCov">          7 :     schema.TypeConstraint(</span>
+<span class="lineNum">      82 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">      83 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span>
+<span class="lineNum">      84 </span><span class="lineCov">          1 :         &quot;Constrain input and output types to float tensors.&quot;);</span>
+<span class="lineNum">      85 </span><span class="lineCov">          5 :     schema.TypeConstraint(</span>
+<span class="lineNum">      86 </span><span class="lineCov">          3 :         &quot;T1&quot;, {&quot;tensor(int32)&quot;}, &quot;Constrain seq_lens to integer tensor.&quot;);</span>
+<span class="lineNum">      87 </span><span class="lineCov">          1 :   };</span>
+<span class="lineNum">      88 </span>            : }
+<a name="89"><span class="lineNum">      89 </span>            : </a>
+<span class="lineNum">      90 </span>            : 
+<span class="lineNum">      91 </span><span class="lineCov">          5 : ONNX_OPERATOR_SCHEMA(GRU)</span>
+<span class="lineNum">      92 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(</span>
+<span class="lineNum">      93 </span>            : Computes an one-layer GRU. This operator is usually supported via some custom
+<span class="lineNum">      94 </span>            : implementation such as CuDNN.
+<span class="lineNum">      95 </span>            : 
+<span class="lineNum">      96 </span>            : Notations:
+<span class="lineNum">      97 </span>            : 
+<span class="lineNum">      98 </span>            : `X` - input tensor
+<span class="lineNum">      99 </span>            : 
+<span class="lineNum">     100 </span>            : `z` - update gate
+<span class="lineNum">     101 </span>            : 
+<span class="lineNum">     102 </span>            : `r` - reset gate
+<span class="lineNum">     103 </span>            : 
+<span class="lineNum">     104 </span>            : `h` - hidden gate
+<span class="lineNum">     105 </span>            : 
+<span class="lineNum">     106 </span>            : `t` - time step (t-1 means previous time step)
+<span class="lineNum">     107 </span>            : 
+<span class="lineNum">     108 </span>            : `W[zrh]` - W parameter weight matrix for update, reset, and hidden gates
+<span class="lineNum">     109 </span>            : 
+<span class="lineNum">     110 </span>            : `R[zrh]` - R recurrence weight matrix for update, reset, and hidden gates
+<span class="lineNum">     111 </span>            : 
+<span class="lineNum">     112 </span>            : `Wb[zrh]` - W bias vectors for update, reset, and hidden gates
+<span class="lineNum">     113 </span>            : 
+<span class="lineNum">     114 </span>            : `Rb[zrh]` - R bias vectors for update, reset, and hidden gates
+<span class="lineNum">     115 </span>            : 
+<span class="lineNum">     116 </span>            : `WB[zrh]` - W parameter weight matrix for backward update, reset, and hidden gates
+<span class="lineNum">     117 </span>            : 
+<span class="lineNum">     118 </span>            : `RB[zrh]` - R recurrence weight matrix for backward update, reset, and hidden gates
+<span class="lineNum">     119 </span>            : 
+<span class="lineNum">     120 </span>            : `WBb[zrh]` - W bias vectors for backward update, reset, and hidden gates
+<span class="lineNum">     121 </span>            : 
+<span class="lineNum">     122 </span>            : `RBb[zrh]` - R bias vectors for backward update, reset, and hidden gates
+<span class="lineNum">     123 </span>            : 
+<span class="lineNum">     124 </span>            : `H` - Hidden state
+<span class="lineNum">     125 </span>            : 
+<span class="lineNum">     126 </span>            : `num_directions` - 2 if direction == bidirectional else 1
+<span class="lineNum">     127 </span>            : 
+<span class="lineNum">     128 </span>            : Activation functions:
+<span class="lineNum">     129 </span>            : 
+<span class="lineNum">     130 </span>            :   Relu(x)                - max(0, x)
+<span class="lineNum">     131 </span>            : 
+<span class="lineNum">     132 </span>            :   Tanh(x)                - (1 - e^{-2x})/(1 + e^{-2x})
+<span class="lineNum">     133 </span>            : 
+<span class="lineNum">     134 </span>            :   Sigmoid(x)             - 1/(1 + e^{-x})
+<span class="lineNum">     135 </span>            : 
+<span class="lineNum">     136 </span>            :   (NOTE: Below are optional)
+<span class="lineNum">     137 </span>            : 
+<span class="lineNum">     138 </span>            :   Affine(x)              - alpha*x + beta
+<span class="lineNum">     139 </span>            : 
+<span class="lineNum">     140 </span>            :   LeakyRelu(x)           - x if x &gt;= 0 else alpha * x
+<span class="lineNum">     141 </span>            : 
+<span class="lineNum">     142 </span>            :   ThresholdedRelu(x)     - x if x &gt;= alpha else 0
+<span class="lineNum">     143 </span>            : 
+<span class="lineNum">     144 </span>            :   ScaledTanh(x)          - alpha*Tanh(beta*x)
+<span class="lineNum">     145 </span>            : 
+<span class="lineNum">     146 </span>            :   HardSigmoid(x)         - min(max(alpha*x + beta, 0), 1)
+<span class="lineNum">     147 </span>            : 
+<span class="lineNum">     148 </span>            :   Elu(x)                 - x if x &gt;= 0 else alpha*(e^x - 1)
+<span class="lineNum">     149 </span>            : 
+<span class="lineNum">     150 </span>            :   Softsign(x)            - x/(1 + |x|)
+<span class="lineNum">     151 </span>            : 
+<span class="lineNum">     152 </span>            :   Softplus(x)            - log(1 + e^x)
+<span class="lineNum">     153 </span>            : 
+<span class="lineNum">     154 </span>            : Equations (Default: f=Sigmoid, g=Tanh):
+<span class="lineNum">     155 </span>            : 
+<span class="lineNum">     156 </span>            :   - zt = f(Xt*(Wz^T) + Ht-1*Rz + Wbz + Rbz)
+<span class="lineNum">     157 </span>            : 
+<span class="lineNum">     158 </span>            :   - rt = f(Xt*(Wr^T) + Ht-1*Rr + Wbr + Rbr)
+<span class="lineNum">     159 </span>            : 
+<span class="lineNum">     160 </span>            :   - ht = g(Xt*(Wh^T) + (rt (.) Ht-1)*Rh + Rbh + Wbh) # default, when linear_before_reset = 0
+<span class="lineNum">     161 </span>            : 
+<span class="lineNum">     162 </span>            :   - ht = g(Xt*(Wh^T) + (rt (.) (Ht-1*Rh + Rbh) + Wbh) # when linear_before_reset != 0
+<span class="lineNum">     163 </span>            : 
+<span class="lineNum">     164 </span>            :   - Ht = (1 - zt) (.) ht + zt (.) Ht-1
+<span class="lineNum">     165 </span>            : )DOC&quot;)
+<span class="lineNum">     166 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     167 </span><span class="lineCov">          1 :         &quot;activations&quot;,</span>
+<span class="lineNum">     168 </span><span class="lineCov">          1 :         &quot;A list of 2 (or 4 if bidirectional) activation functions &quot;</span>
+<span class="lineNum">     169 </span>            :         &quot;for update, reset, and hidden gates. The activation functions must be one &quot;
+<span class="lineNum">     170 </span>            :         &quot;of the activation functions specified above. Optional: See the equations &quot;
+<span class="lineNum">     171 </span>            :         &quot;for default if not specified.&quot;,
+<span class="lineNum">     172 </span>            :         AttributeProto::STRINGS,
+<span class="lineNum">     173 </span>            :         OPTIONAL)
+<span class="lineNum">     174 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     175 </span><span class="lineCov">          1 :         &quot;linear_before_reset&quot;,</span>
+<span class="lineNum">     176 </span><span class="lineCov">          1 :         &quot;When computing the output of the hidden gate, &quot;</span>
+<span class="lineNum">     177 </span>            :         &quot;apply the linear transformation before multiplying by the output of the &quot;
+<span class="lineNum">     178 </span>            :         &quot;reset gate.&quot;,
+<span class="lineNum">     179 </span>            :         AttributeProto::INT,
+<span class="lineNum">     180 </span>            :         OPTIONAL)
+<span class="lineNum">     181 </span><span class="lineCov">          1 :     .Input(</span>
+<span class="lineNum">     182 </span>            :         1,
+<span class="lineNum">     183 </span><span class="lineCov">          1 :         &quot;W&quot;,</span>
+<span class="lineNum">     184 </span><span class="lineCov">          1 :         &quot;The weight tensor for the gates. Concatenation of `W[zrh]` and `WB[zrh]` &quot;</span>
+<span class="lineNum">     185 </span>            :         &quot;(if bidirectional) along dimension 0. This tensor has shape &quot;
+<span class="lineNum">     186 </span>            :         &quot;`[num_directions, 3*hidden_size, input_size]`.&quot;,
+<span class="lineNum">     187 </span><span class="lineCov">          1 :         &quot;T&quot;)</span>
+<span class="lineNum">     188 </span><span class="lineCov">          1 :     .Input(</span>
+<span class="lineNum">     189 </span>            :         2,
+<span class="lineNum">     190 </span><span class="lineCov">          1 :         &quot;R&quot;,</span>
+<span class="lineNum">     191 </span><span class="lineCov">          1 :         &quot;The recurrence weight tensor. Concatenation of `R[zrh]` and `RB[zrh]` &quot;</span>
+<span class="lineNum">     192 </span>            :         &quot;(if bidirectional) along dimension 0. This tensor has shape &quot;
+<span class="lineNum">     193 </span>            :         &quot;`[num_directions, 3*hidden_size, hidden_size]`.&quot;,
+<span class="lineNum">     194 </span><span class="lineCov">          1 :         &quot;T&quot;)</span>
+<span class="lineNum">     195 </span><span class="lineCov">          1 :     .Input(</span>
+<span class="lineNum">     196 </span>            :         3,
+<span class="lineNum">     197 </span><span class="lineCov">          1 :         &quot;B&quot;,</span>
+<span class="lineNum">     198 </span><span class="lineCov">          1 :         &quot;The bias tensor for the gates. Concatenation of `[Wb[zrh], Rb[zrh]]` and &quot;</span>
+<span class="lineNum">     199 </span>            :         &quot;`[WBb[zrh], RBb[zrh]]` (if bidirectional) along dimension 0. This tensor &quot;
+<span class="lineNum">     200 </span>            :         &quot;has shape `[num_directions, 6*hidden_size]`. Optional: If not specified &quot;
+<span class="lineNum">     201 </span>            :         &quot;- assumed to be 0&quot;,
+<span class="lineNum">     202 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     203 </span>            :         OpSchema::Optional)
+<span class="lineNum">     204 </span><span class="lineCov">          2 :     .FillUsing(RNNDocGeneratorOld(&quot;GRU&quot;));</span>
+<span class="lineNum">     205 </span>            : } // namespace ONNX_NAMESPACE
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

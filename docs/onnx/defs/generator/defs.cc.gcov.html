@@ -1,0 +1,303 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - onnx-coverage.info - onnx/defs/generator/defs.cc</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">onnx/defs/generator</a> - defs.cc<span style="font-size: 80%;"> (source / <a href="defs.cc.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">onnx-coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">137</td>
+            <td class="headerCovTableEntry">148</td>
+            <td class="headerCovTableEntryHi">92.6 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-05-11 14:21:51</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">16</td>
+            <td class="headerCovTableEntry">20</td>
+            <td class="headerCovTableEntryMed">80.0 %</td>
+          </tr>
+          <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : // Copyright (c) Facebook Inc. and Microsoft Corporation.</a>
+<span class="lineNum">       2 </span>            : // Licensed under the MIT license.
+<span class="lineNum">       3 </span>            : 
+<span class="lineNum">       4 </span>            : #include &quot;onnx/defs/schema.h&quot;
+<a name="5"><span class="lineNum">       5 </span>            : using namespace ONNX_NAMESPACE;</a>
+<span class="lineNum">       6 </span>            : 
+<span class="lineNum">       7 </span><span class="lineCov">          9 : ONNX_OPERATOR_SCHEMA(Constant)</span>
+<span class="lineNum">       8 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(A constant tensor.)DOC&quot;)</span>
+<span class="lineNum">       9 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">      10 </span><span class="lineCov">          1 :           &quot;value&quot;,</span>
+<span class="lineNum">      11 </span><span class="lineCov">          1 :           &quot;The value for the elements of the output tensor.&quot;,</span>
+<span class="lineNum">      12 </span>            :           AttributeProto::TENSOR)
+<span class="lineNum">      13 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">      14 </span>            :             0,
+<span class="lineNum">      15 </span><span class="lineCov">          1 :             &quot;output&quot;,</span>
+<span class="lineNum">      16 </span><span class="lineCov">          2 :             &quot;Output tensor containing the same value of the provided tensor.&quot;, &quot;T&quot;)</span>
+<a name="17"><span class="lineNum">      17 </span><span class="lineCov">          6 :     .TypeConstraint(&quot;T&quot;, { &quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot; },</span></a>
+<span class="lineNum">      18 </span><span class="lineCov">          1 :         &quot;Constrain input and output types to float tensors.&quot;)</span>
+<span class="lineNum">      19 </span><span class="lineCov">         35 :     .TypeAndShapeInferenceFunction([](InferenceContext&amp; ctx) {</span>
+<span class="lineNum">      20 </span><span class="lineCov">         62 :         auto attr_proto = ctx.getAttribute(&quot;value&quot;);</span>
+<span class="lineNum">      21 </span><span class="lineCov">         31 :         if (nullptr == attr_proto) return; // attribute not present</span>
+<span class="lineNum">      22 </span><span class="lineCov">         31 :         if (!attr_proto-&gt;has_t()) return; // attribute has no tensor value</span>
+<span class="lineNum">      23 </span><span class="lineCov">         31 :         const TensorProto&amp; tensor_proto = attr_proto-&gt;t();</span>
+<span class="lineNum">      24 </span><span class="lineCov">         31 :         updateOutputElemType(ctx, 0, tensor_proto.data_type());</span>
+<span class="lineNum">      25 </span><span class="lineCov">         31 :         updateOutputShape(ctx, 0, tensor_proto);</span>
+<a name="26"><span class="lineNum">      26 </span><span class="lineCov">         62 :     });</span></a>
+<span class="lineNum">      27 </span>            : 
+<span class="lineNum">      28 </span><span class="lineCov">          9 : ONNX_OPERATOR_SCHEMA(RandomUniform)</span>
+<span class="lineNum">      29 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(</span>
+<span class="lineNum">      30 </span>            : Generate a tensor with random values drawn from a uniform distribution. The shape
+<span class="lineNum">      31 </span>            : of the tensor is specified by the `shape` argument and the range by `low` and `high`.
+<span class="lineNum">      32 </span>            : 
+<span class="lineNum">      33 </span>            : The data type is specified by the 'dtype' argument. The 'dtype' argument must
+<span class="lineNum">      34 </span>            : be one of the data types specified in the 'DataType' enum field in the
+<span class="lineNum">      35 </span>            : TensorProto message.
+<span class="lineNum">      36 </span>            : )DOC&quot;)
+<span class="lineNum">      37 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">      38 </span><span class="lineCov">          1 :           &quot;low&quot;,</span>
+<span class="lineNum">      39 </span><span class="lineCov">          1 :           &quot;Lower boundary of the output values. If not specified, default is 0.&quot;,</span>
+<span class="lineNum">      40 </span>            :           AttributeProto::FLOAT,
+<span class="lineNum">      41 </span><span class="lineCov">          1 :           0.0f)</span>
+<span class="lineNum">      42 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">      43 </span><span class="lineCov">          1 :           &quot;high&quot;,</span>
+<span class="lineNum">      44 </span><span class="lineCov">          1 :           &quot;Upper boundary of the output values. If not specified, default is 1.&quot;,</span>
+<span class="lineNum">      45 </span>            :           AttributeProto::FLOAT,
+<span class="lineNum">      46 </span><span class="lineCov">          1 :           1.0f)</span>
+<span class="lineNum">      47 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">      48 </span><span class="lineCov">          1 :           &quot;seed&quot;,</span>
+<span class="lineNum">      49 </span><span class="lineCov">          1 :           &quot;(Optional) Seed to the random generator, if not specified we will auto generate one.&quot;,</span>
+<span class="lineNum">      50 </span>            :           AttributeProto::FLOAT,
+<span class="lineNum">      51 </span>            :           OPTIONAL)
+<span class="lineNum">      52 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">      53 </span><span class="lineCov">          1 :           &quot;dtype&quot;,</span>
+<span class="lineNum">      54 </span><span class="lineCov">          1 :           &quot;The data type for the elements of the output tensor. If not specified, default is TensorProto::FLOAT.&quot;,</span>
+<span class="lineNum">      55 </span>            :           AttributeProto::INT,
+<span class="lineNum">      56 </span><span class="lineCov">          1 :           static_cast&lt;int64_t&gt;(TensorProto::FLOAT))</span>
+<span class="lineNum">      57 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">      58 </span><span class="lineCov">          1 :           &quot;shape&quot;,</span>
+<span class="lineNum">      59 </span><span class="lineCov">          1 :           &quot;The shape of the output tensor.&quot;,</span>
+<span class="lineNum">      60 </span>            :           AttributeProto::INTS)
+<span class="lineNum">      61 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">      62 </span>            :             0,
+<span class="lineNum">      63 </span><span class="lineCov">          1 :             &quot;output&quot;,</span>
+<span class="lineNum">      64 </span><span class="lineCov">          2 :             &quot;Output tensor of random values drawn from uniform distribution&quot;, &quot;T&quot;)</span>
+<a name="65"><span class="lineNum">      65 </span><span class="lineCov">          6 :     .TypeConstraint(&quot;T&quot;, { &quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot; },</span></a>
+<span class="lineNum">      66 </span><span class="lineCov">          1 :         &quot;Constrain output types to float tensors.&quot;)</span>
+<span class="lineNum">      67 </span><span class="lineCov">          4 :     .TypeAndShapeInferenceFunction([](InferenceContext&amp; ctx) {</span>
+<span class="lineNum">      68 </span><span class="lineNoCov">          0 :         propagateElemTypeFromAttributeToOutput(ctx, &quot;dtype&quot;, 0);</span>
+<span class="lineNum">      69 </span><span class="lineNoCov">          0 :         propagateShapeFromAttributeToOutput(ctx, &quot;shape&quot;, 0);</span>
+<a name="70"><span class="lineNum">      70 </span><span class="lineNoCov">          0 :     });</span></a>
+<span class="lineNum">      71 </span>            : 
+<span class="lineNum">      72 </span><span class="lineCov">          9 : ONNX_OPERATOR_SCHEMA(RandomNormal)</span>
+<span class="lineNum">      73 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(</span>
+<span class="lineNum">      74 </span>            : Generate a tensor with random values drawn from a normal distribution. The shape
+<span class="lineNum">      75 </span>            : of the tensor is specified by the `shape` argument and the parameter of the normal distribution
+<span class="lineNum">      76 </span>            : specified by `mean` and `scale`.
+<span class="lineNum">      77 </span>            : 
+<span class="lineNum">      78 </span>            : The data type is specified by the 'dtype' argument. The 'dtype' argument must
+<span class="lineNum">      79 </span>            : be one of the data types specified in the 'DataType' enum field in the
+<span class="lineNum">      80 </span>            : TensorProto message.
+<span class="lineNum">      81 </span>            : )DOC&quot;)
+<span class="lineNum">      82 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">      83 </span><span class="lineCov">          1 :           &quot;mean&quot;,</span>
+<span class="lineNum">      84 </span><span class="lineCov">          1 :           &quot;The mean of the normal distribution. If not specified, default is 0.&quot;,</span>
+<span class="lineNum">      85 </span>            :           AttributeProto::FLOAT,
+<span class="lineNum">      86 </span><span class="lineCov">          1 :           0.0f)</span>
+<span class="lineNum">      87 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">      88 </span><span class="lineCov">          1 :           &quot;scale&quot;,</span>
+<span class="lineNum">      89 </span><span class="lineCov">          1 :           &quot;The standard deviation of the normal distribution. If not specified, default is 1.&quot;,</span>
+<span class="lineNum">      90 </span>            :           AttributeProto::FLOAT,
+<span class="lineNum">      91 </span><span class="lineCov">          1 :           1.0f)</span>
+<span class="lineNum">      92 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">      93 </span><span class="lineCov">          1 :           &quot;seed&quot;,</span>
+<span class="lineNum">      94 </span><span class="lineCov">          1 :           &quot;(Optional) Seed to the random generator, if not specified we will auto generate one.&quot;,</span>
+<span class="lineNum">      95 </span>            :           AttributeProto::FLOAT,
+<span class="lineNum">      96 </span>            :           OPTIONAL)
+<span class="lineNum">      97 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">      98 </span><span class="lineCov">          1 :           &quot;dtype&quot;,</span>
+<span class="lineNum">      99 </span><span class="lineCov">          1 :           &quot;The data type for the elements of the output tensor. Default is TensorProto::FLOAT.&quot;,</span>
+<span class="lineNum">     100 </span>            :           AttributeProto::INT,
+<span class="lineNum">     101 </span><span class="lineCov">          1 :           static_cast&lt;int64_t&gt;(TensorProto::FLOAT))</span>
+<span class="lineNum">     102 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     103 </span><span class="lineCov">          1 :           &quot;shape&quot;,</span>
+<span class="lineNum">     104 </span><span class="lineCov">          1 :           &quot;The shape of the output tensor.&quot;,</span>
+<span class="lineNum">     105 </span>            :           AttributeProto::INTS)
+<span class="lineNum">     106 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">     107 </span>            :             0,
+<span class="lineNum">     108 </span><span class="lineCov">          1 :             &quot;output&quot;,</span>
+<span class="lineNum">     109 </span><span class="lineCov">          2 :             &quot;Output tensor of random values drawn from normal distribution&quot;, &quot;T&quot;)</span>
+<a name="110"><span class="lineNum">     110 </span><span class="lineCov">          6 :     .TypeConstraint(&quot;T&quot;, { &quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot; },</span></a>
+<span class="lineNum">     111 </span><span class="lineCov">          1 :         &quot;Constrain output types to float tensors.&quot;)</span>
+<span class="lineNum">     112 </span><span class="lineCov">          5 :     .TypeAndShapeInferenceFunction([](InferenceContext&amp; ctx) {</span>
+<span class="lineNum">     113 </span><span class="lineCov">          2 :         propagateElemTypeFromAttributeToOutput(ctx, &quot;dtype&quot;, 0);</span>
+<span class="lineNum">     114 </span><span class="lineCov">          2 :         propagateShapeFromAttributeToOutput(ctx, &quot;shape&quot;, 0);</span>
+<a name="115"><span class="lineNum">     115 </span><span class="lineCov">          1 :     });</span></a>
+<span class="lineNum">     116 </span>            : 
+<span class="lineNum">     117 </span><span class="lineCov">          9 : ONNX_OPERATOR_SCHEMA(RandomUniformLike)</span>
+<span class="lineNum">     118 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(</span>
+<span class="lineNum">     119 </span>            : Generate a tensor with random values drawn from a uniform distribution. 
+<span class="lineNum">     120 </span>            : The shape of the output tensor is copied from the shape of the input tensor, 
+<span class="lineNum">     121 </span>            : and the parameters of the uniform distribution are specified by `low` and `high`.
+<span class="lineNum">     122 </span>            : 
+<span class="lineNum">     123 </span>            : The data type is specified by the 'dtype' argument, or copied from the input tensor if not provided. 
+<span class="lineNum">     124 </span>            : The 'dtype' argument must be one of the data types specified in the 'DataType' enum field in the
+<span class="lineNum">     125 </span>            : TensorProto message and be valid as an output type.
+<span class="lineNum">     126 </span>            : )DOC&quot;)
+<span class="lineNum">     127 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     128 </span><span class="lineCov">          1 :           &quot;low&quot;,</span>
+<span class="lineNum">     129 </span><span class="lineCov">          1 :           &quot;Lower boundary of the output values. If not specified, default is 0.&quot;,</span>
+<span class="lineNum">     130 </span>            :           AttributeProto::FLOAT,
+<span class="lineNum">     131 </span><span class="lineCov">          1 :           0.0f)</span>
+<span class="lineNum">     132 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     133 </span><span class="lineCov">          1 :           &quot;high&quot;,</span>
+<span class="lineNum">     134 </span><span class="lineCov">          1 :           &quot;Upper boundary of the output values. If not specified, default is 1.&quot;,</span>
+<span class="lineNum">     135 </span>            :           AttributeProto::FLOAT,
+<span class="lineNum">     136 </span><span class="lineCov">          1 :           1.0f)</span>
+<span class="lineNum">     137 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     138 </span><span class="lineCov">          1 :           &quot;seed&quot;,</span>
+<span class="lineNum">     139 </span><span class="lineCov">          1 :           &quot;(Optional) Seed to the random generator, if not specified we will auto generate one.&quot;,</span>
+<span class="lineNum">     140 </span>            :           AttributeProto::FLOAT,
+<span class="lineNum">     141 </span>            :           OPTIONAL)
+<span class="lineNum">     142 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     143 </span><span class="lineCov">          1 :           &quot;dtype&quot;,</span>
+<span class="lineNum">     144 </span><span class="lineCov">          1 :           &quot;(Optional) The data type for the elements of the output tensor, if not specified, we will use&quot;</span>
+<span class="lineNum">     145 </span>            :           &quot;the data type of the input tensor.&quot;,
+<span class="lineNum">     146 </span>            :           AttributeProto::INT,
+<span class="lineNum">     147 </span>            :           OPTIONAL)
+<span class="lineNum">     148 </span><span class="lineCov">          1 :     .Input(</span>
+<span class="lineNum">     149 </span>            :            0,
+<span class="lineNum">     150 </span><span class="lineCov">          1 :            &quot;input&quot;,</span>
+<span class="lineNum">     151 </span><span class="lineCov">          2 :            &quot;Input tensor to copy shape and optionally type information from.&quot;, &quot;T1&quot;)</span>
+<span class="lineNum">     152 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">     153 </span>            :             0,
+<span class="lineNum">     154 </span><span class="lineCov">          1 :             &quot;output&quot;,</span>
+<span class="lineNum">     155 </span><span class="lineCov">          2 :             &quot;Output tensor of random values drawn from uniform distribution&quot;, &quot;T2&quot;)</span>
+<span class="lineNum">     156 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     157 </span><span class="lineCov">          1 :         &quot;T1&quot;,</span>
+<span class="lineNum">     158 </span><span class="lineCov">          2 :         OpSchema::all_tensor_types(),</span>
+<span class="lineNum">     159 </span><span class="lineCov">          1 :         &quot;Constrain to any tensor type. If the dtype attribute is not provided this must be a valid output type.&quot;)</span>
+<a name="160"><span class="lineNum">     160 </span><span class="lineCov">          6 :     .TypeConstraint(&quot;T2&quot;, { &quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot; },</span></a>
+<span class="lineNum">     161 </span><span class="lineCov">          1 :         &quot;Constrain output types to float tensors.&quot;)</span>
+<span class="lineNum">     162 </span><span class="lineCov">          4 :     .TypeAndShapeInferenceFunction([](InferenceContext&amp; ctx) {</span>
+<span class="lineNum">     163 </span><span class="lineNoCov">          0 :         if (ctx.getAttribute(&quot;dtype&quot;) != nullptr) </span>
+<span class="lineNum">     164 </span><span class="lineNoCov">          0 :           propagateElemTypeFromAttributeToOutput(ctx, &quot;dtype&quot;, 0);</span>
+<span class="lineNum">     165 </span>            :         else
+<span class="lineNum">     166 </span><span class="lineNoCov">          0 :           propagateElemTypeFromInputToOutput(ctx, 0, 0);</span>
+<span class="lineNum">     167 </span><span class="lineNoCov">          0 :         if (!hasNInputShapes(ctx, 1)) {</span>
+<span class="lineNum">     168 </span><span class="lineNoCov">          0 :           return;</span>
+<span class="lineNum">     169 </span>            :         }
+<span class="lineNum">     170 </span><span class="lineNoCov">          0 :         propagateShapeFromInputToOutput(ctx, 0, 0);</span>
+<a name="171"><span class="lineNum">     171 </span><span class="lineNoCov">          0 :     });</span></a>
+<span class="lineNum">     172 </span>            : 
+<span class="lineNum">     173 </span><span class="lineCov">          9 : ONNX_OPERATOR_SCHEMA(RandomNormalLike)</span>
+<span class="lineNum">     174 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(</span>
+<span class="lineNum">     175 </span>            : Generate a tensor with random values drawn from a normal distribution. 
+<span class="lineNum">     176 </span>            : The shape of the output tensor is copied from the shape of the input tensor, 
+<span class="lineNum">     177 </span>            : and the parameters of the normal distribution are specified by `mean` and `scale`.
+<span class="lineNum">     178 </span>            : 
+<span class="lineNum">     179 </span>            : The data type is specified by the 'dtype' argument, or copied from the input tensor if not provided. 
+<span class="lineNum">     180 </span>            : The 'dtype' argument must be one of the data types specified in the 'DataType' enum field in the
+<span class="lineNum">     181 </span>            : TensorProto message, and be valid as an output type.
+<span class="lineNum">     182 </span>            : )DOC&quot;)
+<span class="lineNum">     183 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     184 </span><span class="lineCov">          1 :           &quot;mean&quot;,</span>
+<span class="lineNum">     185 </span><span class="lineCov">          1 :           &quot;The mean of the normal distribution. If not specified, default is 0.&quot;,</span>
+<span class="lineNum">     186 </span>            :           AttributeProto::FLOAT,
+<span class="lineNum">     187 </span><span class="lineCov">          1 :           0.0f)</span>
+<span class="lineNum">     188 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     189 </span><span class="lineCov">          1 :           &quot;scale&quot;,</span>
+<span class="lineNum">     190 </span><span class="lineCov">          1 :           &quot;The standard deviation of the normal distribution. If not specified, default is 1.&quot;,</span>
+<span class="lineNum">     191 </span>            :           AttributeProto::FLOAT,
+<span class="lineNum">     192 </span><span class="lineCov">          1 :           1.0f)</span>
+<span class="lineNum">     193 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     194 </span><span class="lineCov">          1 :           &quot;seed&quot;,</span>
+<span class="lineNum">     195 </span><span class="lineCov">          1 :           &quot;(Optional) Seed to the random generator, if not specified we will auto generate one.&quot;,</span>
+<span class="lineNum">     196 </span>            :           AttributeProto::FLOAT,
+<span class="lineNum">     197 </span>            :           OPTIONAL)
+<span class="lineNum">     198 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     199 </span><span class="lineCov">          1 :           &quot;dtype&quot;,</span>
+<span class="lineNum">     200 </span><span class="lineCov">          1 :           &quot;(Optional) The data type for the elements of the output tensor, if not specified, we will use&quot;</span>
+<span class="lineNum">     201 </span>            :           &quot;the data type of the input tensor.&quot;,
+<span class="lineNum">     202 </span>            :           AttributeProto::INT,
+<span class="lineNum">     203 </span>            :           OPTIONAL)
+<span class="lineNum">     204 </span><span class="lineCov">          1 :     .Input(</span>
+<span class="lineNum">     205 </span>            :            0,
+<span class="lineNum">     206 </span><span class="lineCov">          1 :            &quot;input&quot;,</span>
+<span class="lineNum">     207 </span><span class="lineCov">          2 :            &quot;Input tensor to copy shape and optionally type information from.&quot;, &quot;T1&quot;)</span>
+<span class="lineNum">     208 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">     209 </span>            :             0,
+<span class="lineNum">     210 </span><span class="lineCov">          1 :             &quot;output&quot;,</span>
+<span class="lineNum">     211 </span><span class="lineCov">          2 :             &quot;Output tensor of random values drawn from normal distribution&quot;, &quot;T2&quot;)</span>
+<span class="lineNum">     212 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     213 </span><span class="lineCov">          1 :         &quot;T1&quot;,</span>
+<span class="lineNum">     214 </span><span class="lineCov">          2 :         OpSchema::all_tensor_types(),</span>
+<span class="lineNum">     215 </span><span class="lineCov">          1 :         &quot;Constrain to any tensor type. If the dtype attribute is not provided this must be a valid output type.&quot;)</span>
+<a name="216"><span class="lineNum">     216 </span><span class="lineCov">          6 :     .TypeConstraint(&quot;T2&quot;, { &quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot; },</span></a>
+<span class="lineNum">     217 </span><span class="lineCov">          1 :         &quot;Constrain output types to float tensors.&quot;)</span>
+<span class="lineNum">     218 </span><span class="lineCov">          6 :     .TypeAndShapeInferenceFunction([](InferenceContext&amp; ctx) {</span>
+<span class="lineNum">     219 </span><span class="lineCov">          4 :         if (ctx.getAttribute(&quot;dtype&quot;) != nullptr) </span>
+<span class="lineNum">     220 </span><span class="lineCov">          2 :           propagateElemTypeFromAttributeToOutput(ctx, &quot;dtype&quot;, 0);</span>
+<span class="lineNum">     221 </span>            :         else
+<span class="lineNum">     222 </span><span class="lineCov">          1 :           propagateElemTypeFromInputToOutput(ctx, 0, 0);</span>
+<span class="lineNum">     223 </span><span class="lineCov">          2 :         if (!hasNInputShapes(ctx, 1)) {</span>
+<span class="lineNum">     224 </span><span class="lineNoCov">          0 :           return;</span>
+<span class="lineNum">     225 </span>            :         }
+<span class="lineNum">     226 </span><span class="lineCov">          2 :         propagateShapeFromInputToOutput(ctx, 0, 0);</span>
+<span class="lineNum">     227 </span><span class="lineCov">          4 :     });</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

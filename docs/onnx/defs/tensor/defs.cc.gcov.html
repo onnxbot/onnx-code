@@ -1,0 +1,963 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - onnx-coverage.info - onnx/defs/tensor/defs.cc</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">onnx/defs/tensor</a> - defs.cc<span style="font-size: 80%;"> (source / <a href="defs.cc.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">onnx-coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">591</td>
+            <td class="headerCovTableEntry">610</td>
+            <td class="headerCovTableEntryHi">96.9 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-05-11 14:21:51</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">59</td>
+            <td class="headerCovTableEntry">59</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : // Copyright (c) Facebook Inc. and Microsoft Corporation.</a>
+<span class="lineNum">       2 </span>            : // Licensed under the MIT license.
+<span class="lineNum">       3 </span>            : 
+<span class="lineNum">       4 </span>            : #include &quot;onnx/defs/schema.h&quot;
+<span class="lineNum">       5 </span>            : 
+<span class="lineNum">       6 </span>            : #include &lt;algorithm&gt;
+<span class="lineNum">       7 </span>            : 
+<a name="8"><span class="lineNum">       8 </span>            : using namespace ONNX_NAMESPACE;</a>
+<span class="lineNum">       9 </span>            : 
+<span class="lineNum">      10 </span><span class="lineCov">         31 : ONNX_OPERATOR_SCHEMA(Cast)</span>
+<span class="lineNum">      11 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(</span>
+<span class="lineNum">      12 </span>            : The operator casts the elements of a given input tensor to a data type
+<span class="lineNum">      13 </span>            : specified by the 'to' argument and returns an output tensor of the same size in
+<span class="lineNum">      14 </span>            : the converted type. The 'to' argument must be one of the data types specified
+<span class="lineNum">      15 </span>            : in the 'DataType' enum field in the TensorProto message.
+<span class="lineNum">      16 </span>            : NOTE: Casting to and from strings is not supported yet.
+<span class="lineNum">      17 </span>            : )DOC&quot;)
+<span class="lineNum">      18 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">      19 </span><span class="lineCov">          1 :         &quot;to&quot;,</span>
+<span class="lineNum">      20 </span><span class="lineCov">          1 :         &quot;The data type to which the elements of the input tensor are cast.&quot;</span>
+<span class="lineNum">      21 </span>            :         &quot;Strictly must be one of the types from DataType enum in TensorProto&quot;,
+<span class="lineNum">      22 </span>            :         AttributeProto::INT)
+<span class="lineNum">      23 </span><span class="lineCov">          4 :     .Input(0, &quot;input&quot;, &quot;Input tensor to be cast.&quot;, &quot;T1&quot;)</span>
+<span class="lineNum">      24 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">      25 </span>            :         0,
+<span class="lineNum">      26 </span><span class="lineCov">          1 :         &quot;output&quot;,</span>
+<span class="lineNum">      27 </span><span class="lineCov">          1 :         &quot;Output tensor with the same shape as input with type &quot;</span>
+<span class="lineNum">      28 </span>            :         &quot;specified by the 'to' argument&quot;,
+<span class="lineNum">      29 </span><span class="lineCov">          1 :         &quot;T2&quot;)</span>
+<span class="lineNum">      30 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">      31 </span><span class="lineCov">          1 :         &quot;T1&quot;,</span>
+<span class="lineNum">      32 </span><span class="lineCov">         13 :         {&quot;tensor(float16)&quot;,</span>
+<span class="lineNum">      33 </span><span class="lineCov">          1 :          &quot;tensor(float)&quot;,</span>
+<span class="lineNum">      34 </span><span class="lineCov">          1 :          &quot;tensor(double)&quot;,</span>
+<span class="lineNum">      35 </span><span class="lineCov">          1 :          &quot;tensor(int8)&quot;,</span>
+<span class="lineNum">      36 </span><span class="lineCov">          1 :          &quot;tensor(int16)&quot;,</span>
+<span class="lineNum">      37 </span><span class="lineCov">          1 :          &quot;tensor(int32)&quot;,</span>
+<span class="lineNum">      38 </span><span class="lineCov">          1 :          &quot;tensor(int64)&quot;,</span>
+<span class="lineNum">      39 </span><span class="lineCov">          1 :          &quot;tensor(uint8)&quot;,</span>
+<span class="lineNum">      40 </span><span class="lineCov">          1 :          &quot;tensor(uint16)&quot;,</span>
+<span class="lineNum">      41 </span><span class="lineCov">          1 :          &quot;tensor(uint32)&quot;,</span>
+<span class="lineNum">      42 </span><span class="lineCov">          1 :          &quot;tensor(uint64)&quot;,</span>
+<span class="lineNum">      43 </span><span class="lineCov">          1 :          &quot;tensor(bool)&quot;},</span>
+<span class="lineNum">      44 </span><span class="lineCov">          1 :         &quot;Constrain input types. Casting from strings and complex are not supported.&quot;)</span>
+<span class="lineNum">      45 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">      46 </span><span class="lineCov">          1 :         &quot;T2&quot;,</span>
+<span class="lineNum">      47 </span><span class="lineCov">         13 :         {&quot;tensor(float16)&quot;,</span>
+<span class="lineNum">      48 </span><span class="lineCov">          1 :          &quot;tensor(float)&quot;,</span>
+<span class="lineNum">      49 </span><span class="lineCov">          1 :          &quot;tensor(double)&quot;,</span>
+<span class="lineNum">      50 </span><span class="lineCov">          1 :          &quot;tensor(int8)&quot;,</span>
+<span class="lineNum">      51 </span><span class="lineCov">          1 :          &quot;tensor(int16)&quot;,</span>
+<span class="lineNum">      52 </span><span class="lineCov">          1 :          &quot;tensor(int32)&quot;,</span>
+<span class="lineNum">      53 </span><span class="lineCov">          1 :          &quot;tensor(int64)&quot;,</span>
+<span class="lineNum">      54 </span><span class="lineCov">          1 :          &quot;tensor(uint8)&quot;,</span>
+<span class="lineNum">      55 </span><span class="lineCov">          1 :          &quot;tensor(uint16)&quot;,</span>
+<span class="lineNum">      56 </span><span class="lineCov">          1 :          &quot;tensor(uint32)&quot;,</span>
+<span class="lineNum">      57 </span><span class="lineCov">          1 :          &quot;tensor(uint64)&quot;,</span>
+<a name="58"><span class="lineNum">      58 </span><span class="lineCov">          1 :          &quot;tensor(bool)&quot;},</span></a>
+<span class="lineNum">      59 </span><span class="lineCov">          1 :         &quot;Constrain output types. Casting to strings and complex are not supported.&quot;)</span>
+<span class="lineNum">      60 </span><span class="lineCov">         11 :     .TypeAndShapeInferenceFunction([](InferenceContext&amp; ctx) {</span>
+<span class="lineNum">      61 </span><span class="lineCov">         21 :       ctx.getOutputType(0)-&gt;mutable_tensor_type()-&gt;set_elem_type(</span>
+<span class="lineNum">      62 </span><span class="lineCov">         21 :           static_cast&lt;TensorProto_DataType&gt;(ctx.getAttribute(&quot;to&quot;)-&gt;i()));</span>
+<span class="lineNum">      63 </span><span class="lineCov">          7 :       if (!hasNInputShapes(ctx, 1)) {</span>
+<span class="lineNum">      64 </span><span class="lineNoCov">          0 :         return;</span>
+<span class="lineNum">      65 </span>            :       }
+<span class="lineNum">      66 </span><span class="lineCov">          7 :       propagateShapeFromInputToOutput(ctx, 0, 0);</span>
+<a name="67"><span class="lineNum">      67 </span><span class="lineCov">         14 :     });</span></a>
+<span class="lineNum">      68 </span>            : 
+<span class="lineNum">      69 </span><span class="lineCov">          9 : ONNX_OPERATOR_SCHEMA(Reshape)</span>
+<span class="lineNum">      70 </span><span class="lineCov">          1 :     .SinceVersion(6)</span>
+<span class="lineNum">      71 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(</span>
+<span class="lineNum">      72 </span>            : Reshape the input tensor similar to numpy.reshape.
+<span class="lineNum">      73 </span>            : First input is the data tensor, second input is a shape tensor which specifies the output shape. It outputs the reshaped tensor.
+<span class="lineNum">      74 </span>            : At most one dimension of the new shape can be -1. In this case, the value is
+<span class="lineNum">      75 </span>            : inferred from the size of the tensor and the remaining dimensions. A dimension
+<span class="lineNum">      76 </span>            : could also be 0, in which case the actual dimension value is unchanged (i.e. taken
+<span class="lineNum">      77 </span>            : from the input tensor).)DOC&quot;)
+<span class="lineNum">      78 </span><span class="lineCov">          4 :     .Input(0, &quot;data&quot;, &quot;An input tensor.&quot;, &quot;T&quot;)</span>
+<span class="lineNum">      79 </span><span class="lineCov">          4 :     .Input(1, &quot;shape&quot;, &quot;Specified shape for output.&quot;, &quot;tensor(int64)&quot;)</span>
+<span class="lineNum">      80 </span><span class="lineCov">          1 :     .SinceVersion(5)</span>
+<span class="lineNum">      81 </span><span class="lineCov">          4 :     .Output(0, &quot;reshaped&quot;, &quot;Reshaped data.&quot;, &quot;T&quot;)</span>
+<span class="lineNum">      82 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">      83 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<a name="84"><span class="lineNum">      84 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span></a>
+<span class="lineNum">      85 </span><span class="lineCov">          1 :         &quot;Constrain input and output types to float tensors.&quot;)</span>
+<span class="lineNum">      86 </span><span class="lineCov">        216 :     .TypeAndShapeInferenceFunction([](InferenceContext&amp; ctx) {</span>
+<span class="lineNum">      87 </span><span class="lineCov">        212 :       propagateElemTypeFromInputToOutput(ctx, 0, 0);</span>
+<a name="88"><span class="lineNum">      88 </span><span class="lineCov">        212 :     });</span></a>
+<span class="lineNum">      89 </span>            : 
+<span class="lineNum">      90 </span><span class="lineCov">         18 : ONNX_OPERATOR_SCHEMA(Shape)</span>
+<span class="lineNum">      91 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(</span>
+<span class="lineNum">      92 </span>            : Takes a tensor as input and outputs an 1D int64 tensor containing the shape of the input tensor.
+<span class="lineNum">      93 </span>            : )DOC&quot;)
+<span class="lineNum">      94 </span><span class="lineCov">          4 :     .Input(0, &quot;data&quot;, &quot;An input tensor.&quot;, &quot;T&quot;)</span>
+<span class="lineNum">      95 </span><span class="lineCov">          4 :     .Output(0, &quot;shape&quot;, &quot;Shape of the input tensor&quot;, &quot;T1&quot;)</span>
+<span class="lineNum">      96 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">      97 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">      98 </span><span class="lineCov">         11 :         {&quot;tensor(float16)&quot;,</span>
+<span class="lineNum">      99 </span><span class="lineCov">          1 :          &quot;tensor(float)&quot;,</span>
+<span class="lineNum">     100 </span><span class="lineCov">          1 :          &quot;tensor(double)&quot;,</span>
+<span class="lineNum">     101 </span><span class="lineCov">          1 :          &quot;tensor(int8)&quot;,</span>
+<span class="lineNum">     102 </span><span class="lineCov">          1 :          &quot;tensor(int16)&quot;,</span>
+<span class="lineNum">     103 </span><span class="lineCov">          1 :          &quot;tensor(int32)&quot;,</span>
+<span class="lineNum">     104 </span><span class="lineCov">          1 :          &quot;tensor(int64)&quot;,</span>
+<span class="lineNum">     105 </span><span class="lineCov">          1 :          &quot;tensor(uint8)&quot;,</span>
+<span class="lineNum">     106 </span><span class="lineCov">          1 :          &quot;tensor(uint16)&quot;,</span>
+<span class="lineNum">     107 </span><span class="lineCov">          1 :          &quot;tensor(bool)&quot;},</span>
+<span class="lineNum">     108 </span><span class="lineCov">          1 :         &quot;Input tensor can be of arbitrary type.&quot;)</span>
+<span class="lineNum">     109 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     110 </span><span class="lineCov">          1 :         &quot;T1&quot;,</span>
+<a name="111"><span class="lineNum">     111 </span><span class="lineCov">          2 :         {&quot;tensor(int64)&quot;},</span></a>
+<span class="lineNum">     112 </span><span class="lineCov">          1 :         &quot;Constrains output to int64 tensor.&quot;)</span>
+<span class="lineNum">     113 </span><span class="lineCov">         14 :     .TypeAndShapeInferenceFunction([](InferenceContext&amp; ctx) {</span>
+<span class="lineNum">     114 </span><span class="lineCov">         10 :       ctx.getOutputType(0)-&gt;mutable_tensor_type()-&gt;set_elem_type(</span>
+<span class="lineNum">     115 </span>            :           TensorProto::INT64);
+<span class="lineNum">     116 </span>            : 
+<span class="lineNum">     117 </span><span class="lineCov">         10 :       if (!hasNInputShapes(ctx, 1)) {</span>
+<span class="lineNum">     118 </span><span class="lineCov">          3 :         return;</span>
+<span class="lineNum">     119 </span>            :       }
+<span class="lineNum">     120 </span>            : 
+<span class="lineNum">     121 </span><span class="lineCov">          7 :       if (ctx.getInputType(0)-&gt;tensor_type().has_shape()) {</span>
+<span class="lineNum">     122 </span><span class="lineCov">          7 :         ctx.getOutputType(0)</span>
+<span class="lineNum">     123 </span><span class="lineCov">          7 :             -&gt;mutable_tensor_type()</span>
+<span class="lineNum">     124 </span><span class="lineCov">          7 :             -&gt;mutable_shape()</span>
+<span class="lineNum">     125 </span><span class="lineCov">          7 :             -&gt;add_dim()</span>
+<span class="lineNum">     126 </span><span class="lineCov">          7 :             -&gt;set_dim_value(</span>
+<span class="lineNum">     127 </span><span class="lineCov">          7 :                 ctx.getInputType(0)-&gt;tensor_type().shape().dim_size());</span>
+<span class="lineNum">     128 </span><span class="lineCov">          7 :       }</span>
+<a name="129"><span class="lineNum">     129 </span><span class="lineCov">         10 :     });</span></a>
+<span class="lineNum">     130 </span>            : 
+<span class="lineNum">     131 </span><span class="lineCov">         18 : ONNX_OPERATOR_SCHEMA(Size)</span>
+<span class="lineNum">     132 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(</span>
+<span class="lineNum">     133 </span>            : Takes a tensor as input and outputs a int64 scalar that equals to the total number of elements of the input tensor.
+<span class="lineNum">     134 </span>            : )DOC&quot;)
+<span class="lineNum">     135 </span><span class="lineCov">          4 :     .Input(0, &quot;data&quot;, &quot;An input tensor.&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     136 </span><span class="lineCov">          4 :     .Output(0, &quot;size&quot;, &quot;Total number of elements of the input tensor&quot;, &quot;T1&quot;)</span>
+<span class="lineNum">     137 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     138 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     139 </span><span class="lineCov">         11 :         {&quot;tensor(float16)&quot;,</span>
+<span class="lineNum">     140 </span><span class="lineCov">          1 :          &quot;tensor(float)&quot;,</span>
+<span class="lineNum">     141 </span><span class="lineCov">          1 :          &quot;tensor(double)&quot;,</span>
+<span class="lineNum">     142 </span><span class="lineCov">          1 :          &quot;tensor(int8)&quot;,</span>
+<span class="lineNum">     143 </span><span class="lineCov">          1 :          &quot;tensor(int16)&quot;,</span>
+<span class="lineNum">     144 </span><span class="lineCov">          1 :          &quot;tensor(int32)&quot;,</span>
+<span class="lineNum">     145 </span><span class="lineCov">          1 :          &quot;tensor(int64)&quot;,</span>
+<span class="lineNum">     146 </span><span class="lineCov">          1 :          &quot;tensor(uint8)&quot;,</span>
+<span class="lineNum">     147 </span><span class="lineCov">          1 :          &quot;tensor(uint16)&quot;,</span>
+<span class="lineNum">     148 </span><span class="lineCov">          1 :          &quot;tensor(bool)&quot;},</span>
+<span class="lineNum">     149 </span><span class="lineCov">          1 :         &quot;Input tensor can be of arbitrary type.&quot;)</span>
+<span class="lineNum">     150 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     151 </span><span class="lineCov">          1 :         &quot;T1&quot;,</span>
+<a name="152"><span class="lineNum">     152 </span><span class="lineCov">          2 :         {&quot;tensor(int64)&quot;},</span></a>
+<span class="lineNum">     153 </span><span class="lineCov">          1 :         &quot;Constrains output to int64 tensor, which should be a scalar though.&quot;)</span>
+<span class="lineNum">     154 </span><span class="lineCov">          7 :     .TypeAndShapeInferenceFunction([](InferenceContext&amp; ctx) {</span>
+<span class="lineNum">     155 </span><span class="lineCov">          3 :       ctx.getOutputType(0)-&gt;mutable_tensor_type()-&gt;set_elem_type(</span>
+<span class="lineNum">     156 </span>            :           TensorProto::INT64);
+<span class="lineNum">     157 </span><span class="lineCov">          3 :       ctx.getOutputType(0)-&gt;mutable_tensor_type()-&gt;mutable_shape();</span>
+<a name="158"><span class="lineNum">     158 </span><span class="lineCov">          3 :     });</span></a>
+<span class="lineNum">     159 </span>            : 
+<span class="lineNum">     160 </span><span class="lineCov">          9 : ONNX_OPERATOR_SCHEMA(Concat)</span>
+<span class="lineNum">     161 </span><span class="lineCov">          1 :     .SinceVersion(4)</span>
+<span class="lineNum">     162 </span><span class="lineCov">          3 :     .Attr(&quot;axis&quot;, &quot;Which axis to concat on&quot;, AttributeProto::INT)</span>
+<span class="lineNum">     163 </span><span class="lineCov">          2 :     .SetDoc(&quot;Concatenate a list of tensors into a single tensor&quot;)</span>
+<span class="lineNum">     164 </span><span class="lineCov">          1 :     .Input(</span>
+<span class="lineNum">     165 </span>            :         0,
+<span class="lineNum">     166 </span><span class="lineCov">          1 :         &quot;inputs&quot;,</span>
+<span class="lineNum">     167 </span><span class="lineCov">          1 :         &quot;List of tensors for concatenation&quot;,</span>
+<span class="lineNum">     168 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     169 </span>            :         OpSchema::Variadic)
+<span class="lineNum">     170 </span><span class="lineCov">          4 :     .Output(0, &quot;concat_result&quot;, &quot;Concatenated tensor&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     171 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     172 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<a name="173"><span class="lineNum">     173 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span></a>
+<span class="lineNum">     174 </span><span class="lineCov">          1 :         &quot;Constrain output types to float tensors.&quot;)</span>
+<span class="lineNum">     175 </span><span class="lineCov">        125 :     .TypeAndShapeInferenceFunction([](InferenceContext&amp; ctx) {</span>
+<span class="lineNum">     176 </span><span class="lineCov">        121 :       propagateElemTypeFromInputToOutput(ctx, 0, 0);</span>
+<span class="lineNum">     177 </span><span class="lineCov">        242 :       if (ctx.getNumInputs() &lt; 1 || !hasNInputShapes(ctx, static_cast&lt;int&gt;(ctx.getNumInputs()))) {</span>
+<span class="lineNum">     178 </span><span class="lineCov">         95 :         return;</span>
+<span class="lineNum">     179 </span>            :       }
+<span class="lineNum">     180 </span>            : 
+<span class="lineNum">     181 </span><span class="lineCov">         52 :       auto axisAttr = ctx.getAttribute(&quot;axis&quot;);</span>
+<span class="lineNum">     182 </span><span class="lineCov">         26 :       if (!axisAttr) {</span>
+<span class="lineNum">     183 </span><span class="lineNoCov">          0 :         return;</span>
+<span class="lineNum">     184 </span>            :       }
+<span class="lineNum">     185 </span><span class="lineCov">         26 :       int axis = static_cast&lt;int&gt;(axisAttr-&gt;i());</span>
+<span class="lineNum">     186 </span><span class="lineCov">         26 :       if (axis &lt; 0) {</span>
+<span class="lineNum">     187 </span><span class="lineNoCov">          0 :         return;</span>
+<span class="lineNum">     188 </span>            :       }
+<span class="lineNum">     189 </span>            : 
+<span class="lineNum">     190 </span><span class="lineCov">         26 :       bool all_lengths_known = true;</span>
+<span class="lineNum">     191 </span><span class="lineCov">         26 :       int total_length = 0;</span>
+<span class="lineNum">     192 </span>            : 
+<span class="lineNum">     193 </span><span class="lineCov">         26 :       auto* output_shape =</span>
+<span class="lineNum">     194 </span><span class="lineCov">         26 :           ctx.getOutputType(0)-&gt;mutable_tensor_type()-&gt;mutable_shape();</span>
+<span class="lineNum">     195 </span>            : 
+<span class="lineNum">     196 </span><span class="lineCov">        138 :       for (int64_t i = 0;</span>
+<span class="lineNum">     197 </span><span class="lineCov">         69 :            i &lt; ctx.getInputType(0)-&gt;tensor_type().shape().dim_size();</span>
+<span class="lineNum">     198 </span><span class="lineCov">         43 :            ++i) {</span>
+<span class="lineNum">     199 </span><span class="lineCov">         43 :         output_shape-&gt;add_dim();</span>
+<span class="lineNum">     200 </span><span class="lineCov">         43 :       }</span>
+<span class="lineNum">     201 </span>            : 
+<span class="lineNum">     202 </span><span class="lineCov">        180 :       for (size_t i = 0; i &lt; ctx.getNumInputs(); i++) {</span>
+<span class="lineNum">     203 </span><span class="lineCov">         64 :         const auto&amp; shape = ctx.getInputType(i)-&gt;tensor_type().shape();</span>
+<span class="lineNum">     204 </span><span class="lineCov">        332 :         for (int j = 0; j &lt; shape.dim_size(); j++) {</span>
+<span class="lineNum">     205 </span><span class="lineCov">        102 :           if (j == axis) {</span>
+<span class="lineNum">     206 </span><span class="lineCov">         64 :             if (shape.dim(j).has_dim_value()) {</span>
+<span class="lineNum">     207 </span><span class="lineCov">         64 :               total_length += static_cast&lt;int&gt;(shape.dim(j).dim_value());</span>
+<span class="lineNum">     208 </span><span class="lineCov">         64 :             } else {</span>
+<span class="lineNum">     209 </span><span class="lineNoCov">          0 :               all_lengths_known = false;</span>
+<span class="lineNum">     210 </span>            :             }
+<span class="lineNum">     211 </span><span class="lineCov">        102 :           } else if (shape.dim(j).has_dim_value()) {</span>
+<span class="lineNum">     212 </span><span class="lineCov">         38 :             if (output_shape-&gt;dim(j).has_dim_value()) {</span>
+<span class="lineNum">     213 </span><span class="lineCov">         42 :               if (shape.dim(j).dim_value() !=</span>
+<span class="lineNum">     214 </span><span class="lineCov">         21 :                   output_shape-&gt;dim(j).dim_value()) {</span>
+<span class="lineNum">     215 </span><span class="lineNoCov">          0 :                 return;</span>
+<span class="lineNum">     216 </span>            :               }
+<span class="lineNum">     217 </span><span class="lineCov">         21 :             } else {</span>
+<span class="lineNum">     218 </span><span class="lineCov">         17 :               *output_shape-&gt;mutable_dim(j) = shape.dim(j);</span>
+<span class="lineNum">     219 </span>            :             }
+<span class="lineNum">     220 </span><span class="lineCov">         38 :           }</span>
+<span class="lineNum">     221 </span><span class="lineCov">        102 :         }</span>
+<span class="lineNum">     222 </span><span class="lineCov">         64 :       }</span>
+<span class="lineNum">     223 </span>            : 
+<span class="lineNum">     224 </span><span class="lineCov">         26 :       if (all_lengths_known) {</span>
+<span class="lineNum">     225 </span><span class="lineCov">         26 :         output_shape-&gt;mutable_dim(axis)-&gt;set_dim_value(total_length);</span>
+<span class="lineNum">     226 </span><span class="lineCov">         26 :       }</span>
+<a name="227"><span class="lineNum">     227 </span><span class="lineCov">        121 :     });</span></a>
+<span class="lineNum">     228 </span>            : 
+<span class="lineNum">     229 </span><span class="lineCov">          9 : ONNX_OPERATOR_SCHEMA(Split)</span>
+<span class="lineNum">     230 </span><span class="lineCov">          1 :     .SinceVersion(2)</span>
+<span class="lineNum">     231 </span><span class="lineCov">          4 :     .Input(0, &quot;input&quot;, &quot;The tensor to split&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     232 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">     233 </span>            :         0,
+<span class="lineNum">     234 </span><span class="lineCov">          1 :         &quot;outputs&quot;,</span>
+<span class="lineNum">     235 </span><span class="lineCov">          1 :         &quot;One or more outputs forming list of tensors after splitting&quot;,</span>
+<span class="lineNum">     236 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     237 </span>            :         OpSchema::Variadic)
+<span class="lineNum">     238 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     239 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     240 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span>
+<span class="lineNum">     241 </span><span class="lineCov">          1 :         &quot;Constrain input types to float tensors.&quot;)</span>
+<span class="lineNum">     242 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     243 </span><span class="lineCov">          1 :         &quot;axis&quot;,</span>
+<span class="lineNum">     244 </span><span class="lineCov">          1 :         &quot;Which axis to split on (defaults to 0)&quot;,</span>
+<span class="lineNum">     245 </span>            :         AttributeProto::INT,
+<span class="lineNum">     246 </span><span class="lineCov">          1 :         static_cast&lt;int64_t&gt;(0))</span>
+<span class="lineNum">     247 </span><span class="lineCov">          3 :     .Attr(&quot;split&quot;, &quot;length of each output&quot;, AttributeProto::INTS, OPTIONAL)</span>
+<span class="lineNum">     248 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(Split a tensor into a list of tensors, along the specified</span>
+<span class="lineNum">     249 </span>            : 'axis'. Lengths of the parts can be specified using argument 'split'.
+<a name="250"><span class="lineNum">     250 </span>            : Otherwise, the tensor is split to equal sized parts.</a>
+<span class="lineNum">     251 </span>            : )DOC&quot;)
+<span class="lineNum">     252 </span><span class="lineCov">         16 :     .TypeAndShapeInferenceFunction([](InferenceContext&amp; ctx) {</span>
+<span class="lineNum">     253 </span><span class="lineCov">         76 :       for (int i = 0; i &lt; static_cast&lt;int&gt;(ctx.getNumOutputs()); ++i) {</span>
+<span class="lineNum">     254 </span><span class="lineCov">         26 :         propagateElemTypeFromInputToOutput(ctx, 0, i);</span>
+<span class="lineNum">     255 </span><span class="lineCov">         26 :       }</span>
+<span class="lineNum">     256 </span>            : 
+<span class="lineNum">     257 </span><span class="lineCov">         12 :       if (!hasNInputShapes(ctx, 1)) {</span>
+<span class="lineNum">     258 </span><span class="lineNoCov">          0 :         return;</span>
+<span class="lineNum">     259 </span>            :       }
+<span class="lineNum">     260 </span>            : 
+<span class="lineNum">     261 </span><span class="lineCov">         24 :       auto axisAttr = ctx.getAttribute(&quot;axis&quot;);</span>
+<span class="lineNum">     262 </span><span class="lineCov">         36 :       int axis = axisAttr ? static_cast&lt;int&gt;(axisAttr-&gt;i()) : 0;</span>
+<span class="lineNum">     263 </span><span class="lineCov">         12 :       if (axis &lt; 0) {</span>
+<span class="lineNum">     264 </span><span class="lineCov">          1 :         return;</span>
+<span class="lineNum">     265 </span>            :       }
+<span class="lineNum">     266 </span><span class="lineCov">         11 :       std::vector&lt;int64_t&gt; split;</span>
+<span class="lineNum">     267 </span><span class="lineCov">         33 :       if (!getRepeatedAttribute(ctx, &quot;split&quot;, split)) {</span>
+<span class="lineNum">     268 </span><span class="lineCov">         28 :         if (!ctx.getInputType(0)-&gt;tensor_type().has_shape()) {</span>
+<span class="lineNum">     269 </span><span class="lineNoCov">          0 :           return;</span>
+<span class="lineNum">     270 </span>            :         }
+<span class="lineNum">     271 </span><span class="lineCov">          7 :         const auto&amp; splitDim =</span>
+<span class="lineNum">     272 </span><span class="lineCov">         28 :             ctx.getInputType(0)-&gt;tensor_type().shape().dim(axis);</span>
+<span class="lineNum">     273 </span><span class="lineCov">         14 :         if (!splitDim.has_dim_value()) {</span>
+<span class="lineNum">     274 </span><span class="lineNoCov">          0 :           return;</span>
+<span class="lineNum">     275 </span>            :         }
+<span class="lineNum">     276 </span><span class="lineCov">         14 :         int splitDimValue = static_cast&lt;int&gt;(splitDim.dim_value());</span>
+<span class="lineNum">     277 </span><span class="lineCov">         14 :         int chunkSize = splitDimValue / static_cast&lt;int&gt;(ctx.getNumOutputs());</span>
+<span class="lineNum">     278 </span><span class="lineCov">          7 :         int leftOver =</span>
+<span class="lineNum">     279 </span><span class="lineCov">         14 :             splitDimValue - (chunkSize * static_cast&lt;int&gt;(ctx.getNumOutputs()));</span>
+<span class="lineNum">     280 </span><span class="lineCov">         69 :         for (int i = 0; i &lt; static_cast&lt;int&gt;(ctx.getNumOutputs()); i++) {</span>
+<span class="lineNum">     281 </span><span class="lineCov">         48 :           split.push_back(i &lt; leftOver ? chunkSize + 1 : chunkSize);</span>
+<span class="lineNum">     282 </span><span class="lineCov">         16 :         }</span>
+<span class="lineNum">     283 </span>            : 
+<span class="lineNum">     284 </span><span class="lineCov">         69 :         for (size_t i = 0; i &lt; ctx.getNumOutputs(); i++) {</span>
+<span class="lineNum">     285 </span><span class="lineCov">         64 :           *ctx.getOutputType(i)-&gt;mutable_tensor_type()-&gt;mutable_shape() =</span>
+<span class="lineNum">     286 </span><span class="lineCov">         48 :               ctx.getInputType(0)-&gt;tensor_type().shape();</span>
+<span class="lineNum">     287 </span><span class="lineCov">         16 :           ctx.getOutputType(i)</span>
+<span class="lineNum">     288 </span><span class="lineCov">         16 :               -&gt;mutable_tensor_type()</span>
+<span class="lineNum">     289 </span><span class="lineCov">         16 :               -&gt;mutable_shape()</span>
+<span class="lineNum">     290 </span><span class="lineCov">         16 :               -&gt;mutable_dim(axis)</span>
+<span class="lineNum">     291 </span><span class="lineCov">         32 :               -&gt;set_dim_value(split[i]);</span>
+<span class="lineNum">     292 </span><span class="lineCov">         16 :         }</span>
+<span class="lineNum">     293 </span><span class="lineCov">          7 :       }</span>
+<a name="294"><span class="lineNum">     294 </span><span class="lineCov">         34 :     });</span></a>
+<span class="lineNum">     295 </span>            : 
+<span class="lineNum">     296 </span><span class="lineCov">          9 : ONNX_OPERATOR_SCHEMA(Slice)</span>
+<span class="lineNum">     297 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(</span>
+<span class="lineNum">     298 </span>            : Produces a slice of the input tensor along multiple axes. Similar to numpy:
+<span class="lineNum">     299 </span>            : https://docs.scipy.org/doc/numpy/reference/arrays.indexing.html
+<span class="lineNum">     300 </span>            : Slices uses `axes`, `starts` and `ends` attributes to specify the start and end
+<span class="lineNum">     301 </span>            : dimension for each axis in the list of axes, it uses this information to
+<span class="lineNum">     302 </span>            : slice the input `data` tensor. If a negative value is passed for any of the
+<span class="lineNum">     303 </span>            : start or end indices, it represent number of elements before the end of that
+<span class="lineNum">     304 </span>            : dimension. If the value passed to start or end is larger than the `n` (the
+<span class="lineNum">     305 </span>            : number of elements in this dimension), it represents `n`. For slicing to the
+<span class="lineNum">     306 </span>            : end of a dimension with unknown size, it is recommended to pass in `INT_MAX`.
+<span class="lineNum">     307 </span>            : If `axes` are omitted, they are set to `[0, ..., ndim-1]`.
+<span class="lineNum">     308 </span>            : Example 1:
+<span class="lineNum">     309 </span>            :   data = [
+<span class="lineNum">     310 </span>            :       [1, 2, 3, 4],
+<span class="lineNum">     311 </span>            :       [5, 6, 7, 8],
+<span class="lineNum">     312 </span>            :   ]
+<span class="lineNum">     313 </span>            :   axes = [0, 1]
+<span class="lineNum">     314 </span>            :   starts = [1, 0]
+<span class="lineNum">     315 </span>            :   ends = [2, 3]
+<span class="lineNum">     316 </span>            :   result = [
+<span class="lineNum">     317 </span>            :       [5, 6, 7],
+<span class="lineNum">     318 </span>            :   ]
+<span class="lineNum">     319 </span>            : Example 2:
+<span class="lineNum">     320 </span>            :   data = [
+<span class="lineNum">     321 </span>            :       [1, 2, 3, 4],
+<span class="lineNum">     322 </span>            :       [5, 6, 7, 8],
+<span class="lineNum">     323 </span>            :   ]
+<span class="lineNum">     324 </span>            :   starts = [0, 1]
+<span class="lineNum">     325 </span>            :   ends = [-1, 1000]
+<span class="lineNum">     326 </span>            :   result = [
+<span class="lineNum">     327 </span>            :       [2, 3, 4],
+<span class="lineNum">     328 </span>            :   ]
+<span class="lineNum">     329 </span>            : )DOC&quot;)
+<span class="lineNum">     330 </span><span class="lineCov">          4 :     .Input(0, &quot;data&quot;, &quot;Tensor of data to extract slices from.&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     331 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     332 </span><span class="lineCov">          1 :         &quot;axes&quot;,</span>
+<span class="lineNum">     333 </span><span class="lineCov">          1 :         &quot;Axes that `starts` and `ends` apply to. &quot;</span>
+<span class="lineNum">     334 </span>            :         &quot;It's optional. If not present, will be treated as &quot;
+<span class="lineNum">     335 </span>            :         &quot;[0, 1, ..., len(`starts`) - 1].&quot;,
+<span class="lineNum">     336 </span>            :         AttributeProto::INTS,
+<span class="lineNum">     337 </span>            :         OPTIONAL)
+<span class="lineNum">     338 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     339 </span><span class="lineCov">          1 :         &quot;starts&quot;,</span>
+<span class="lineNum">     340 </span><span class="lineCov">          1 :         &quot;Starting indices of corresponding axis in `axes`&quot;,</span>
+<span class="lineNum">     341 </span>            :         AttributeProto::INTS)
+<span class="lineNum">     342 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     343 </span><span class="lineCov">          1 :         &quot;ends&quot;,</span>
+<span class="lineNum">     344 </span><span class="lineCov">          1 :         &quot;Ending indices (exclusive) of corresponding axis in axes`&quot;,</span>
+<span class="lineNum">     345 </span>            :         AttributeProto::INTS)
+<span class="lineNum">     346 </span><span class="lineCov">          4 :     .Output(0, &quot;output&quot;, &quot;Sliced data tensor.&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     347 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     348 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<a name="349"><span class="lineNum">     349 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span></a>
+<span class="lineNum">     350 </span><span class="lineCov">          1 :         &quot;Constrain input and output types to float tensors.&quot;)</span>
+<span class="lineNum">     351 </span><span class="lineCov">         40 :     .TypeAndShapeInferenceFunction([](InferenceContext&amp; ctx) {</span>
+<span class="lineNum">     352 </span><span class="lineCov">         36 :       propagateElemTypeFromInputToOutput(ctx, 0, 0);</span>
+<span class="lineNum">     353 </span><span class="lineCov">         36 :       if (!hasNInputShapes(ctx, 1)) {</span>
+<span class="lineNum">     354 </span><span class="lineNoCov">          0 :         return;</span>
+<span class="lineNum">     355 </span>            :       }
+<span class="lineNum">     356 </span><span class="lineCov">         36 :       std::vector&lt;int64_t&gt; starts;</span>
+<span class="lineNum">     357 </span><span class="lineCov">         36 :       std::vector&lt;int64_t&gt; ends;</span>
+<span class="lineNum">     358 </span><span class="lineCov">        216 :       if (!getRepeatedAttribute(ctx, &quot;starts&quot;, starts) ||</span>
+<span class="lineNum">     359 </span><span class="lineCov">        144 :           !getRepeatedAttribute(ctx, &quot;ends&quot;, ends) ||</span>
+<span class="lineNum">     360 </span><span class="lineCov">         36 :           starts.size() != ends.size()) {</span>
+<span class="lineNum">     361 </span><span class="lineNoCov">          0 :         return;</span>
+<span class="lineNum">     362 </span>            :       }
+<span class="lineNum">     363 </span><span class="lineCov">         36 :       std::vector&lt;int64_t&gt; axes;</span>
+<span class="lineNum">     364 </span><span class="lineCov">        108 :       if (!getRepeatedAttribute(ctx, &quot;axes&quot;, axes)) {</span>
+<span class="lineNum">     365 </span><span class="lineCov">          8 :         for (int i = 0; (size_t)i &lt; starts.size(); ++i) {</span>
+<span class="lineNum">     366 </span><span class="lineCov">          3 :           axes.push_back(i);</span>
+<span class="lineNum">     367 </span><span class="lineCov">          3 :         }</span>
+<span class="lineNum">     368 </span><span class="lineCov">         36 :       } else if (axes.size() != starts.size()) {</span>
+<span class="lineNum">     369 </span><span class="lineNoCov">          0 :         return;</span>
+<span class="lineNum">     370 </span><span class="lineCov">         70 :       } else if (!std::is_sorted(axes.begin(), axes.end())) {</span>
+<span class="lineNum">     371 </span>            :         // TODO support shape inference for unsorted axes
+<span class="lineNum">     372 </span><span class="lineCov">          1 :         return;</span>
+<span class="lineNum">     373 </span>            :       }
+<span class="lineNum">     374 </span>            : 
+<span class="lineNum">     375 </span><span class="lineCov">        105 :       ctx.getOutputType(0)-&gt;mutable_tensor_type()-&gt;mutable_shape();</span>
+<span class="lineNum">     376 </span>            : 
+<span class="lineNum">     377 </span><span class="lineCov">        196 :       for (size_t i = 0, j = 0;</span>
+<span class="lineNum">     378 </span><span class="lineCov">        490 :            (int64_t)i &lt; ctx.getInputType(0)-&gt;tensor_type().shape().dim_size();</span>
+<span class="lineNum">     379 </span><span class="lineCov">         63 :            ++i) {</span>
+<span class="lineNum">     380 </span><span class="lineCov">        126 :         auto* newdim = ctx.getOutputType(0)</span>
+<span class="lineNum">     381 </span><span class="lineCov">         63 :                            -&gt;mutable_tensor_type()</span>
+<span class="lineNum">     382 </span><span class="lineCov">         63 :                            -&gt;mutable_shape()</span>
+<span class="lineNum">     383 </span><span class="lineCov">         63 :                            -&gt;add_dim();</span>
+<span class="lineNum">     384 </span><span class="lineCov">        155 :         if (j &lt; axes.size() &amp;&amp; static_cast&lt;size_t&gt;(axes[j]) == i) {</span>
+<span class="lineNum">     385 </span>            :           // There's a lot of potential behaviors. For now just
+<span class="lineNum">     386 </span>            :           // handle some simple cases.
+<span class="lineNum">     387 </span><span class="lineCov">         83 :           if (ctx.getInputType(0)</span>
+<span class="lineNum">     388 </span><span class="lineCov">         42 :                   -&gt;tensor_type()</span>
+<span class="lineNum">     389 </span><span class="lineCov">         42 :                   .shape()</span>
+<span class="lineNum">     390 </span><span class="lineCov">         42 :                   .dim((int)i)</span>
+<span class="lineNum">     391 </span><span class="lineCov">         84 :                   .has_dim_value() &amp;&amp;</span>
+<span class="lineNum">     392 </span><span class="lineCov">        166 :               starts[j] &gt;= 0 &amp;&amp; ends[j] &gt;= 0) {</span>
+<span class="lineNum">     393 </span><span class="lineCov">        117 :             auto newval = std::min(</span>
+<span class="lineNum">     394 </span><span class="lineCov">         78 :                               (int64_t)ctx.getInputType(0)</span>
+<span class="lineNum">     395 </span><span class="lineCov">         39 :                                   -&gt;tensor_type()</span>
+<span class="lineNum">     396 </span><span class="lineCov">         39 :                                   .shape()</span>
+<span class="lineNum">     397 </span><span class="lineCov">         39 :                                   .dim((int)i)</span>
+<span class="lineNum">     398 </span><span class="lineCov">         39 :                                   .dim_value(),</span>
+<span class="lineNum">     399 </span><span class="lineCov">         78 :                               ends[j]) -</span>
+<span class="lineNum">     400 </span><span class="lineCov">         78 :                 starts[j];</span>
+<span class="lineNum">     401 </span><span class="lineCov">         39 :             if (newval &gt;= 0) {</span>
+<span class="lineNum">     402 </span><span class="lineCov">         38 :               newdim-&gt;set_dim_value(newval);</span>
+<span class="lineNum">     403 </span><span class="lineCov">         38 :             }</span>
+<span class="lineNum">     404 </span><span class="lineCov">         39 :           }</span>
+<span class="lineNum">     405 </span><span class="lineCov">         42 :           ++j;</span>
+<span class="lineNum">     406 </span><span class="lineCov">         42 :         } else {</span>
+<span class="lineNum">     407 </span><span class="lineCov">        105 :           *newdim = ctx.getInputType(0)-&gt;tensor_type().shape().dim((int)i);</span>
+<span class="lineNum">     408 </span>            :         }
+<span class="lineNum">     409 </span><span class="lineCov">         63 :       }</span>
+<a name="410"><span class="lineNum">     410 </span><span class="lineCov">        143 :     });</span></a>
+<span class="lineNum">     411 </span>            : 
+<span class="lineNum">     412 </span><span class="lineCov">          9 : ONNX_OPERATOR_SCHEMA(Transpose)</span>
+<span class="lineNum">     413 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(</span>
+<span class="lineNum">     414 </span>            : Transpose the input tensor similar to numpy.transpose. For example, when
+<span class="lineNum">     415 </span>            : perm=(1, 0, 2), given an input tensor of shape (1, 2, 3), the output shape
+<span class="lineNum">     416 </span>            : will be (2, 1, 3).
+<span class="lineNum">     417 </span>            : )DOC&quot;)
+<span class="lineNum">     418 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     419 </span><span class="lineCov">          1 :         &quot;perm&quot;,</span>
+<span class="lineNum">     420 </span><span class="lineCov">          1 :         &quot;A list of integers. By default, reverse the dimensions, &quot;</span>
+<span class="lineNum">     421 </span>            :         &quot;otherwise permute the axes according to the values given.&quot;,
+<span class="lineNum">     422 </span>            :         AttributeProto::INTS,
+<span class="lineNum">     423 </span>            :         OPTIONAL)
+<span class="lineNum">     424 </span><span class="lineCov">          4 :     .Input(0, &quot;data&quot;, &quot;An input tensor.&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     425 </span><span class="lineCov">          4 :     .Output(0, &quot;transposed&quot;, &quot;Transposed output.&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     426 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     427 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<a name="428"><span class="lineNum">     428 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span></a>
+<span class="lineNum">     429 </span><span class="lineCov">          1 :         &quot;Constrain input and output types to float tensors.&quot;)</span>
+<span class="lineNum">     430 </span><span class="lineCov">         35 :     .TypeAndShapeInferenceFunction([](InferenceContext&amp; ctx) {</span>
+<span class="lineNum">     431 </span><span class="lineCov">         31 :       propagateElemTypeFromInputToOutput(ctx, 0, 0);</span>
+<span class="lineNum">     432 </span><span class="lineCov">         31 :       if (!hasNInputShapes(ctx, 1)) {</span>
+<span class="lineNum">     433 </span><span class="lineCov">         17 :         return;</span>
+<span class="lineNum">     434 </span>            :       }
+<span class="lineNum">     435 </span>            : 
+<span class="lineNum">     436 </span><span class="lineCov">         14 :       std::vector&lt;int64_t&gt; perm;</span>
+<span class="lineNum">     437 </span><span class="lineCov">         42 :       if (!getRepeatedAttribute(ctx, &quot;perm&quot;, perm)) {</span>
+<span class="lineNum">     438 </span><span class="lineCov">         12 :         for (int i = ctx.getInputType(0)-&gt;tensor_type().shape().dim_size() - 1;</span>
+<span class="lineNum">     439 </span><span class="lineCov">          4 :              i &gt;= 0;</span>
+<span class="lineNum">     440 </span><span class="lineCov">          3 :              --i) {</span>
+<span class="lineNum">     441 </span><span class="lineCov">          3 :           perm.push_back(i);</span>
+<span class="lineNum">     442 </span><span class="lineCov">          3 :         }</span>
+<span class="lineNum">     443 </span><span class="lineCov">          1 :       }</span>
+<span class="lineNum">     444 </span>            : 
+<span class="lineNum">     445 </span><span class="lineCov">         14 :       propagateElemTypeFromInputToOutput(ctx, 0, 0);</span>
+<span class="lineNum">     446 </span><span class="lineCov">        116 :       for (size_t i = 0; i &lt; perm.size(); ++i) {</span>
+<span class="lineNum">     447 </span><span class="lineCov">         44 :         appendSingleDimCopiedFromInputTypeToOutputType(</span>
+<span class="lineNum">     448 </span><span class="lineCov">         88 :             ctx, 0, 0, static_cast&lt;size_t&gt;(perm[i]));</span>
+<span class="lineNum">     449 </span><span class="lineCov">         44 :       }</span>
+<a name="450"><span class="lineNum">     450 </span><span class="lineCov">         45 :     });</span></a>
+<span class="lineNum">     451 </span>            : 
+<span class="lineNum">     452 </span><span class="lineCov">         12 : ONNX_OPERATOR_SCHEMA(Gather)</span>
+<span class="lineNum">     453 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(</span>
+<span class="lineNum">     454 </span>            : Given `data` tensor of rank r &gt;= 1, and `indices` tensor of rank q, gather
+<span class="lineNum">     455 </span>            : entries of the axis dimension of `data` (by default outer-most one as axis=0) indexed by `indices`, and concatenates
+<span class="lineNum">     456 </span>            : them in an output tensor of rank q + (r - 1).
+<span class="lineNum">     457 </span>            : Example 1:
+<span class="lineNum">     458 </span>            :   data = [
+<span class="lineNum">     459 </span>            :       [1.0, 1.2],
+<span class="lineNum">     460 </span>            :       [2.3, 3.4],
+<span class="lineNum">     461 </span>            :       [4.5, 5.7],
+<span class="lineNum">     462 </span>            :   ]
+<span class="lineNum">     463 </span>            :   indices = [
+<span class="lineNum">     464 </span>            :       [0, 1],
+<span class="lineNum">     465 </span>            :       [1, 2],
+<span class="lineNum">     466 </span>            :   ]
+<span class="lineNum">     467 </span>            :   output = [
+<span class="lineNum">     468 </span>            :       [
+<span class="lineNum">     469 </span>            :           [1.0, 1.2],
+<span class="lineNum">     470 </span>            :           [2.3, 3.4],
+<span class="lineNum">     471 </span>            :       ],
+<span class="lineNum">     472 </span>            :       [
+<span class="lineNum">     473 </span>            :           [2.3, 3.4],
+<span class="lineNum">     474 </span>            :           [4.5, 5.7],
+<span class="lineNum">     475 </span>            :       ],
+<span class="lineNum">     476 </span>            :   ]
+<span class="lineNum">     477 </span>            : Example 2:
+<span class="lineNum">     478 </span>            :   data = [
+<span class="lineNum">     479 </span>            :       [1.0, 1.2, 1.9],
+<span class="lineNum">     480 </span>            :       [2.3, 3.4, 3.9],
+<span class="lineNum">     481 </span>            :       [4.5, 5.7, 5.9],
+<span class="lineNum">     482 </span>            :   ]
+<span class="lineNum">     483 </span>            :   indices = [
+<span class="lineNum">     484 </span>            :       [0, 2],
+<span class="lineNum">     485 </span>            :   ]
+<span class="lineNum">     486 </span>            :   axis = 1,
+<span class="lineNum">     487 </span>            :   output = [
+<span class="lineNum">     488 </span>            :       [
+<span class="lineNum">     489 </span>            :           [1.0, 1.9],
+<span class="lineNum">     490 </span>            :           [2.3, 3.9],
+<span class="lineNum">     491 </span>            :           [4.5, 5.9],
+<span class="lineNum">     492 </span>            :       ],
+<span class="lineNum">     493 </span>            :   ]
+<span class="lineNum">     494 </span>            : )DOC&quot;)
+<span class="lineNum">     495 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     496 </span><span class="lineCov">          1 :         &quot;axis&quot;,</span>
+<span class="lineNum">     497 </span><span class="lineCov">          1 :         &quot;Which axis to gather on, defaults to 0. Negative value means &quot;</span>
+<span class="lineNum">     498 </span>            :         &quot;counting dimensions from the back. Accepted range in [-r, r-1]&quot;,
+<span class="lineNum">     499 </span>            :         AttributeProto::INT,
+<span class="lineNum">     500 </span><span class="lineCov">          1 :         static_cast&lt;int64_t&gt;(0))</span>
+<span class="lineNum">     501 </span><span class="lineCov">          4 :     .Input(0, &quot;data&quot;, &quot;Tensor of rank r &gt;= 1.&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     502 </span><span class="lineCov">          1 :     .Input(</span>
+<span class="lineNum">     503 </span>            :         1,
+<span class="lineNum">     504 </span><span class="lineCov">          1 :         &quot;indices&quot;,</span>
+<span class="lineNum">     505 </span><span class="lineCov">          1 :         &quot;Tensor of int32/int64 indices, of any rank q.&quot;,</span>
+<span class="lineNum">     506 </span><span class="lineCov">          1 :         &quot;Tind&quot;)</span>
+<span class="lineNum">     507 </span><span class="lineCov">          4 :     .Output(0, &quot;output&quot;, &quot;Tensor of rank q + (r - 1).&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     508 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     509 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     510 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span>
+<span class="lineNum">     511 </span><span class="lineCov">          1 :         &quot;Constrain input and output types to float tensors.&quot;)</span>
+<span class="lineNum">     512 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     513 </span><span class="lineCov">          1 :         &quot;Tind&quot;,</span>
+<a name="514"><span class="lineNum">     514 </span><span class="lineCov">          3 :         {&quot;tensor(int32)&quot;, &quot;tensor(int64)&quot;},</span></a>
+<span class="lineNum">     515 </span><span class="lineCov">          1 :         &quot;Constrain indices to integer types&quot;)</span>
+<span class="lineNum">     516 </span><span class="lineCov">         17 :     .TypeAndShapeInferenceFunction([](InferenceContext&amp; ctx) {</span>
+<span class="lineNum">     517 </span><span class="lineCov">         13 :       propagateElemTypeFromInputToOutput(ctx, 0, 0);</span>
+<span class="lineNum">     518 </span><span class="lineCov">         13 :       if (!hasNInputShapes(ctx, 2)) {</span>
+<span class="lineNum">     519 </span><span class="lineCov">          3 :         return;</span>
+<span class="lineNum">     520 </span>            :       }
+<span class="lineNum">     521 </span>            : 
+<span class="lineNum">     522 </span><span class="lineCov">         10 :       int r = ctx.getInputType(0)-&gt;tensor_type().shape().dim_size();</span>
+<span class="lineNum">     523 </span><span class="lineCov">         10 :       int q = ctx.getInputType(1)-&gt;tensor_type().shape().dim_size();</span>
+<span class="lineNum">     524 </span>            : 
+<span class="lineNum">     525 </span><span class="lineCov">         10 :       int out_rank = q + r - 1;</span>
+<span class="lineNum">     526 </span>            : 
+<span class="lineNum">     527 </span><span class="lineCov">         10 :       if (out_rank == 0) {</span>
+<span class="lineNum">     528 </span><span class="lineCov">          5 :         ctx.getOutputType(0)-&gt;mutable_tensor_type()-&gt;mutable_shape();</span>
+<span class="lineNum">     529 </span><span class="lineCov">          5 :       }</span>
+<span class="lineNum">     530 </span><span class="lineCov">         52 :       for (int i = 0; i &lt; out_rank; ++i) {</span>
+<span class="lineNum">     531 </span><span class="lineCov">         16 :         ctx.getOutputType(0)-&gt;mutable_tensor_type()-&gt;mutable_shape()-&gt;add_dim();</span>
+<span class="lineNum">     532 </span><span class="lineCov">         16 :       }</span>
+<a name="533"><span class="lineNum">     533 </span><span class="lineCov">         13 :     });</span></a>
+<span class="lineNum">     534 </span>            : 
+<span class="lineNum">     535 </span><span class="lineCov">          9 : ONNX_OPERATOR_SCHEMA(Squeeze)</span>
+<span class="lineNum">     536 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     537 </span><span class="lineCov">          1 :         &quot;axes&quot;,</span>
+<span class="lineNum">     538 </span><span class="lineCov">          1 :         &quot;List of positive integers, indicate the dimensions to squeeze.&quot;,</span>
+<span class="lineNum">     539 </span>            :         AttributeProto::INTS)
+<span class="lineNum">     540 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(</span>
+<span class="lineNum">     541 </span>            : Remove single-dimensional entries from the shape of a tensor.
+<span class="lineNum">     542 </span>            : Takes a  parameter `axes` with a list of axes to squeeze.
+<span class="lineNum">     543 </span>            : )DOC&quot;)
+<span class="lineNum">     544 </span><span class="lineCov">          4 :     .Input(0, &quot;data&quot;, &quot;Tensors with at least max(dims) dimensions.&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     545 </span><span class="lineCov">          4 :     .Output(0, &quot;squeezed&quot;, &quot;Reshaped tensor with same data as input.&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     546 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     547 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<a name="548"><span class="lineNum">     548 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span></a>
+<span class="lineNum">     549 </span><span class="lineCov">          1 :         &quot;Constrain input and output types to float tensors.&quot;)</span>
+<span class="lineNum">     550 </span><span class="lineCov">          9 :     .TypeAndShapeInferenceFunction([](InferenceContext&amp; ctx) {</span>
+<span class="lineNum">     551 </span><span class="lineCov">          5 :       propagateElemTypeFromInputToOutput(ctx, 0, 0);</span>
+<span class="lineNum">     552 </span><span class="lineCov">          5 :       if (!hasNInputShapes(ctx, 1)) {</span>
+<span class="lineNum">     553 </span><span class="lineCov">          2 :         return;</span>
+<span class="lineNum">     554 </span>            :       }
+<span class="lineNum">     555 </span>            : 
+<span class="lineNum">     556 </span><span class="lineCov">          3 :       std::vector&lt;int64_t&gt; axes;</span>
+<span class="lineNum">     557 </span><span class="lineCov">          9 :       if (!getRepeatedAttribute(ctx, &quot;axes&quot;, axes)) {</span>
+<span class="lineNum">     558 </span><span class="lineNoCov">          0 :         return;</span>
+<span class="lineNum">     559 </span>            :       }
+<span class="lineNum">     560 </span>            : 
+<span class="lineNum">     561 </span><span class="lineCov">         12 :       if (!ctx.getInputType(0)-&gt;tensor_type().has_shape()) {</span>
+<span class="lineNum">     562 </span><span class="lineNoCov">          0 :         return;</span>
+<span class="lineNum">     563 </span>            :       }
+<span class="lineNum">     564 </span>            : 
+<span class="lineNum">     565 </span><span class="lineCov">          9 :       ctx.getOutputType(0)-&gt;mutable_tensor_type()-&gt;mutable_shape();</span>
+<span class="lineNum">     566 </span>            : 
+<span class="lineNum">     567 </span><span class="lineCov">         30 :       for (int i = 0, j = 0;</span>
+<span class="lineNum">     568 </span><span class="lineCov">         75 :            i &lt; ctx.getInputType(0)-&gt;tensor_type().shape().dim_size();</span>
+<span class="lineNum">     569 </span><span class="lineCov">         12 :            ++i) {</span>
+<span class="lineNum">     570 </span><span class="lineCov">         28 :         if (static_cast&lt;size_t&gt;(j) &lt; axes.size() &amp;&amp; axes[j] == i) {</span>
+<span class="lineNum">     571 </span><span class="lineCov">          6 :           ++j;</span>
+<span class="lineNum">     572 </span><span class="lineCov">          6 :         } else {</span>
+<span class="lineNum">     573 </span><span class="lineCov">          6 :           *ctx.getOutputType(0)</span>
+<span class="lineNum">     574 </span><span class="lineCov">          6 :                -&gt;mutable_tensor_type()</span>
+<span class="lineNum">     575 </span><span class="lineCov">          6 :                -&gt;mutable_shape()</span>
+<span class="lineNum">     576 </span><span class="lineCov">         36 :                -&gt;add_dim() = ctx.getInputType(0)-&gt;tensor_type().shape().dim(i);</span>
+<span class="lineNum">     577 </span>            :         }
+<span class="lineNum">     578 </span><span class="lineCov">         12 :       }</span>
+<a name="579"><span class="lineNum">     579 </span><span class="lineCov">         13 :     });</span></a>
+<span class="lineNum">     580 </span>            : 
+<span class="lineNum">     581 </span><span class="lineCov">          9 : ONNX_OPERATOR_SCHEMA(Unsqueeze)</span>
+<span class="lineNum">     582 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     583 </span><span class="lineCov">          1 :         &quot;axes&quot;,</span>
+<span class="lineNum">     584 </span><span class="lineCov">          1 :         &quot;List of positive integers, indicate the dimensions to be inserted&quot;,</span>
+<span class="lineNum">     585 </span>            :         AttributeProto::INTS)
+<span class="lineNum">     586 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(</span>
+<span class="lineNum">     587 </span>            : Insert single-dimensional entries to the shape of a tensor.
+<span class="lineNum">     588 </span>            : Takes one required argument `axes`, a list of dimensions that will be inserted.
+<span class="lineNum">     589 </span>            : Dimension indices in `axes` are as seen in the output tensor. For example:
+<span class="lineNum">     590 </span>            :   Given a tensor such that tensor with shape [3, 4, 5], then
+<span class="lineNum">     591 </span>            :   Unsqueeze(tensor, axes=[0, 4]) has shape [1, 3, 4, 5, 1]
+<span class="lineNum">     592 </span>            : )DOC&quot;)
+<span class="lineNum">     593 </span><span class="lineCov">          4 :     .Input(0, &quot;data&quot;, &quot;Original tensor&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     594 </span><span class="lineCov">          4 :     .Output(0, &quot;expanded&quot;, &quot;Reshaped tensor with same data as input.&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     595 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     596 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<a name="597"><span class="lineNum">     597 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span></a>
+<span class="lineNum">     598 </span><span class="lineCov">          1 :         &quot;Constrain input and output types to float tensors.&quot;)</span>
+<span class="lineNum">     599 </span><span class="lineCov">         37 :     .TypeAndShapeInferenceFunction([](InferenceContext&amp; ctx) {</span>
+<span class="lineNum">     600 </span><span class="lineCov">         33 :       propagateElemTypeFromInputToOutput(ctx, 0, 0);</span>
+<span class="lineNum">     601 </span><span class="lineCov">         33 :       if (!hasNInputShapes(ctx, 1)) {</span>
+<span class="lineNum">     602 </span><span class="lineCov">          3 :         return;</span>
+<span class="lineNum">     603 </span>            :       }
+<span class="lineNum">     604 </span>            : 
+<span class="lineNum">     605 </span><span class="lineCov">         30 :       std::vector&lt;int64_t&gt; axes;</span>
+<span class="lineNum">     606 </span><span class="lineCov">         90 :       if (!getRepeatedAttribute(ctx, &quot;axes&quot;, axes)) {</span>
+<span class="lineNum">     607 </span><span class="lineNoCov">          0 :         return;</span>
+<span class="lineNum">     608 </span>            :       }
+<span class="lineNum">     609 </span><span class="lineCov">         30 :       std::sort(axes.begin(), axes.end());</span>
+<span class="lineNum">     610 </span>            : 
+<span class="lineNum">     611 </span><span class="lineCov">        120 :       if (!ctx.getInputType(0)-&gt;tensor_type().has_shape()) {</span>
+<span class="lineNum">     612 </span><span class="lineNoCov">          0 :         return;</span>
+<span class="lineNum">     613 </span>            :       }
+<span class="lineNum">     614 </span>            : 
+<span class="lineNum">     615 </span><span class="lineCov">         90 :       ctx.getOutputType(0)-&gt;mutable_tensor_type()-&gt;mutable_shape();</span>
+<span class="lineNum">     616 </span>            : 
+<span class="lineNum">     617 </span><span class="lineCov">         30 :       int j = 0;</span>
+<span class="lineNum">     618 </span><span class="lineCov">        396 :       for (int i = 0; i &lt; ctx.getInputType(0)-&gt;tensor_type().shape().dim_size();</span>
+<span class="lineNum">     619 </span><span class="lineCov">         36 :            ++i) {</span>
+<span class="lineNum">     620 </span><span class="lineCov">        165 :         while (static_cast&lt;size_t&gt;(j) &lt; axes.size() &amp;&amp;</span>
+<span class="lineNum">     621 </span><span class="lineCov">         81 :                axes[j] ==</span>
+<span class="lineNum">     622 </span><span class="lineCov">        135 :                    ctx.getOutputType(0)-&gt;tensor_type().shape().dim_size()) {</span>
+<span class="lineNum">     623 </span><span class="lineCov">         19 :           ctx.getOutputType(0)</span>
+<span class="lineNum">     624 </span><span class="lineCov">         19 :               -&gt;mutable_tensor_type()</span>
+<span class="lineNum">     625 </span><span class="lineCov">         19 :               -&gt;mutable_shape()</span>
+<span class="lineNum">     626 </span><span class="lineCov">         19 :               -&gt;add_dim()</span>
+<span class="lineNum">     627 </span><span class="lineCov">         19 :               -&gt;set_dim_value(1);</span>
+<span class="lineNum">     628 </span><span class="lineCov">         19 :           ++j;</span>
+<span class="lineNum">     629 </span>            :         }
+<span class="lineNum">     630 </span><span class="lineCov">         36 :         *ctx.getOutputType(0)</span>
+<span class="lineNum">     631 </span><span class="lineCov">         36 :              -&gt;mutable_tensor_type()</span>
+<span class="lineNum">     632 </span><span class="lineCov">         36 :              -&gt;mutable_shape()</span>
+<span class="lineNum">     633 </span><span class="lineCov">        216 :              -&gt;add_dim() = ctx.getInputType(0)-&gt;tensor_type().shape().dim(i);</span>
+<span class="lineNum">     634 </span><span class="lineCov">         36 :       }</span>
+<span class="lineNum">     635 </span><span class="lineCov">        132 :       while (static_cast&lt;size_t&gt;(j) &lt; axes.size() &amp;&amp;</span>
+<span class="lineNum">     636 </span><span class="lineCov">         42 :              axes[j] ==</span>
+<span class="lineNum">     637 </span><span class="lineCov">         70 :                  ctx.getOutputType(0)-&gt;tensor_type().shape().dim_size()) {</span>
+<span class="lineNum">     638 </span><span class="lineCov">         14 :         ctx.getOutputType(0)</span>
+<span class="lineNum">     639 </span><span class="lineCov">         14 :             -&gt;mutable_tensor_type()</span>
+<span class="lineNum">     640 </span><span class="lineCov">         14 :             -&gt;mutable_shape()</span>
+<span class="lineNum">     641 </span><span class="lineCov">         14 :             -&gt;add_dim()</span>
+<span class="lineNum">     642 </span><span class="lineCov">         14 :             -&gt;set_dim_value(1);</span>
+<span class="lineNum">     643 </span><span class="lineCov">         14 :         ++j;</span>
+<span class="lineNum">     644 </span>            :       }
+<a name="645"><span class="lineNum">     645 </span><span class="lineCov">         96 :     });</span></a>
+<span class="lineNum">     646 </span>            : 
+<span class="lineNum">     647 </span><span class="lineCov">          9 : ONNX_OPERATOR_SCHEMA(Pad)</span>
+<span class="lineNum">     648 </span><span class="lineCov">          1 :     .SinceVersion(2)</span>
+<span class="lineNum">     649 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     650 </span><span class="lineCov">          1 :         &quot;pads&quot;,</span>
+<span class="lineNum">     651 </span><span class="lineCov">          1 :         &quot;List of integers indicate the padding element count at the &quot;</span>
+<span class="lineNum">     652 </span>            :         &quot;beginning and end of each axis, for 2D it is the number of pixel. &quot;
+<span class="lineNum">     653 </span>            :         &quot;`pads` rank should be double of the input's rank. `pads` format should be as follow &quot;
+<span class="lineNum">     654 </span>            :         &quot;[x1_begin, x2_begin...x1_end, x2_end,...], where xi_begin the number of pixels &quot;
+<span class="lineNum">     655 </span>            :         &quot;added at the beginning of axis `i` and xi_end, the number of pixels added at &quot;
+<span class="lineNum">     656 </span>            :         &quot;the end of axis `i`.&quot;,
+<span class="lineNum">     657 </span>            :         AttributeProto::INTS)
+<span class="lineNum">     658 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     659 </span><span class="lineCov">          1 :         &quot;mode&quot;,</span>
+<span class="lineNum">     660 </span><span class="lineCov">          1 :         &quot;Three modes: constant(default), reflect, edge&quot;,</span>
+<span class="lineNum">     661 </span>            :         AttributeProto::STRING,
+<span class="lineNum">     662 </span><span class="lineCov">          1 :         std::string(&quot;constant&quot;))</span>
+<span class="lineNum">     663 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     664 </span><span class="lineCov">          1 :         &quot;value&quot;,</span>
+<span class="lineNum">     665 </span><span class="lineCov">          1 :         &quot;One float, indicates the value to be filled, default is 0&quot;,</span>
+<span class="lineNum">     666 </span>            :         AttributeProto::FLOAT,
+<span class="lineNum">     667 </span><span class="lineCov">          1 :         0.0f)</span>
+<span class="lineNum">     668 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(</span>
+<span class="lineNum">     669 </span>            : Given `data` tensor, pads, mode, and value.
+<span class="lineNum">     670 </span>            : Example:
+<span class="lineNum">     671 </span>            :   Insert 0 pads to the beginning of the second dimension.
+<span class="lineNum">     672 </span>            :   data = [
+<span class="lineNum">     673 </span>            :       [1.0, 1.2],
+<span class="lineNum">     674 </span>            :       [2.3, 3.4],
+<span class="lineNum">     675 </span>            :       [4.5, 5.7],
+<span class="lineNum">     676 </span>            :   ]
+<span class="lineNum">     677 </span>            :   pads = [0, 2, 0, 0]
+<span class="lineNum">     678 </span>            :   output = [
+<span class="lineNum">     679 </span>            :       [
+<span class="lineNum">     680 </span>            :           [0.0, 0.0, 1.0, 1.2],
+<span class="lineNum">     681 </span>            :           [0.0, 0.0, 2.3, 3.4],
+<span class="lineNum">     682 </span>            :           [0.0, 0.0, 4.5, 5.7],
+<span class="lineNum">     683 </span>            :       ],
+<span class="lineNum">     684 </span>            :   ]
+<span class="lineNum">     685 </span>            : )DOC&quot;)
+<span class="lineNum">     686 </span><span class="lineCov">          4 :     .Input(0, &quot;data&quot;, &quot;Input tensor.&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     687 </span><span class="lineCov">          4 :     .Output(0, &quot;output&quot;, &quot;Tensor after padding.&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     688 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     689 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<a name="690"><span class="lineNum">     690 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span></a>
+<span class="lineNum">     691 </span><span class="lineCov">          1 :         &quot;Constrain input and output types to float tensors.&quot;)</span>
+<span class="lineNum">     692 </span><span class="lineCov">         14 :     .TypeAndShapeInferenceFunction([](InferenceContext&amp; ctx) {</span>
+<span class="lineNum">     693 </span><span class="lineCov">         10 :       propagateElemTypeFromInputToOutput(ctx, 0, 0);</span>
+<span class="lineNum">     694 </span><span class="lineCov">         10 :       if (!hasNInputShapes(ctx, 1)) {</span>
+<span class="lineNum">     695 </span><span class="lineNoCov">          0 :         return;</span>
+<span class="lineNum">     696 </span>            :       }
+<span class="lineNum">     697 </span>            : 
+<span class="lineNum">     698 </span><span class="lineCov">         10 :       std::vector&lt;int64_t&gt; pads;</span>
+<span class="lineNum">     699 </span><span class="lineCov">         50 :       if (!getRepeatedAttribute(ctx, &quot;pads&quot;, pads) ||</span>
+<span class="lineNum">     700 </span><span class="lineCov">         20 :           pads.size() !=</span>
+<span class="lineNum">     701 </span>            :               static_cast&lt;size_t&gt;(
+<span class="lineNum">     702 </span><span class="lineCov">         50 :                   ctx.getInputType(0)-&gt;tensor_type().shape().dim_size() * 2)) {</span>
+<span class="lineNum">     703 </span><span class="lineNoCov">          0 :         return;</span>
+<span class="lineNum">     704 </span>            :       }
+<span class="lineNum">     705 </span>            : 
+<span class="lineNum">     706 </span><span class="lineCov">         30 :       ctx.getOutputType(0)-&gt;mutable_tensor_type()-&gt;mutable_shape();</span>
+<span class="lineNum">     707 </span>            : 
+<span class="lineNum">     708 </span><span class="lineCov">         98 :       for (size_t i = 0;</span>
+<span class="lineNum">     709 </span><span class="lineCov">        245 :            (int64_t)i &lt; ctx.getInputType(0)-&gt;tensor_type().shape().dim_size();</span>
+<span class="lineNum">     710 </span><span class="lineCov">         39 :            ++i) {</span>
+<span class="lineNum">     711 </span><span class="lineCov">         78 :         auto* newdim = ctx.getOutputType(0)</span>
+<span class="lineNum">     712 </span><span class="lineCov">         39 :                            -&gt;mutable_tensor_type()</span>
+<span class="lineNum">     713 </span><span class="lineCov">         39 :                            -&gt;mutable_shape()</span>
+<span class="lineNum">     714 </span><span class="lineCov">         39 :                            -&gt;add_dim();</span>
+<span class="lineNum">     715 </span><span class="lineCov">         78 :         if (ctx.getInputType(0)</span>
+<span class="lineNum">     716 </span><span class="lineCov">         39 :                 -&gt;tensor_type()</span>
+<span class="lineNum">     717 </span><span class="lineCov">         39 :                 .shape()</span>
+<span class="lineNum">     718 </span><span class="lineCov">         39 :                 .dim((int)i)</span>
+<span class="lineNum">     719 </span><span class="lineCov">         39 :                 .has_dim_value()) {</span>
+<span class="lineNum">     720 </span><span class="lineCov">         76 :           newdim-&gt;set_dim_value(</span>
+<span class="lineNum">     721 </span><span class="lineCov">         38 :               ctx.getInputType(0)</span>
+<span class="lineNum">     722 </span><span class="lineCov">         38 :                   -&gt;tensor_type()</span>
+<span class="lineNum">     723 </span><span class="lineCov">         38 :                   .shape()</span>
+<span class="lineNum">     724 </span><span class="lineCov">         38 :                   .dim((int)i)</span>
+<span class="lineNum">     725 </span><span class="lineCov">         76 :                   .dim_value() +</span>
+<span class="lineNum">     726 </span><span class="lineCov">        114 :               pads[i] +</span>
+<span class="lineNum">     727 </span><span class="lineCov">        228 :               pads[ctx.getInputType(0)-&gt;tensor_type().shape().dim_size() + i]);</span>
+<span class="lineNum">     728 </span><span class="lineCov">         38 :         } else if (</span>
+<span class="lineNum">     729 </span><span class="lineCov">          4 :             pads[i] +</span>
+<span class="lineNum">     730 </span><span class="lineCov">          2 :                 pads</span>
+<span class="lineNum">     731 </span><span class="lineCov">          6 :                     [ctx.getInputType(0)-&gt;tensor_type().shape().dim_size() +</span>
+<span class="lineNum">     732 </span><span class="lineCov">          2 :                      i] ==</span>
+<span class="lineNum">     733 </span>            :             0) {
+<span class="lineNum">     734 </span><span class="lineNoCov">          0 :           *newdim = ctx.getInputType(0)-&gt;tensor_type().shape().dim((int)i);</span>
+<span class="lineNum">     735 </span><span class="lineNoCov">          0 :         }</span>
+<span class="lineNum">     736 </span><span class="lineCov">         39 :       }</span>
+<a name="737"><span class="lineNum">     737 </span><span class="lineCov">         30 :     });</span></a>
+<span class="lineNum">     738 </span>            : 
+<span class="lineNum">     739 </span><span class="lineCov">          9 : ONNX_OPERATOR_SCHEMA(SpaceToDepth)</span>
+<span class="lineNum">     740 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     741 </span><span class="lineCov">          1 :         &quot;blocksize&quot;,</span>
+<span class="lineNum">     742 </span><span class="lineCov">          1 :         &quot;Blocks of [blocksize, blocksize] are moved.&quot;,</span>
+<span class="lineNum">     743 </span>            :         AttributeProto::INT)
+<span class="lineNum">     744 </span><span class="lineCov">          1 :     .SetDoc(</span>
+<span class="lineNum">     745 </span><span class="lineCov">          1 :         R&quot;DOC(SpaceToDepth rearranges blocks of spatial data into depth. More specifically,</span>
+<span class="lineNum">     746 </span>            : this op outputs a copy of the input tensor where values from the height and width dimensions
+<span class="lineNum">     747 </span>            : are moved to the depth dimension.
+<span class="lineNum">     748 </span>            : )DOC&quot;)
+<span class="lineNum">     749 </span><span class="lineCov">          1 :     .Input(</span>
+<span class="lineNum">     750 </span>            :         0,
+<span class="lineNum">     751 </span><span class="lineCov">          1 :         &quot;input&quot;,</span>
+<span class="lineNum">     752 </span><span class="lineCov">          1 :         &quot;Input tensor of [N,C,H,W], where N is the batch axis, C is the channel or depth&quot;</span>
+<span class="lineNum">     753 </span>            :         &quot;, H is the height and W is the width.&quot;,
+<span class="lineNum">     754 </span><span class="lineCov">          1 :         &quot;T&quot;)</span>
+<span class="lineNum">     755 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">     756 </span>            :         0,
+<span class="lineNum">     757 </span><span class="lineCov">          1 :         &quot;output&quot;,</span>
+<span class="lineNum">     758 </span><span class="lineCov">          1 :         &quot;Output tensor of [N, C * blocksize * blocksize, H/blocksize, W/blocksize].&quot;,</span>
+<span class="lineNum">     759 </span><span class="lineCov">          1 :         &quot;T&quot;)</span>
+<span class="lineNum">     760 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     761 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<a name="762"><span class="lineNum">     762 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span></a>
+<span class="lineNum">     763 </span><span class="lineCov">          1 :         &quot;Constrain input types to float tensors.&quot;)</span>
+<span class="lineNum">     764 </span><span class="lineCov">          6 :         .TypeAndShapeInferenceFunction([](InferenceContext&amp; ctx) {</span>
+<span class="lineNum">     765 </span><span class="lineCov">          2 :                 propagateElemTypeFromInputToOutput(ctx, 0, 0);</span>
+<span class="lineNum">     766 </span><span class="lineCov">          4 :                 auto blocksize = getAttribute(ctx, &quot;blocksize&quot;, 0);</span>
+<span class="lineNum">     767 </span><span class="lineCov">          2 :                 if (blocksize &lt;= 0) return;</span>
+<span class="lineNum">     768 </span><span class="lineCov">          2 :                 if (hasInputShape(ctx, 0)) {</span>
+<span class="lineNum">     769 </span><span class="lineCov">          2 :                         auto&amp; input_shape = getInputShape(ctx, 0);</span>
+<span class="lineNum">     770 </span><span class="lineCov">          2 :                         if (input_shape.dim_size() == 4) {</span>
+<span class="lineNum">     771 </span>            :                                 // TODO: Clarify what behavior should be if H or W is not a multiple of blocksize.
+<span class="lineNum">     772 </span><span class="lineCov">         22 :                                 updateOutputShape(ctx, 0, {</span>
+<span class="lineNum">     773 </span><span class="lineCov">          4 :                                         input_shape.dim(0),</span>
+<span class="lineNum">     774 </span><span class="lineCov">          6 :                                         input_shape.dim(1) * (blocksize * blocksize),</span>
+<span class="lineNum">     775 </span><span class="lineCov">          6 :                                         input_shape.dim(2) / blocksize,</span>
+<span class="lineNum">     776 </span><span class="lineCov">          6 :                                         input_shape.dim(3) / blocksize</span>
+<span class="lineNum">     777 </span>            :                                 });
+<span class="lineNum">     778 </span><span class="lineCov">          2 :                         }</span>
+<span class="lineNum">     779 </span><span class="lineCov">          2 :                 }</span>
+<a name="780"><span class="lineNum">     780 </span><span class="lineCov">          2 :     });</span></a>
+<span class="lineNum">     781 </span>            : 
+<span class="lineNum">     782 </span><span class="lineCov">          9 : ONNX_OPERATOR_SCHEMA(DepthToSpace)</span>
+<span class="lineNum">     783 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     784 </span><span class="lineCov">          1 :         &quot;blocksize&quot;,</span>
+<span class="lineNum">     785 </span><span class="lineCov">          1 :         &quot;Blocks of [blocksize, blocksize] are moved.&quot;,</span>
+<span class="lineNum">     786 </span>            :         AttributeProto::INT)
+<span class="lineNum">     787 </span><span class="lineCov">          1 :     .SetDoc(</span>
+<span class="lineNum">     788 </span><span class="lineCov">          1 :         R&quot;DOC(DepthToSpace rearranges (permutes) data from depth into blocks of spatial data.</span>
+<span class="lineNum">     789 </span>            : This is the reverse transformation of SpaceToDepth. More specifically, this op outputs a copy of
+<span class="lineNum">     790 </span>            : the input tensor where values from the depth dimension are moved in spatial blocks to the height
+<span class="lineNum">     791 </span>            : and width dimensions.
+<span class="lineNum">     792 </span>            : )DOC&quot;)
+<span class="lineNum">     793 </span><span class="lineCov">          1 :     .Input(</span>
+<span class="lineNum">     794 </span>            :         0,
+<span class="lineNum">     795 </span><span class="lineCov">          1 :         &quot;input&quot;,</span>
+<span class="lineNum">     796 </span><span class="lineCov">          1 :         &quot;Input tensor of [N,C,H,W], where N is the batch axis, C is the channel or depth&quot;</span>
+<span class="lineNum">     797 </span>            :         &quot;, H is the height and W is the width.&quot;,
+<span class="lineNum">     798 </span><span class="lineCov">          1 :         &quot;T&quot;)</span>
+<span class="lineNum">     799 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">     800 </span>            :         0,
+<span class="lineNum">     801 </span><span class="lineCov">          1 :         &quot;output&quot;,</span>
+<span class="lineNum">     802 </span><span class="lineCov">          1 :         &quot;Output tensor of [N, C/(blocksize * blocksize), H * blocksize, W * blocksize].&quot;,</span>
+<span class="lineNum">     803 </span><span class="lineCov">          1 :         &quot;T&quot;)</span>
+<span class="lineNum">     804 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     805 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<a name="806"><span class="lineNum">     806 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span></a>
+<span class="lineNum">     807 </span><span class="lineCov">          1 :         &quot;Constrain input types to float tensors.&quot;)</span>
+<span class="lineNum">     808 </span><span class="lineCov">          7 :         .TypeAndShapeInferenceFunction([](InferenceContext&amp; ctx) {</span>
+<span class="lineNum">     809 </span><span class="lineCov">          3 :                 propagateElemTypeFromInputToOutput(ctx, 0, 0);</span>
+<span class="lineNum">     810 </span><span class="lineCov">          6 :                 auto blocksize = getAttribute(ctx, &quot;blocksize&quot;, 0);</span>
+<span class="lineNum">     811 </span><span class="lineCov">          3 :                 if (blocksize &lt;= 0) return;</span>
+<span class="lineNum">     812 </span><span class="lineCov">          3 :                 if (hasInputShape(ctx, 0)) {</span>
+<span class="lineNum">     813 </span><span class="lineCov">          3 :                         auto&amp; input_shape = getInputShape(ctx, 0);</span>
+<span class="lineNum">     814 </span><span class="lineCov">          3 :                         if (input_shape.dim_size() == 4) {</span>
+<span class="lineNum">     815 </span>            :                                 // TODO: Clarify what behavior should be if C is not a multiple of blocksize*blocksize.
+<span class="lineNum">     816 </span><span class="lineCov">         33 :                                 updateOutputShape(ctx, 0, {</span>
+<span class="lineNum">     817 </span><span class="lineCov">          6 :                                         input_shape.dim(0),</span>
+<span class="lineNum">     818 </span><span class="lineCov">          9 :                                         input_shape.dim(1) / (blocksize * blocksize),</span>
+<span class="lineNum">     819 </span><span class="lineCov">          9 :                                         input_shape.dim(2) * blocksize,</span>
+<span class="lineNum">     820 </span><span class="lineCov">          9 :                                         input_shape.dim(3) * blocksize</span>
+<span class="lineNum">     821 </span>            :                                 });
+<span class="lineNum">     822 </span><span class="lineCov">          3 :                         }</span>
+<span class="lineNum">     823 </span><span class="lineCov">          3 :                 }</span>
+<a name="824"><span class="lineNum">     824 </span><span class="lineCov">          3 :         });</span></a>
+<span class="lineNum">     825 </span>            : 
+<span class="lineNum">     826 </span><span class="lineCov">         11 : ONNX_OPERATOR_SCHEMA(Tile)</span>
+<span class="lineNum">     827 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(Constructs a tensor by tiling a given tensor.</span>
+<span class="lineNum">     828 </span>            : This is the same as function `tile` in Numpy, but no broadcast.
+<span class="lineNum">     829 </span>            : For example A = [[1, 2], [3, 4]], B = [1, 2], tile(A, B) = [[1, 2, 1, 2], [3, 4, 3, 4]]
+<span class="lineNum">     830 </span>            : )DOC&quot;)
+<span class="lineNum">     831 </span><span class="lineCov">          4 :     .Input(0, &quot;input&quot;, &quot;Input tensor of any shape.&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     832 </span><span class="lineCov">          1 :     .Input(</span>
+<span class="lineNum">     833 </span>            :         1,
+<span class="lineNum">     834 </span><span class="lineCov">          1 :         &quot;repeats&quot;,</span>
+<span class="lineNum">     835 </span><span class="lineCov">          1 :         &quot;1D int64 tensor of the same length as input's dimension number, &quot;</span>
+<span class="lineNum">     836 </span>            :         &quot;includes numbers of repeated copies along input's dimensions.&quot;,
+<span class="lineNum">     837 </span><span class="lineCov">          1 :         &quot;T1&quot;)</span>
+<span class="lineNum">     838 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">     839 </span>            :         0,
+<span class="lineNum">     840 </span><span class="lineCov">          1 :         &quot;output&quot;,</span>
+<span class="lineNum">     841 </span><span class="lineCov">          1 :         &quot;Output tensor of the same dimension and type as tensor input. &quot;</span>
+<span class="lineNum">     842 </span>            :         &quot;output_dim[i] = input_dim[i] * repeats[i]&quot;,
+<span class="lineNum">     843 </span><span class="lineCov">          1 :         &quot;T&quot;)</span>
+<span class="lineNum">     844 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     845 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     846 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span>
+<span class="lineNum">     847 </span><span class="lineCov">          1 :         &quot;Constrain input and output's types to float tensors.&quot;)</span>
+<span class="lineNum">     848 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     849 </span><span class="lineCov">          1 :         &quot;T1&quot;,</span>
+<span class="lineNum">     850 </span><span class="lineCov">          2 :         {&quot;tensor(int64)&quot;},</span>
+<a name="851"><span class="lineNum">     851 </span><span class="lineCov">          1 :         &quot;Constrain repeat's type to int64 tensors.&quot;);</span></a>
+<span class="lineNum">     852 </span>            : 
+<span class="lineNum">     853 </span><span class="lineCov">          5 : ONNX_OPERATOR_SCHEMA(Upsample)</span>
+<span class="lineNum">     854 </span><span class="lineCov">          1 :         .SinceVersion(7)</span>
+<span class="lineNum">     855 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     856 </span><span class="lineCov">          1 :         &quot;scales&quot;,</span>
+<span class="lineNum">     857 </span><span class="lineCov">          1 :         &quot;The scale array along each dimension. It takes value greater than or equal to 1.&quot;</span>
+<span class="lineNum">     858 </span>            :         &quot; The number of elements of 'scales' should be the same as the rank of input 'X'.&quot;,
+<span class="lineNum">     859 </span>            :         AttributeProto::FLOATS)
+<span class="lineNum">     860 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     861 </span><span class="lineCov">          1 :         &quot;mode&quot;,</span>
+<span class="lineNum">     862 </span><span class="lineCov">          1 :         &quot;Two interpolation modes: nearest (default), and linear (including bilinear, trilinear, etc)&quot;,</span>
+<span class="lineNum">     863 </span>            :         AttributeProto::STRING,
+<span class="lineNum">     864 </span><span class="lineCov">          1 :         std::string(&quot;nearest&quot;))</span>
+<span class="lineNum">     865 </span><span class="lineCov">          4 :     .Input(0, &quot;X&quot;, &quot;N-D tensor&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     866 </span><span class="lineCov">          4 :     .Output(0, &quot;Y&quot;, &quot;N-D tensor after resizing&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     867 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     868 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     869 </span><span class="lineCov">          2 :         OpSchema::all_tensor_types(),</span>
+<span class="lineNum">     870 </span><span class="lineCov">          1 :         &quot;Constrain input/output types to all tensor types.&quot;)</span>
+<span class="lineNum">     871 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(</span>
+<span class="lineNum">     872 </span>            : Upsample the input tensor.
+<span class="lineNum">     873 </span>            : Each dimension value of the output tensor is:
+<span class="lineNum">     874 </span>            :   output_dimension = floor(input_dimension * scale).
+<a name="875"><span class="lineNum">     875 </span>            : )DOC&quot;);</a>
+<span class="lineNum">     876 </span>            : 
+<span class="lineNum">     877 </span><span class="lineCov">          5 : ONNX_OPERATOR_SCHEMA(Identity)</span>
+<span class="lineNum">     878 </span><span class="lineCov">          2 : .SetDoc(&quot;Identity operator&quot;)</span>
+<span class="lineNum">     879 </span><span class="lineCov">          4 : .Input(0, &quot;input&quot;, &quot;Input tensor&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     880 </span><span class="lineCov">          1 : .Output(</span>
+<span class="lineNum">     881 </span>            :         0,
+<span class="lineNum">     882 </span><span class="lineCov">          1 :         &quot;output&quot;,</span>
+<span class="lineNum">     883 </span><span class="lineCov">          1 :         &quot;Tensor to copy input into.&quot;,</span>
+<span class="lineNum">     884 </span><span class="lineCov">          1 :         &quot;T&quot;)</span>
+<span class="lineNum">     885 </span><span class="lineCov">          4 :         .TypeConstraint(&quot;T&quot;, OpSchema::all_tensor_types(),</span>
+<span class="lineNum">     886 </span><span class="lineCov">          1 :                 &quot;Constrain input and output types to all tensor types.&quot;)</span>
+<span class="lineNum">     887 </span><span class="lineCov">          2 :         .TypeAndShapeInferenceFunction(propagateShapeAndTypeFromFirstInput);</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

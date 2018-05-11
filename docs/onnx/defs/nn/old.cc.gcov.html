@@ -1,0 +1,361 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - onnx-coverage.info - onnx/defs/nn/old.cc</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">onnx/defs/nn</a> - old.cc<span style="font-size: 80%;"> (source / <a href="old.cc.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">onnx-coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">158</td>
+            <td class="headerCovTableEntry">158</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-05-11 14:21:51</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">7</td>
+            <td class="headerCovTableEntry">7</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : // Copyright (c) Facebook Inc. and Microsoft Corporation.</a>
+<span class="lineNum">       2 </span>            : // Licensed under the MIT license.
+<span class="lineNum">       3 </span>            : 
+<span class="lineNum">       4 </span>            : #include &quot;onnx/defs/schema.h&quot;
+<span class="lineNum">       5 </span>            : 
+<span class="lineNum">       6 </span>            : using namespace ONNX_NAMESPACE;
+<a name="7"><span class="lineNum">       7 </span>            : </a>
+<span class="lineNum">       8 </span>            : namespace ONNX_NAMESPACE {
+<span class="lineNum">       9 </span><span class="lineCov">          1 : static std::string pads_doc =</span>
+<span class="lineNum">      10 </span><span class="lineCov">          3 :     &quot;Padding for the beginning and ending along each axis, it can take any value greater &quot;</span>
+<span class="lineNum">      11 </span>            :     &quot;than or equal to 0. The value represent the number of pixels added to the beginning &quot;
+<span class="lineNum">      12 </span>            :     &quot;and end part of the corresponding axis. `pads` format should be as follow &quot;
+<span class="lineNum">      13 </span>            :     &quot;[x1_begin, x2_begin...x1_end, x2_end,...], where xi_begin the number of pixels &quot;
+<span class="lineNum">      14 </span>            :     &quot;added at the beginning of axis `i` and xi_end, the number of pixels added at &quot;
+<a name="15"><span class="lineNum">      15 </span>            :     &quot;the end of axis `i`. This attribute cannot be used simultaneously with &quot;</a>
+<span class="lineNum">      16 </span>            :     &quot;auto_pad attribute.&quot;;
+<span class="lineNum">      17 </span><span class="lineCov">          1 : static std::string auto_pad_doc =</span>
+<span class="lineNum">      18 </span><span class="lineCov">          3 :     &quot;auto_pad must be either SAME_UPPER, SAME_LOWER or VALID. Where &quot;</span>
+<span class="lineNum">      19 </span>            :     &quot;SAME_UPPER or SAME_LOWER mean pad the input so that the output size match the input.&quot;
+<span class="lineNum">      20 </span>            :     &quot;In case of odd number add the extra padding at the end for SAME_UPPER and at the &quot;
+<span class="lineNum">      21 </span>            :     &quot;beginning for SAME_LOWER. VALID mean no padding. DEPRECATION NOTE: auto_pad is &quot;
+<span class="lineNum">      22 </span>            :     &quot;only intended to support legacy uses, and for framework authors, one is explicitly &quot;
+<span class="lineNum">      23 </span>            :     &quot;encouraged to use explicit padding specified in the pads attribute.&quot;;
+<a name="24"><span class="lineNum">      24 </span>            : } // namespace ONNX_NAMESPACE</a>
+<span class="lineNum">      25 </span>            : 
+<span class="lineNum">      26 </span><span class="lineCov">          9 : ONNX_OPERATOR_SCHEMA(LpPool)</span>
+<span class="lineNum">      27 </span><span class="lineCov">          1 :     .SinceVersion(1)</span>
+<span class="lineNum">      28 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(</span>
+<span class="lineNum">      29 </span>            :  LpPool consumes an input tensor X and applies Lp pooling across the
+<span class="lineNum">      30 </span>            :  the tensor according to kernel sizes, stride sizes, and pad lengths.
+<span class="lineNum">      31 </span>            :  Lp pooling consisting of computing the Lp norm on all values of a subset
+<span class="lineNum">      32 </span>            :  of the input tensor according to the kernel size and downsampling the
+<span class="lineNum">      33 </span>            :  data into the output tensor Y for further processing.)DOC&quot;)
+<span class="lineNum">      34 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">      35 </span><span class="lineCov">          1 :         &quot;kernel_shape&quot;,</span>
+<span class="lineNum">      36 </span><span class="lineCov">          1 :         &quot;The size of the kernel along each axis.&quot;,</span>
+<span class="lineNum">      37 </span>            :         AttributeProto::INTS,
+<span class="lineNum">      38 </span>            :         OPTIONAL)
+<span class="lineNum">      39 </span><span class="lineCov">          3 :     .Attr(&quot;strides&quot;, &quot;Stride along each axis.&quot;, AttributeProto::INTS, OPTIONAL)</span>
+<span class="lineNum">      40 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">      41 </span><span class="lineCov">          1 :         &quot;auto_pad&quot;,</span>
+<span class="lineNum">      42 </span><span class="lineCov">          1 :         auto_pad_doc.c_str(),</span>
+<span class="lineNum">      43 </span>            :         AttributeProto::STRING,
+<span class="lineNum">      44 </span><span class="lineCov">          1 :         std::string(&quot;NOTSET&quot;))</span>
+<span class="lineNum">      45 </span><span class="lineCov">          3 :     .Attr(&quot;pads&quot;, pads_doc.c_str(), AttributeProto::INTS, OPTIONAL)</span>
+<span class="lineNum">      46 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">      47 </span><span class="lineCov">          1 :         &quot;p&quot;,</span>
+<span class="lineNum">      48 </span><span class="lineCov">          1 :         &quot;p value of the Lp norm used to pool over the input data, default is 2.0.&quot;,</span>
+<span class="lineNum">      49 </span>            :         AttributeProto::FLOAT,
+<span class="lineNum">      50 </span><span class="lineCov">          1 :         2.0f)</span>
+<span class="lineNum">      51 </span><span class="lineCov">          1 :     .Input(</span>
+<span class="lineNum">      52 </span>            :         0,
+<span class="lineNum">      53 </span><span class="lineCov">          1 :         &quot;X&quot;,</span>
+<span class="lineNum">      54 </span><span class="lineCov">          1 :         &quot;Input data tensor from the previous operator; &quot;</span>
+<span class="lineNum">      55 </span>            :         &quot;dimensions for image case are (N x C x H x W), &quot;
+<span class="lineNum">      56 </span>            :         &quot;where N is the batch size, C is the number of &quot;
+<span class="lineNum">      57 </span>            :         &quot;channels, and H and W are the height and the &quot;
+<span class="lineNum">      58 </span>            :         &quot;width of the data. For non image case, the &quot;
+<span class="lineNum">      59 </span>            :         &quot;dimension are in the form of &quot;
+<span class="lineNum">      60 </span>            :         &quot;(N x C x D1 x D2 ... Dn), where N is the &quot;
+<span class="lineNum">      61 </span>            :         &quot;batch size.&quot;,
+<span class="lineNum">      62 </span><span class="lineCov">          1 :         &quot;T&quot;)</span>
+<span class="lineNum">      63 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">      64 </span>            :         0,
+<span class="lineNum">      65 </span><span class="lineCov">          1 :         &quot;Y&quot;,</span>
+<span class="lineNum">      66 </span><span class="lineCov">          1 :         &quot;Output data tensor from Lp pooling across the input &quot;</span>
+<span class="lineNum">      67 </span>            :         &quot;tensor. Dimensions will vary based on various kernel, stride, and pad &quot;
+<span class="lineNum">      68 </span>            :         &quot;sizes.&quot;,
+<span class="lineNum">      69 </span><span class="lineCov">          1 :         &quot;T&quot;)</span>
+<span class="lineNum">      70 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">      71 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">      72 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span>
+<a name="73"><span class="lineNum">      73 </span><span class="lineCov">          1 :         &quot;Constrain input and output types to float tensors.&quot;);</span></a>
+<span class="lineNum">      74 </span>            : 
+<span class="lineNum">      75 </span><span class="lineCov">          9 : ONNX_OPERATOR_SCHEMA(GlobalLpPool)</span>
+<span class="lineNum">      76 </span><span class="lineCov">          1 :     .SinceVersion(1)</span>
+<span class="lineNum">      77 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(</span>
+<span class="lineNum">      78 </span>            :  GlobalLpPool consumes an input tensor X and applies lp pool pooling across the
+<span class="lineNum">      79 </span>            :  the values in the same channel. This is equivalent to LpPool with kernel size
+<span class="lineNum">      80 </span>            :  equal to the spatial dimension of input tensor.)DOC&quot;)
+<span class="lineNum">      81 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">      82 </span><span class="lineCov">          1 :         &quot;p&quot;,</span>
+<span class="lineNum">      83 </span><span class="lineCov">          1 :         &quot;p value of the Lp norm used to pool over the input data, default is 2.0.&quot;,</span>
+<span class="lineNum">      84 </span>            :         AttributeProto::FLOAT,
+<span class="lineNum">      85 </span><span class="lineCov">          1 :         2.0f)</span>
+<span class="lineNum">      86 </span><span class="lineCov">          1 :     .Input(</span>
+<span class="lineNum">      87 </span>            :         0,
+<span class="lineNum">      88 </span><span class="lineCov">          1 :         &quot;X&quot;,</span>
+<span class="lineNum">      89 </span><span class="lineCov">          1 :         &quot;Input data tensor from the previous operator; &quot;</span>
+<span class="lineNum">      90 </span>            :         &quot;dimensions for image case are (N x C x H x W), &quot;
+<span class="lineNum">      91 </span>            :         &quot;where N is the batch size, C is the number of &quot;
+<span class="lineNum">      92 </span>            :         &quot;channels, and H and W are the height and the width &quot;
+<span class="lineNum">      93 </span>            :         &quot;of the data. For non image case, the dimension are &quot;
+<span class="lineNum">      94 </span>            :         &quot;in the form of (N x C x D1 x D2 ... Dn), &quot;
+<span class="lineNum">      95 </span>            :         &quot;where N is the batch size.&quot;,
+<span class="lineNum">      96 </span><span class="lineCov">          1 :         &quot;T&quot;)</span>
+<span class="lineNum">      97 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">      98 </span>            :         0,
+<span class="lineNum">      99 </span><span class="lineCov">          1 :         &quot;Y&quot;,</span>
+<span class="lineNum">     100 </span><span class="lineCov">          1 :         &quot;Output data tensor from pooling across the input &quot;</span>
+<span class="lineNum">     101 </span>            :         &quot;tensor. Dimensions will be N x C x 1 x 1&quot;,
+<span class="lineNum">     102 </span><span class="lineCov">          1 :         &quot;T&quot;)</span>
+<span class="lineNum">     103 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     104 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     105 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span>
+<a name="106"><span class="lineNum">     106 </span><span class="lineCov">          1 :         &quot;Constrain input and output types to float tensors.&quot;);</span></a>
+<span class="lineNum">     107 </span>            : 
+<span class="lineNum">     108 </span><span class="lineCov">          9 : ONNX_OPERATOR_SCHEMA(BatchNormalization)</span>
+<span class="lineNum">     109 </span><span class="lineCov">          1 :     .SinceVersion(1)</span>
+<span class="lineNum">     110 </span><span class="lineCov">          2 :     .NumOutputs({1, 5})</span>
+<span class="lineNum">     111 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(</span>
+<span class="lineNum">     112 </span>            : Carries out batch normalization as described in the paper
+<span class="lineNum">     113 </span>            : https://arxiv.org/abs/1502.03167. Depending on the mode it is being run,
+<span class="lineNum">     114 </span>            : there are multiple cases for the number of outputs, which we list below:
+<span class="lineNum">     115 </span>            : 
+<span class="lineNum">     116 </span>            : Output case #1: Y, mean, var, saved_mean, saved_var (training mode)
+<span class="lineNum">     117 </span>            : Output case #2: Y (test mode)
+<span class="lineNum">     118 </span>            :     )DOC&quot;)
+<span class="lineNum">     119 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     120 </span><span class="lineCov">          1 :         &quot;spatial&quot;,</span>
+<span class="lineNum">     121 </span><span class="lineCov">          1 :         &quot;If true, compute the mean and variance across all spatial elements &quot;</span>
+<span class="lineNum">     122 </span>            :         &quot;If false, compute the mean and variance across per feature.&quot;
+<span class="lineNum">     123 </span>            :         &quot;Default is 1.&quot;,
+<span class="lineNum">     124 </span>            :         AttributeProto::INT,
+<span class="lineNum">     125 </span><span class="lineCov">          1 :         static_cast&lt;int64_t&gt;(1))</span>
+<span class="lineNum">     126 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     127 </span><span class="lineCov">          1 :         &quot;is_test&quot;,</span>
+<span class="lineNum">     128 </span><span class="lineCov">          1 :         &quot;If set to nonzero, run spatial batch normalization in test mode, default is 0.&quot;,</span>
+<span class="lineNum">     129 </span>            :         AttributeProto::INT,
+<span class="lineNum">     130 </span><span class="lineCov">          1 :         static_cast&lt;int64_t&gt;(0))</span>
+<span class="lineNum">     131 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     132 </span><span class="lineCov">          1 :         &quot;epsilon&quot;,</span>
+<span class="lineNum">     133 </span><span class="lineCov">          1 :         &quot;The epsilon value to use to avoid division by zero, default is 1e-5f.&quot;,</span>
+<span class="lineNum">     134 </span>            :         AttributeProto::FLOAT,
+<span class="lineNum">     135 </span><span class="lineCov">          1 :         1e-5f)</span>
+<span class="lineNum">     136 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     137 </span><span class="lineCov">          1 :         &quot;momentum&quot;,</span>
+<span class="lineNum">     138 </span><span class="lineCov">          1 :         &quot;Factor used in computing the running mean and variance.&quot;</span>
+<span class="lineNum">     139 </span>            :         &quot;e.g., running_mean = running_mean * momentum + mean * (1 - momentum), default is 0.9f.&quot;,
+<span class="lineNum">     140 </span>            :         AttributeProto::FLOAT,
+<span class="lineNum">     141 </span><span class="lineCov">          1 :         0.9f)</span>
+<span class="lineNum">     142 </span>            :     // This attribute was added via AllowConsumed API in OpSchema.
+<span class="lineNum">     143 </span>            :     // After removing the API, we're now using the Attr API to simulate the old
+<span class="lineNum">     144 </span>            :     // definition.
+<span class="lineNum">     145 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     146 </span><span class="lineCov">          1 :         &quot;consumed_inputs&quot;,</span>
+<span class="lineNum">     147 </span><span class="lineCov">          1 :         &quot;legacy optimization attribute.&quot;,</span>
+<span class="lineNum">     148 </span>            :         AttributeProto::INTS)
+<span class="lineNum">     149 </span><span class="lineCov">          4 :     .Input(0, &quot;X&quot;, &quot;The input 4-dimensional tensor of shape NCHW.&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     150 </span><span class="lineCov">          1 :     .Input(</span>
+<span class="lineNum">     151 </span>            :         1,
+<span class="lineNum">     152 </span><span class="lineCov">          1 :         &quot;scale&quot;,</span>
+<span class="lineNum">     153 </span><span class="lineCov">          1 :         &quot;The scale as a 1-dimensional tensor of size C to be applied to the &quot;</span>
+<span class="lineNum">     154 </span>            :         &quot;output.&quot;,
+<span class="lineNum">     155 </span><span class="lineCov">          1 :         &quot;T&quot;)</span>
+<span class="lineNum">     156 </span><span class="lineCov">          1 :     .Input(</span>
+<span class="lineNum">     157 </span>            :         2,
+<span class="lineNum">     158 </span><span class="lineCov">          1 :         &quot;B&quot;,</span>
+<span class="lineNum">     159 </span><span class="lineCov">          1 :         &quot;The bias as a 1-dimensional tensor of size C to be applied to the &quot;</span>
+<span class="lineNum">     160 </span>            :         &quot;output.&quot;,
+<span class="lineNum">     161 </span><span class="lineCov">          1 :         &quot;T&quot;)</span>
+<span class="lineNum">     162 </span><span class="lineCov">          1 :     .Input(</span>
+<span class="lineNum">     163 </span>            :         3,
+<span class="lineNum">     164 </span><span class="lineCov">          1 :         &quot;mean&quot;,</span>
+<span class="lineNum">     165 </span><span class="lineCov">          1 :         &quot;The running mean (training) or the estimated mean (testing) &quot;</span>
+<span class="lineNum">     166 </span>            :         &quot;as a 1-dimensional tensor of size C.&quot;,
+<span class="lineNum">     167 </span><span class="lineCov">          1 :         &quot;T&quot;)</span>
+<span class="lineNum">     168 </span><span class="lineCov">          1 :     .Input(</span>
+<span class="lineNum">     169 </span>            :         4,
+<span class="lineNum">     170 </span><span class="lineCov">          1 :         &quot;var&quot;,</span>
+<span class="lineNum">     171 </span><span class="lineCov">          1 :         &quot;The running variance (training) or the estimated &quot;</span>
+<span class="lineNum">     172 </span>            :         &quot;variance (testing) as a 1-dimensional tensor of size C.&quot;,
+<span class="lineNum">     173 </span><span class="lineCov">          1 :         &quot;T&quot;)</span>
+<span class="lineNum">     174 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">     175 </span>            :         0,
+<span class="lineNum">     176 </span><span class="lineCov">          1 :         &quot;Y&quot;,</span>
+<span class="lineNum">     177 </span><span class="lineCov">          1 :         &quot;The output 4-dimensional tensor of the same shape as X.&quot;,</span>
+<span class="lineNum">     178 </span><span class="lineCov">          1 :         &quot;T&quot;)</span>
+<span class="lineNum">     179 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">     180 </span>            :         1,
+<span class="lineNum">     181 </span><span class="lineCov">          1 :         &quot;mean&quot;,</span>
+<span class="lineNum">     182 </span><span class="lineCov">          1 :         &quot;The running mean after the BatchNormalization operator. Must be in-place &quot;</span>
+<span class="lineNum">     183 </span>            :         &quot;with the input mean. Should not be used for testing.&quot;,
+<span class="lineNum">     184 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     185 </span>            :         OpSchema::Optional)
+<span class="lineNum">     186 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">     187 </span>            :         2,
+<span class="lineNum">     188 </span><span class="lineCov">          1 :         &quot;var&quot;,</span>
+<span class="lineNum">     189 </span><span class="lineCov">          1 :         &quot;The running variance after the BatchNormalization operator. Must be &quot;</span>
+<span class="lineNum">     190 </span>            :         &quot;in-place with the input var. Should not be used for testing.&quot;,
+<span class="lineNum">     191 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     192 </span>            :         OpSchema::Optional)
+<span class="lineNum">     193 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">     194 </span>            :         3,
+<span class="lineNum">     195 </span><span class="lineCov">          1 :         &quot;saved_mean&quot;,</span>
+<span class="lineNum">     196 </span><span class="lineCov">          1 :         &quot;Saved mean used during training to speed up gradient &quot;</span>
+<span class="lineNum">     197 </span>            :         &quot;computation. Should not be used for testing.&quot;,
+<span class="lineNum">     198 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     199 </span>            :         OpSchema::Optional)
+<span class="lineNum">     200 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">     201 </span>            :         4,
+<span class="lineNum">     202 </span><span class="lineCov">          1 :         &quot;saved_var&quot;,</span>
+<span class="lineNum">     203 </span><span class="lineCov">          1 :         &quot;Saved variance used during training to speed up &quot;</span>
+<span class="lineNum">     204 </span>            :         &quot;gradient computation. Should not be used for testing.&quot;,
+<span class="lineNum">     205 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     206 </span>            :         OpSchema::Optional)
+<span class="lineNum">     207 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     208 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     209 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span>
+<a name="210"><span class="lineNum">     210 </span><span class="lineCov">          1 :         &quot;Constrain input and output types to float tensors.&quot;);</span></a>
+<span class="lineNum">     211 </span>            : 
+<span class="lineNum">     212 </span><span class="lineCov">          9 : ONNX_OPERATOR_SCHEMA(InstanceNormalization)</span>
+<span class="lineNum">     213 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(</span>
+<span class="lineNum">     214 </span>            : Carries out instance normalization as described in the paper
+<span class="lineNum">     215 </span>            : https://arxiv.org/abs/1607.08022.
+<span class="lineNum">     216 </span>            : 
+<span class="lineNum">     217 </span>            : y = scale * (x - mean) / sqrt(variance + epsilon) + B,
+<span class="lineNum">     218 </span>            : where mean and variance are computed per instance per channel.
+<span class="lineNum">     219 </span>            : 
+<span class="lineNum">     220 </span>            : )DOC&quot;)
+<span class="lineNum">     221 </span>            :     // This attribute was added via AllowConsumed API in OpSchema.
+<span class="lineNum">     222 </span>            :     // After removing the API, we're now using the Attr API to simulate the old
+<span class="lineNum">     223 </span>            :     // definition.
+<span class="lineNum">     224 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     225 </span><span class="lineCov">          1 :         &quot;consumed_inputs&quot;,</span>
+<span class="lineNum">     226 </span><span class="lineCov">          1 :         &quot;legacy optimization attribute.&quot;,</span>
+<span class="lineNum">     227 </span>            :         AttributeProto::INTS,
+<span class="lineNum">     228 </span>            :         OPTIONAL)
+<span class="lineNum">     229 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     230 </span><span class="lineCov">          1 :         &quot;epsilon&quot;,</span>
+<span class="lineNum">     231 </span><span class="lineCov">          1 :         &quot;The epsilon value to use to avoid division by zero, default is 1e-5f.&quot;,</span>
+<span class="lineNum">     232 </span>            :         AttributeProto::FLOAT,
+<span class="lineNum">     233 </span><span class="lineCov">          1 :         1e-5f)</span>
+<span class="lineNum">     234 </span><span class="lineCov">          4 :     .Input(0, &quot;input&quot;, &quot;The input 4-dimensional tensor of shape NCHW.&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     235 </span><span class="lineCov">          4 :     .Input(1, &quot;scale&quot;, &quot;The input 1-dimensional scale tensor of size C.&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     236 </span><span class="lineCov">          4 :     .Input(2, &quot;B&quot;, &quot;The input 1-dimensional bias tensor of size C.&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     237 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">     238 </span>            :         0,
+<span class="lineNum">     239 </span><span class="lineCov">          1 :         &quot;output&quot;,</span>
+<span class="lineNum">     240 </span><span class="lineCov">          1 :         &quot;The output 4-dimensional tensor of the same shape as input.&quot;,</span>
+<span class="lineNum">     241 </span><span class="lineCov">          1 :         &quot;T&quot;)</span>
+<span class="lineNum">     242 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     243 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     244 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span>
+<a name="245"><span class="lineNum">     245 </span><span class="lineCov">          1 :         &quot;Constrain input and output types to float tensors.&quot;);</span></a>
+<span class="lineNum">     246 </span>            : 
+<span class="lineNum">     247 </span><span class="lineCov">          9 : ONNX_OPERATOR_SCHEMA(Dropout)</span>
+<span class="lineNum">     248 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(</span>
+<span class="lineNum">     249 </span>            : Dropout takes one input data (Tensor&lt;float&gt;) and produces two Tensor outputs,
+<span class="lineNum">     250 </span>            : output (Tensor&lt;float&gt;) and mask (Tensor&lt;bool&gt;). Depending on whether it is in
+<span class="lineNum">     251 </span>            : test mode or not, the output Y will either be a random dropout, or a simple
+<span class="lineNum">     252 </span>            : copy of the input. Note that our implementation of Dropout does scaling in
+<span class="lineNum">     253 </span>            : the training phase, so during testing nothing needs to be done.
+<span class="lineNum">     254 </span>            : )DOC&quot;)
+<span class="lineNum">     255 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     256 </span><span class="lineCov">          1 :         &quot;ratio&quot;,</span>
+<span class="lineNum">     257 </span><span class="lineCov">          1 :         &quot;(float, default 0.5) the ratio of random dropout&quot;,</span>
+<span class="lineNum">     258 </span>            :         AttributeProto::FLOAT,
+<span class="lineNum">     259 </span><span class="lineCov">          1 :         0.5f)</span>
+<span class="lineNum">     260 </span>            :     // This attribute was added via AllowConsumed API in OpSchema.
+<span class="lineNum">     261 </span>            :     // After removing the API, we're now using the Attr API to simulate the old
+<span class="lineNum">     262 </span>            :     // definition.
+<span class="lineNum">     263 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     264 </span><span class="lineCov">          1 :         &quot;consumed_inputs&quot;,</span>
+<span class="lineNum">     265 </span><span class="lineCov">          1 :         &quot;legacy optimization attribute.&quot;,</span>
+<span class="lineNum">     266 </span>            :         AttributeProto::INTS,
+<span class="lineNum">     267 </span>            :         OPTIONAL)
+<span class="lineNum">     268 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     269 </span><span class="lineCov">          1 :         &quot;is_test&quot;,</span>
+<span class="lineNum">     270 </span><span class="lineCov">          1 :         &quot;(int, default 0) if nonzero, run dropout in test mode where &quot;</span>
+<span class="lineNum">     271 </span>            :         &quot;the output is simply Y = X.&quot;,
+<span class="lineNum">     272 </span>            :         AttributeProto::INT,
+<span class="lineNum">     273 </span><span class="lineCov">          1 :         static_cast&lt;int64_t&gt;(0))</span>
+<span class="lineNum">     274 </span><span class="lineCov">          4 :     .Input(0, &quot;data&quot;, &quot;The input data as Tensor.&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     275 </span><span class="lineCov">          4 :     .Output(0, &quot;output&quot;, &quot;The output.&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     276 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">     277 </span>            :         1,
+<span class="lineNum">     278 </span><span class="lineCov">          1 :         &quot;mask&quot;,</span>
+<span class="lineNum">     279 </span><span class="lineCov">          1 :         &quot;The output mask. If is_test is nonzero, this output is not filled.&quot;,</span>
+<span class="lineNum">     280 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     281 </span>            :         OpSchema::Optional)
+<span class="lineNum">     282 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     283 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     284 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span>
+<span class="lineNum">     285 </span><span class="lineCov">          1 :         &quot;Constrain input and output types to float tensors.&quot;);</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

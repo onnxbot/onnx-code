@@ -1,0 +1,297 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - onnx-coverage.info - onnx/shape_inference/implementation.h</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">onnx/shape_inference</a> - implementation.h<span style="font-size: 80%;"> (source / <a href="implementation.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">onnx-coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">119</td>
+            <td class="headerCovTableEntry">136</td>
+            <td class="headerCovTableEntryMed">87.5 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-05-11 14:21:51</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">12</td>
+            <td class="headerCovTableEntry">13</td>
+            <td class="headerCovTableEntryHi">92.3 %</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : #pragma once</a>
+<span class="lineNum">       2 </span>            : 
+<span class="lineNum">       3 </span>            : #include &quot;onnx/defs/schema.h&quot;
+<span class="lineNum">       4 </span>            : #include &quot;onnx/proto_utils.h&quot;
+<span class="lineNum">       5 </span>            : #include &quot;onnx/string_utils.h&quot;
+<span class="lineNum">       6 </span>            : 
+<span class="lineNum">       7 </span>            : namespace ONNX_NAMESPACE {
+<a name="8"><span class="lineNum">       8 </span>            : namespace shape_inference {</a>
+<a name="9"><span class="lineNum">       9 </span>            : </a>
+<span class="lineNum">      10 </span><span class="lineCov">       4988 : struct InferenceContextImpl : public InferenceContext {</span>
+<span class="lineNum">      11 </span><span class="lineCov">       4988 :   InferenceContextImpl(</span>
+<span class="lineNum">      12 </span>            :       const NodeProto&amp; n,
+<span class="lineNum">      13 </span><span class="lineCov">       7482 :       const std::unordered_map&lt;std::string, TypeProto*&gt;&amp; valueTypesByName) {</span>
+<span class="lineNum">      14 </span><span class="lineCov">      40185 :     for (const auto&amp; attr : n.attribute()) {</span>
+<span class="lineNum">      15 </span><span class="lineCov">      10809 :       attributesByName_[attr.name()] = &amp;attr;</span>
+<span class="lineNum">      16 </span>            :     }
+<span class="lineNum">      17 </span>            : 
+<span class="lineNum">      18 </span><span class="lineCov">      51854 :     for (const auto&amp; input : n.input()) {</span>
+<span class="lineNum">      19 </span><span class="lineCov">      10540 :       auto iter = valueTypesByName.find(input);</span>
+<span class="lineNum">      20 </span><span class="lineCov">      10540 :       if (iter != valueTypesByName.end()) {</span>
+<span class="lineNum">      21 </span><span class="lineCov">      10502 :         allInputTypes_.push_back(iter-&gt;second);</span>
+<span class="lineNum">      22 </span><span class="lineCov">       5251 :       } else {</span>
+<span class="lineNum">      23 </span><span class="lineCov">         19 :         allInputTypes_.push_back(nullptr);</span>
+<span class="lineNum">      24 </span>            :       }
+<span class="lineNum">      25 </span>            :     }
+<span class="lineNum">      26 </span>            : 
+<span class="lineNum">      27 </span><span class="lineCov">       4988 :     allOutputTypes_.resize(n.output_size());</span>
+<a name="28"><span class="lineNum">      28 </span><span class="lineCov">       4988 :   }</span></a>
+<span class="lineNum">      29 </span>            : 
+<span class="lineNum">      30 </span>            :   const AttributeProto* getAttribute(const std::string&amp; name) const override {
+<span class="lineNum">      31 </span><span class="lineCov">        630 :     auto iter = attributesByName_.find(name);</span>
+<span class="lineNum">      32 </span><span class="lineCov">        630 :     if (iter == attributesByName_.end()) {</span>
+<span class="lineNum">      33 </span><span class="lineCov">        141 :       return nullptr;</span>
+<span class="lineNum">      34 </span>            :     } else {
+<span class="lineNum">      35 </span><span class="lineCov">        489 :       return iter-&gt;second;</span>
+<a name="36"><span class="lineNum">      36 </span>            :     }</a>
+<span class="lineNum">      37 </span><span class="lineCov">        630 :   }</span>
+<span class="lineNum">      38 </span>            :   size_t getNumInputs() const override {
+<span class="lineNum">      39 </span><span class="lineCov">       2732 :     return allInputTypes_.size();</span>
+<a name="40"><span class="lineNum">      40 </span>            :   }</a>
+<span class="lineNum">      41 </span>            : 
+<span class="lineNum">      42 </span>            :   const TypeProto* getInputType(size_t index) const override {
+<span class="lineNum">      43 </span><span class="lineCov">      11235 :     if (index &gt;= allInputTypes_.size()) {</span>
+<span class="lineNum">      44 </span><span class="lineNoCov">          0 :       throw std::runtime_error(</span>
+<span class="lineNum">      45 </span><span class="lineNoCov">          0 :           &quot;input &quot; + ONNX_NAMESPACE::to_string(index) + &quot; is out of bounds&quot;);</span>
+<span class="lineNum">      46 </span>            :     }
+<span class="lineNum">      47 </span><span class="lineCov">      11235 :     return allInputTypes_[index];</span>
+<a name="48"><span class="lineNum">      48 </span><span class="lineNoCov">          0 :   }</span></a>
+<span class="lineNum">      49 </span>            : 
+<span class="lineNum">      50 </span>            :   size_t getNumOutputs() const override {
+<span class="lineNum">      51 </span><span class="lineCov">         98 :     return allOutputTypes_.size();</span>
+<a name="52"><span class="lineNum">      52 </span>            :   }</a>
+<span class="lineNum">      53 </span>            : 
+<span class="lineNum">      54 </span>            :   TypeProto* getOutputType(size_t index) override {
+<span class="lineNum">      55 </span><span class="lineCov">       8417 :     if (index &gt;= allOutputTypes_.size()) {</span>
+<span class="lineNum">      56 </span><span class="lineNoCov">          0 :       throw std::runtime_error(</span>
+<span class="lineNum">      57 </span><span class="lineNoCov">          0 :           &quot;output &quot; + ONNX_NAMESPACE::to_string(index) + &quot; is out of bounds&quot;);</span>
+<span class="lineNum">      58 </span>            :     }
+<span class="lineNum">      59 </span><span class="lineCov">       8417 :     return &amp;allOutputTypes_[index];</span>
+<span class="lineNum">      60 </span><span class="lineNoCov">          0 :   }</span>
+<span class="lineNum">      61 </span>            :   std::unordered_map&lt;std::string, const AttributeProto*&gt; attributesByName_;
+<span class="lineNum">      62 </span>            :   std::vector&lt;const TypeProto*&gt; allInputTypes_;
+<span class="lineNum">      63 </span>            :   std::vector&lt;TypeProto&gt; allOutputTypes_;
+<a name="64"><span class="lineNum">      64 </span>            : };</a>
+<span class="lineNum">      65 </span>            : 
+<span class="lineNum">      66 </span>            : void checkShapesAndTypes(
+<span class="lineNum">      67 </span>            :     const TypeProto_Tensor&amp; inferredType,
+<span class="lineNum">      68 </span>            :     const TypeProto_Tensor&amp; existingType) {
+<span class="lineNum">      69 </span><span class="lineCov">        691 :   if (inferredType.elem_type() != TensorProto::UNDEFINED &amp;&amp;</span>
+<span class="lineNum">      70 </span><span class="lineCov">        346 :       existingType.elem_type() != TensorProto::UNDEFINED &amp;&amp;</span>
+<span class="lineNum">      71 </span><span class="lineCov">        345 :       existingType.elem_type() != inferredType.elem_type()) {</span>
+<span class="lineNum">      72 </span><span class="lineCov">          1 :     std::stringstream ss;</span>
+<span class="lineNum">      73 </span><span class="lineCov">          1 :     ss &lt;&lt; &quot;Inferred elem type differs from existing elem type: (&quot;</span>
+<span class="lineNum">      74 </span><span class="lineCov">          2 :        &lt;&lt; inferredType.elem_type()</span>
+<span class="lineNum">      75 </span><span class="lineCov">          1 :        &lt;&lt; &quot;) vs (&quot;</span>
+<span class="lineNum">      76 </span><span class="lineCov">          2 :        &lt;&lt; existingType.elem_type()</span>
+<span class="lineNum">      77 </span><span class="lineCov">          1 :        &lt;&lt; &quot;)&quot;;</span>
+<span class="lineNum">      78 </span><span class="lineCov">          6 :     throw std::runtime_error(ss.str());</span>
+<span class="lineNum">      79 </span><span class="lineCov">          3 :   }</span>
+<span class="lineNum">      80 </span>            : 
+<span class="lineNum">      81 </span><span class="lineCov">        634 :   if (!inferredType.has_shape() || !existingType.has_shape()) {</span>
+<span class="lineNum">      82 </span><span class="lineCov">         57 :     return;</span>
+<span class="lineNum">      83 </span>            :   }
+<span class="lineNum">      84 </span>            : 
+<span class="lineNum">      85 </span><span class="lineCov">        288 :   if (inferredType.shape().dim_size() != existingType.shape().dim_size()) {</span>
+<span class="lineNum">      86 </span><span class="lineNoCov">          0 :     std::stringstream ss;</span>
+<span class="lineNum">      87 </span><span class="lineNoCov">          0 :     ss &lt;&lt; &quot;Inferred shape and existing shape differ in rank: (&quot;</span>
+<span class="lineNum">      88 </span><span class="lineNoCov">          0 :        &lt;&lt; inferredType.shape().dim_size()</span>
+<span class="lineNum">      89 </span><span class="lineNoCov">          0 :        &lt;&lt; &quot;) vs (&quot;</span>
+<span class="lineNum">      90 </span><span class="lineNoCov">          0 :        &lt;&lt; existingType.shape().dim_size()</span>
+<span class="lineNum">      91 </span><span class="lineNoCov">          0 :        &lt;&lt; &quot;)&quot;;</span>
+<span class="lineNum">      92 </span><span class="lineNoCov">          0 :     throw std::runtime_error(ss.str());</span>
+<span class="lineNum">      93 </span><span class="lineNoCov">          0 :   }</span>
+<span class="lineNum">      94 </span>            : 
+<span class="lineNum">      95 </span><span class="lineCov">       2154 :   for (int i = 0; i &lt; inferredType.shape().dim_size(); ++i) {</span>
+<span class="lineNum">      96 </span><span class="lineCov">        790 :     const auto&amp; inferredDim = inferredType.shape().dim(i);</span>
+<span class="lineNum">      97 </span><span class="lineCov">        790 :     const auto&amp; existingDim = existingType.shape().dim(i);</span>
+<span class="lineNum">      98 </span><span class="lineCov">       1562 :     if (inferredDim.has_dim_value() &amp;&amp;</span>
+<span class="lineNum">      99 </span><span class="lineCov">        774 :         existingDim.has_dim_value() &amp;&amp;</span>
+<span class="lineNum">     100 </span><span class="lineCov">        772 :         inferredDim.dim_value() != existingDim.dim_value()) {</span>
+<span class="lineNum">     101 </span><span class="lineCov">          1 :       std::stringstream ss;</span>
+<span class="lineNum">     102 </span><span class="lineCov">          1 :       ss &lt;&lt; &quot;Inferred shape and existing shape differ in dimension &quot;</span>
+<span class="lineNum">     103 </span><span class="lineCov">          1 :          &lt;&lt; i</span>
+<span class="lineNum">     104 </span><span class="lineCov">          1 :          &lt;&lt; &quot;: (&quot;</span>
+<span class="lineNum">     105 </span><span class="lineCov">          2 :          &lt;&lt; inferredDim.dim_value()</span>
+<span class="lineNum">     106 </span><span class="lineCov">          1 :          &lt;&lt; &quot;) vs (&quot;</span>
+<span class="lineNum">     107 </span><span class="lineCov">          2 :          &lt;&lt; existingDim.dim_value()</span>
+<span class="lineNum">     108 </span><span class="lineCov">          1 :          &lt;&lt; &quot;)&quot;;</span>
+<span class="lineNum">     109 </span><span class="lineCov">          6 :       throw std::runtime_error(ss.str());</span>
+<span class="lineNum">     110 </span><span class="lineCov">          1 :     }</span>
+<span class="lineNum">     111 </span><span class="lineCov">        789 :   }</span>
+<a name="112"><span class="lineNum">     112 </span><span class="lineCov">        346 : }</span></a>
+<span class="lineNum">     113 </span>            : 
+<span class="lineNum">     114 </span>            : void mergeShapesAndTypes(
+<span class="lineNum">     115 </span>            :     const TypeProto_Tensor&amp; inferredType,
+<span class="lineNum">     116 </span>            :     TypeProto_Tensor* existingType) {
+<span class="lineNum">     117 </span><span class="lineCov">       4616 :   if (inferredType.elem_type() != TensorProto::UNDEFINED &amp;&amp;</span>
+<span class="lineNum">     118 </span><span class="lineCov">       2308 :       existingType-&gt;elem_type() == TensorProto::UNDEFINED) {</span>
+<span class="lineNum">     119 </span><span class="lineCov">       1965 :     existingType-&gt;set_elem_type(inferredType.elem_type());</span>
+<span class="lineNum">     120 </span><span class="lineCov">       1965 :   }</span>
+<span class="lineNum">     121 </span>            : 
+<span class="lineNum">     122 </span><span class="lineCov">       2308 :   if (!inferredType.has_shape()) {</span>
+<span class="lineNum">     123 </span><span class="lineCov">       1766 :     return;</span>
+<span class="lineNum">     124 </span>            :   }
+<span class="lineNum">     125 </span>            : 
+<span class="lineNum">     126 </span><span class="lineCov">        542 :   if (!existingType-&gt;has_shape()) {</span>
+<span class="lineNum">     127 </span>            :     // Ensure the shape is initialized. Note that this must be done
+<span class="lineNum">     128 </span>            :     // even for (zero-dimensional) scalars.
+<span class="lineNum">     129 </span><span class="lineCov">        255 :     existingType-&gt;mutable_shape();</span>
+<span class="lineNum">     130 </span>            : 
+<span class="lineNum">     131 </span><span class="lineCov">       1646 :     for (int j = 0; j &lt; inferredType.shape().dim_size(); ++j) {</span>
+<span class="lineNum">     132 </span><span class="lineCov">        568 :       existingType-&gt;mutable_shape()-&gt;add_dim();</span>
+<span class="lineNum">     133 </span><span class="lineCov">        568 :     }</span>
+<span class="lineNum">     134 </span><span class="lineCov">        255 :   }</span>
+<span class="lineNum">     135 </span>            : 
+<span class="lineNum">     136 </span><span class="lineCov">       3798 :   for (int i = 0; i &lt; inferredType.shape().dim_size(); ++i) {</span>
+<span class="lineNum">     137 </span><span class="lineCov">       1357 :     const auto&amp; inferredDim = inferredType.shape().dim(i);</span>
+<span class="lineNum">     138 </span><span class="lineCov">       1357 :     auto* existingDim = existingType-&gt;mutable_shape()-&gt;mutable_dim(i);</span>
+<span class="lineNum">     139 </span><span class="lineCov">       1357 :     if (!existingDim-&gt;has_dim_value()) {</span>
+<span class="lineNum">     140 </span><span class="lineCov">        570 :       *existingDim = inferredDim;</span>
+<span class="lineNum">     141 </span><span class="lineCov">        570 :     }</span>
+<span class="lineNum">     142 </span><span class="lineCov">       1357 :   }</span>
+<a name="143"><span class="lineNum">     143 </span><span class="lineCov">       2308 : }</span></a>
+<span class="lineNum">     144 </span>            : 
+<span class="lineNum">     145 </span>            : void InferShapes(ModelProto&amp; m) {
+<span class="lineNum">     146 </span><span class="lineCov">        461 :   std::unordered_map&lt;std::string, int&gt; opset_imports;</span>
+<span class="lineNum">     147 </span><span class="lineCov">       5993 :   for (const auto&amp; opset_import : m.opset_import()) {</span>
+<span class="lineNum">     148 </span><span class="lineCov">       1383 :     opset_imports[opset_import.domain()] =</span>
+<span class="lineNum">     149 </span><span class="lineCov">        922 :         static_cast&lt;int&gt;(opset_import.version());</span>
+<span class="lineNum">     150 </span>            :   }
+<span class="lineNum">     151 </span>            : 
+<span class="lineNum">     152 </span><span class="lineCov">        922 :   auto* g = m.mutable_graph();</span>
+<span class="lineNum">     153 </span>            : 
+<span class="lineNum">     154 </span><span class="lineCov">        461 :   std::unordered_map&lt;std::string, TypeProto*&gt; valueTypesByName;</span>
+<span class="lineNum">     155 </span><span class="lineCov">       3935 :   for (auto&amp; vi : *g-&gt;mutable_value_info()) {</span>
+<span class="lineNum">     156 </span><span class="lineCov">        334 :     if (vi.has_type())</span>
+<span class="lineNum">     157 </span><span class="lineCov">        660 :       valueTypesByName[vi.name()] = vi.mutable_type();</span>
+<span class="lineNum">     158 </span>            :   }
+<span class="lineNum">     159 </span><span class="lineCov">      24081 :   for (auto&amp; vi : *g-&gt;mutable_input()) {</span>
+<span class="lineNum">     160 </span><span class="lineCov">       6090 :     if (vi.has_type())</span>
+<span class="lineNum">     161 </span><span class="lineCov">      12180 :       valueTypesByName[vi.name()] = vi.mutable_type();</span>
+<span class="lineNum">     162 </span>            :   }
+<span class="lineNum">     163 </span><span class="lineCov">       5405 :   for (auto&amp; vi : *g-&gt;mutable_output()) {</span>
+<span class="lineNum">     164 </span><span class="lineCov">        754 :     if (vi.has_type())</span>
+<span class="lineNum">     165 </span><span class="lineCov">       1508 :       valueTypesByName[vi.name()] = vi.mutable_type();</span>
+<span class="lineNum">     166 </span>            :   }
+<span class="lineNum">     167 </span>            : 
+<span class="lineNum">     168 </span><span class="lineCov">      20214 :   for (const auto&amp; n : g-&gt;node()) {</span>
+<span class="lineNum">     169 </span>            :     // Resolve domain for node
+<span class="lineNum">     170 </span><span class="lineCov">       7482 :     auto dit = opset_imports.find(n.domain());</span>
+<span class="lineNum">     171 </span><span class="lineCov">       4988 :     if (dit == opset_imports.end()) {</span>
+<span class="lineNum">     172 </span><span class="lineNoCov">          0 :       continue;</span>
+<span class="lineNum">     173 </span>            :     }
+<span class="lineNum">     174 </span><span class="lineCov">       4988 :     auto domain_version = dit-&gt;second;</span>
+<span class="lineNum">     175 </span>            : 
+<span class="lineNum">     176 </span><span class="lineCov">       2494 :     const auto schema =</span>
+<span class="lineNum">     177 </span><span class="lineCov">       7482 :         OpSchemaRegistry::Schema(n.op_type(), domain_version, n.domain());</span>
+<span class="lineNum">     178 </span><span class="lineCov">       2494 :     if (!schema) {</span>
+<span class="lineNum">     179 </span><span class="lineNoCov">          0 :       continue;</span>
+<span class="lineNum">     180 </span>            :     }
+<span class="lineNum">     181 </span>            : 
+<span class="lineNum">     182 </span><span class="lineCov">       2494 :     InferenceContextImpl ctx(n, valueTypesByName);</span>
+<span class="lineNum">     183 </span><span class="lineCov">       4988 :     schema-&gt;GetTypeAndShapeInferenceFunction()(ctx);</span>
+<span class="lineNum">     184 </span>            : 
+<span class="lineNum">     185 </span><span class="lineCov">      15042 :     for (int i = 0; i &lt; n.output_size(); ++i) {</span>
+<span class="lineNum">     186 </span><span class="lineCov">       7566 :       if (!ctx.getOutputType(i)-&gt;has_tensor_type()) {</span>
+<span class="lineNum">     187 </span><span class="lineCov">        212 :         continue;</span>
+<span class="lineNum">     188 </span>            :       }
+<span class="lineNum">     189 </span><span class="lineCov">       6930 :       const auto&amp; inferredType = ctx.getOutputType(i)-&gt;tensor_type();</span>
+<span class="lineNum">     190 </span>            : 
+<span class="lineNum">     191 </span>            :       // Bail out early if shape inference does nothing useful.
+<span class="lineNum">     192 </span><span class="lineCov">       4620 :       if (inferredType.elem_type() == TensorProto::UNDEFINED &amp;&amp; !inferredType.has_shape()) {</span>
+<span class="lineNum">     193 </span><span class="lineNoCov">          0 :         continue;</span>
+<span class="lineNum">     194 </span>            :       }
+<span class="lineNum">     195 </span>            : 
+<span class="lineNum">     196 </span>            :       // Find any pre-existing type and shape info. If there is such,
+<span class="lineNum">     197 </span>            :       // then check for compatability with the inferred
+<span class="lineNum">     198 </span>            :       // information. Otherwise, initialize it in an empty state.
+<span class="lineNum">     199 </span><span class="lineCov">       6930 :       auto iter = valueTypesByName.find(n.output(i));</span>
+<span class="lineNum">     200 </span><span class="lineCov">       2310 :       TypeProto* existingType = nullptr;</span>
+<span class="lineNum">     201 </span><span class="lineCov">       4620 :       if (iter != valueTypesByName.end()) {</span>
+<span class="lineNum">     202 </span><span class="lineCov">        692 :         existingType = iter-&gt;second;</span>
+<span class="lineNum">     203 </span><span class="lineCov">        692 :         checkShapesAndTypes(inferredType, existingType-&gt;tensor_type());</span>
+<span class="lineNum">     204 </span><span class="lineCov">        344 :       } else {</span>
+<span class="lineNum">     205 </span><span class="lineCov">       3928 :         auto vi = g-&gt;add_value_info();</span>
+<span class="lineNum">     206 </span><span class="lineCov">       3928 :         vi-&gt;set_name(n.output(i));</span>
+<span class="lineNum">     207 </span><span class="lineCov">       3928 :         existingType = vi-&gt;mutable_type();</span>
+<span class="lineNum">     208 </span>            :       }
+<span class="lineNum">     209 </span>            : 
+<span class="lineNum">     210 </span>            :       // Now we can merge pre-existing and inferred info, without
+<span class="lineNum">     211 </span>            :       // further need for error-checking.
+<span class="lineNum">     212 </span><span class="lineCov">       4616 :       mergeShapesAndTypes(inferredType, existingType-&gt;mutable_tensor_type());</span>
+<span class="lineNum">     213 </span>            : 
+<span class="lineNum">     214 </span>            :       // Make merged info available to futher inference.
+<span class="lineNum">     215 </span><span class="lineCov">       6924 :       valueTypesByName[n.output(i)] = existingType;</span>
+<span class="lineNum">     216 </span><span class="lineCov">       2308 :     }</span>
+<span class="lineNum">     217 </span><span class="lineCov">       2494 :   }</span>
+<span class="lineNum">     218 </span><span class="lineCov">        467 : }</span>
+<span class="lineNum">     219 </span>            : 
+<span class="lineNum">     220 </span>            : } // namespace shape_inference
+<span class="lineNum">     221 </span>            : } // namespace ONNX_NAMESPACE
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

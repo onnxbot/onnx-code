@@ -1,0 +1,291 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - onnx-coverage.info - onnx/defs/controlflow/defs.cc</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">onnx/defs/controlflow</a> - defs.cc<span style="font-size: 80%;"> (source / <a href="defs.cc.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">onnx-coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">54</td>
+            <td class="headerCovTableEntry">54</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-05-11 14:21:51</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : // Copyright (c) Facebook Inc. and Microsoft Corporation.</a>
+<span class="lineNum">       2 </span>            : // Licensed under the MIT license.
+<span class="lineNum">       3 </span>            : 
+<span class="lineNum">       4 </span>            : #include &quot;onnx/defs/schema.h&quot;
+<span class="lineNum">       5 </span>            : using namespace ONNX_NAMESPACE;
+<span class="lineNum">       6 </span>            : 
+<a name="7"><span class="lineNum">       7 </span>            : using SupportType = ONNX_NAMESPACE::OpSchema::SupportType;</a>
+<span class="lineNum">       8 </span>            : 
+<span class="lineNum">       9 </span><span class="lineCov">          7 : ONNX_OPERATOR_SCHEMA(If)</span>
+<span class="lineNum">      10 </span><span class="lineCov">          1 :     .SetSupportLevel(SupportType::EXPERIMENTAL)</span>
+<span class="lineNum">      11 </span><span class="lineCov">          2 :     .SetDoc(&quot;If conditional&quot;)</span>
+<span class="lineNum">      12 </span><span class="lineCov">          4 :     .Input(0, &quot;cond&quot;, &quot;Condition for the if&quot;, &quot;B&quot;)</span>
+<span class="lineNum">      13 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">      14 </span>            :         0,
+<span class="lineNum">      15 </span><span class="lineCov">          1 :         &quot;outputs&quot;,</span>
+<span class="lineNum">      16 </span><span class="lineCov">          1 :         &quot;Values that are live-out to the enclosing scope.&quot;,</span>
+<span class="lineNum">      17 </span><span class="lineCov">          1 :         &quot;V&quot;,</span>
+<span class="lineNum">      18 </span>            :         OpSchema::Variadic)
+<span class="lineNum">      19 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">      20 </span><span class="lineCov">          1 :         &quot;then_branch&quot;,</span>
+<span class="lineNum">      21 </span><span class="lineCov">          1 :         &quot;Graph to run if condition is true. Has N outputs: values you wish to &quot;</span>
+<span class="lineNum">      22 </span>            :         &quot;be live-out to the enclosing scope. The number of outputs must match&quot;
+<span class="lineNum">      23 </span>            :         &quot; the number of outputs in the else_branch.&quot;,
+<span class="lineNum">      24 </span>            :         AttributeProto::GRAPH,
+<span class="lineNum">      25 </span>            :         true)
+<span class="lineNum">      26 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">      27 </span><span class="lineCov">          1 :         &quot;else_branch&quot;,</span>
+<span class="lineNum">      28 </span><span class="lineCov">          1 :         &quot;Graph to run if condition is false. Has N outputs: values you wish to&quot;</span>
+<span class="lineNum">      29 </span>            :         &quot; be live-out to the enclosing scope. The number of outputs must match&quot;
+<span class="lineNum">      30 </span>            :         &quot; the number of outputs in the then_branch.&quot;,
+<span class="lineNum">      31 </span>            :         AttributeProto::GRAPH,
+<span class="lineNum">      32 </span>            :         true)
+<span class="lineNum">      33 </span><span class="lineCov">          5 :     .TypeConstraint(&quot;V&quot;, OpSchema::all_tensor_types(), &quot;All Tensor types&quot;)</span>
+<a name="34"><span class="lineNum">      34 </span><span class="lineCov">          5 :     .TypeConstraint(&quot;B&quot;, {&quot;tensor(bool)&quot;}, &quot;Only bool&quot;);</span></a>
+<span class="lineNum">      35 </span>            : 
+<span class="lineNum">      36 </span><span class="lineCov">          9 : ONNX_OPERATOR_SCHEMA(Loop)</span>
+<span class="lineNum">      37 </span><span class="lineCov">          1 :     .SetSupportLevel(SupportType::EXPERIMENTAL)</span>
+<span class="lineNum">      38 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(</span>
+<span class="lineNum">      39 </span>            : Generic Looping construct. This loop has multiple termination conditions:
+<span class="lineNum">      40 </span>            : 
+<span class="lineNum">      41 </span>            : 1) Trip count. Iteration count specified at runtime. Set by
+<span class="lineNum">      42 </span>            :    specifying the input M. Optional. Set to empty string to omit.
+<span class="lineNum">      43 </span>            :    Note that a static trip count (specified at graph construction time) can be
+<span class="lineNum">      44 </span>            :    specified by passing in a constant node for input M.
+<span class="lineNum">      45 </span>            : 2) Loop termination condition. This is an input to the op that determines
+<span class="lineNum">      46 </span>            :    whether to run the first iteration and also a loop-carried dependency for
+<span class="lineNum">      47 </span>            :    the body graph. The body graph must yield a value for the condition variable,
+<span class="lineNum">      48 </span>            :    whether this input is provided or not.
+<span class="lineNum">      49 </span>            : 
+<span class="lineNum">      50 </span>            : This table summarizes the operating modes of this operator with equivalent
+<span class="lineNum">      51 </span>            : C-style code:
+<span class="lineNum">      52 </span>            : 
+<span class="lineNum">      53 </span>            :     Operator inputs defined as (max_trip_count, condition_var).
+<span class="lineNum">      54 </span>            : 
+<span class="lineNum">      55 </span>            :     input (&quot;&quot;, &quot;&quot;):
+<span class="lineNum">      56 </span>            :         for (int i=0; ; ++i) {
+<span class="lineNum">      57 </span>            :           cond = ... // Note this value is ignored, but is required in the body
+<span class="lineNum">      58 </span>            :         }
+<span class="lineNum">      59 </span>            : 
+<span class="lineNum">      60 </span>            :     input (&quot;&quot;, cond) // Note this is analogous to a while loop
+<span class="lineNum">      61 </span>            :         bool cond = ...;
+<span class="lineNum">      62 </span>            :         for (int i=0; cond; ++i) {
+<span class="lineNum">      63 </span>            :           cond = ...;
+<span class="lineNum">      64 </span>            :         }
+<span class="lineNum">      65 </span>            : 
+<span class="lineNum">      66 </span>            :     input (&quot;&quot;, 1) // Note this is analogous to a do-while loop
+<span class="lineNum">      67 </span>            :         bool cond = true
+<span class="lineNum">      68 </span>            :         for (int i=0; cond; ++i) {
+<span class="lineNum">      69 </span>            :           cond = ...;
+<span class="lineNum">      70 </span>            :         }
+<span class="lineNum">      71 </span>            : 
+<span class="lineNum">      72 </span>            :     input (trip_count, &quot;&quot;) // Note this is analogous to a for loop
+<span class="lineNum">      73 </span>            :         int trip_count = ...
+<span class="lineNum">      74 </span>            :         for (int i=0; i &lt; trip_count; ++i) {
+<span class="lineNum">      75 </span>            :           cond = ...; // ignored
+<span class="lineNum">      76 </span>            :         }
+<span class="lineNum">      77 </span>            : 
+<span class="lineNum">      78 </span>            :     input (trip_count, cond)
+<span class="lineNum">      79 </span>            :         int trip_count = ...;
+<span class="lineNum">      80 </span>            :         bool cond = ...;
+<span class="lineNum">      81 </span>            :         for (int i=0; i &lt; trip_count &amp;&amp; cond; ++i) {
+<span class="lineNum">      82 </span>            :           cond = ...;
+<span class="lineNum">      83 </span>            :         }
+<span class="lineNum">      84 </span>            : 
+<span class="lineNum">      85 </span>            : 
+<span class="lineNum">      86 </span>            : *Sample usage - cond as well as trip count*
+<span class="lineNum">      87 </span>            : 
+<span class="lineNum">      88 </span>            :     graph predict-net {
+<span class="lineNum">      89 </span>            :       %a = Constant[value = &lt;Scalar Tensor [3]&gt;]()
+<span class="lineNum">      90 </span>            :       %b = Constant[value = &lt;Scalar Tensor [6]&gt;]()
+<span class="lineNum">      91 </span>            :       %keepgoing = Constant[value = &lt;Scalar Tensor [1]&gt;]()
+<span class="lineNum">      92 </span>            :       %max_trip_count = Constant[value = &lt;Scalar Tensor [10]&gt;]()
+<span class="lineNum">      93 </span>            :       %keepgoing_out, %b_out, %user_defined_vals = Loop[body = &lt;graph body-net&gt;](%max_trip_count, %keepgoing, %b)
+<span class="lineNum">      94 </span>            :       return
+<span class="lineNum">      95 </span>            :     }
+<span class="lineNum">      96 </span>            : 
+<span class="lineNum">      97 </span>            :     graph body-net (
+<span class="lineNum">      98 </span>            :       %i[INT32, scalar]
+<span class="lineNum">      99 </span>            :       %keepgoing[BOOL, scalar]
+<span class="lineNum">     100 </span>            :       %b[INT32, scalar]
+<span class="lineNum">     101 </span>            :     ) {
+<span class="lineNum">     102 </span>            :       %my_local = Add(%a, %b)
+<span class="lineNum">     103 </span>            :       %b_out = Sub(%a, %b)
+<span class="lineNum">     104 </span>            :       %keepgoing_out = Greater(%my_local, %b_out)
+<span class="lineNum">     105 </span>            :       %user_defined_vals = Add(%b, %b)
+<span class="lineNum">     106 </span>            :       return %keepgoing_out, %b_out, %user_defined_vals
+<span class="lineNum">     107 </span>            :     }
+<span class="lineNum">     108 </span>            : 
+<span class="lineNum">     109 </span>            : *Sample equivalent C code*
+<span class="lineNum">     110 </span>            : 
+<span class="lineNum">     111 </span>            :     {
+<span class="lineNum">     112 </span>            :       /* User-defined code (enclosing scope) */
+<span class="lineNum">     113 </span>            :       int a = 3, b = 6;
+<span class="lineNum">     114 </span>            :       bool keepgoing = true; // Analogous to input cond
+<span class="lineNum">     115 </span>            :       /* End user-defined code */
+<span class="lineNum">     116 </span>            : 
+<span class="lineNum">     117 </span>            :       /* Implicitly-defined code */
+<span class="lineNum">     118 </span>            :       const int max_trip_count = 10; // Analogous to input M
+<span class="lineNum">     119 </span>            :       int user_defined_vals[]; // Imagine this is resizable
+<span class="lineNum">     120 </span>            :       /* End implicitly-defined code */
+<span class="lineNum">     121 </span>            :       for (int i=0; i &lt; max_trip_count &amp;&amp; keepgoing; ++i) {
+<span class="lineNum">     122 </span>            :         /* User-defined code (loop body) */
+<span class="lineNum">     123 </span>            :         int my_local = a + b; // Reading values in the enclosing scope is fine
+<span class="lineNum">     124 </span>            :         b = a - b; // writes fine if we specify b as a loop-carried dependency
+<span class="lineNum">     125 </span>            :         keepgoing = my_local &gt; b; // keepgoing is a loop-carried dependency
+<span class="lineNum">     126 </span>            :         user_defined_vals[i] = b + b;
+<span class="lineNum">     127 </span>            :         /* End user-defined code */
+<span class="lineNum">     128 </span>            :       }
+<span class="lineNum">     129 </span>            :       // my_local = 123; // Can't do this. my_local was defined in the the body
+<span class="lineNum">     130 </span>            : 
+<span class="lineNum">     131 </span>            :       // These below values are live-out from the loop and therefore accessible
+<span class="lineNum">     132 </span>            :       b_out; user_defined_vals; keepgoing_out;
+<span class="lineNum">     133 </span>            :     }
+<span class="lineNum">     134 </span>            : 
+<span class="lineNum">     135 </span>            : There are several things of note in this code snippet:
+<span class="lineNum">     136 </span>            : 
+<span class="lineNum">     137 </span>            : 1) Values from the enclosing scope (i.e. variable a here) are in scope and can
+<span class="lineNum">     138 </span>            :    be referenced in the inputs of the loop.
+<span class="lineNum">     139 </span>            : 2) Any variables which you wish to make available in the enclosing scope (i.e.
+<span class="lineNum">     140 </span>            :    the variables b and keepgoing) must be declared as either loop-carried
+<span class="lineNum">     141 </span>            :    dependencies (both at the op inputs and output and at the body net input and
+<span class="lineNum">     142 </span>            :    output) or scan_outputs.
+<span class="lineNum">     143 </span>            : 3) Values created in the body cannot be accessed in the enclosing scope.
+<span class="lineNum">     144 </span>            : 
+<span class="lineNum">     145 </span>            : Note that the semantics of this op support &quot;diagonal&quot; or &quot;wavefront&quot; execution.
+<span class="lineNum">     146 </span>            : (See Step 3 here for an example:
+<span class="lineNum">     147 </span>            : https://devblogs.nvidia.com/optimizing-recurrent-neural-networks-cudnn-5/).
+<span class="lineNum">     148 </span>            : Frontends should emit multi-layer RNNs as a series of While operators (with
+<span class="lineNum">     149 </span>            : time being the inner looping dimension), with each successive layer consuming
+<span class="lineNum">     150 </span>            : the scan_outputs from the previous layer, possibly going through several
+<span class="lineNum">     151 </span>            : point-wise operators (e.g. dropout, residual connections, linear layer).
+<span class="lineNum">     152 </span>            : Concretely, the (possibly transformed) scan_outputs are referenced by the
+<span class="lineNum">     153 </span>            : subsequent layer as a LoopIndexTensor operating on a value in scope, not
+<span class="lineNum">     154 </span>            : necessarily a loop-carried dependency. Backends can recognize this pattern and
+<span class="lineNum">     155 </span>            : are permitted to schedule the execution of the multi-layer network in a
+<span class="lineNum">     156 </span>            : pipelined/&quot;wavefront&quot; fashion.
+<span class="lineNum">     157 </span>            : 
+<span class="lineNum">     158 </span>            : )DOC&quot;)
+<span class="lineNum">     159 </span><span class="lineCov">          1 :     .Input(</span>
+<span class="lineNum">     160 </span>            :         0,
+<span class="lineNum">     161 </span><span class="lineCov">          1 :         &quot;M&quot;,</span>
+<span class="lineNum">     162 </span><span class="lineCov">          1 :         &quot;A maximum trip-count for the loop specified at runtime. Optional.&quot;</span>
+<span class="lineNum">     163 </span>            :         &quot; pass empty string to skip.&quot;,
+<span class="lineNum">     164 </span><span class="lineCov">          1 :         &quot;I&quot;)</span>
+<span class="lineNum">     165 </span><span class="lineCov">          1 :     .Input(</span>
+<span class="lineNum">     166 </span>            :         1,
+<span class="lineNum">     167 </span><span class="lineCov">          1 :         &quot;cond&quot;,</span>
+<span class="lineNum">     168 </span><span class="lineCov">          1 :         &quot;A boolean termination condition. Pass empty string to skip.&quot;,</span>
+<span class="lineNum">     169 </span><span class="lineCov">          1 :         &quot;B&quot;)</span>
+<span class="lineNum">     170 </span><span class="lineCov">          1 :     .Input(</span>
+<span class="lineNum">     171 </span>            :         2,
+<span class="lineNum">     172 </span><span class="lineCov">          1 :         &quot;v_initial&quot;,</span>
+<span class="lineNum">     173 </span><span class="lineCov">          1 :         &quot;The initial values of any loop-carried dependencies (values that &quot;</span>
+<span class="lineNum">     174 </span>            :         &quot;change across loop iterations)&quot;,
+<span class="lineNum">     175 </span><span class="lineCov">          1 :         &quot;V&quot;,</span>
+<span class="lineNum">     176 </span>            :         OpSchema::Variadic)
+<span class="lineNum">     177 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">     178 </span>            :         0,
+<span class="lineNum">     179 </span><span class="lineCov">          1 :         &quot;v_final_and_scan_outputs&quot;,</span>
+<span class="lineNum">     180 </span><span class="lineCov">          1 :         &quot;Final N loop carried dependency values then K scan_outputs&quot;,</span>
+<span class="lineNum">     181 </span><span class="lineCov">          1 :         &quot;V&quot;,</span>
+<span class="lineNum">     182 </span>            :         OpSchema::Variadic)
+<span class="lineNum">     183 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     184 </span><span class="lineCov">          1 :         &quot;body&quot;,</span>
+<span class="lineNum">     185 </span><span class="lineCov">          1 :         &quot;The graph run each iteration. It has 2+N inputs: (iteration_num, &quot;</span>
+<span class="lineNum">     186 </span>            :         &quot;condition, loop carried dependencies...). It has 1+N+K outputs: &quot;
+<span class="lineNum">     187 </span>            :         &quot;(condition, loop carried dependencies..., scan_outputs...). Each &quot;
+<span class="lineNum">     188 </span>            :         &quot;scan_output is created by concatenating the value of the specified &quot;
+<span class="lineNum">     189 </span>            :         &quot;output value at the end of each iteration of the loop. It is an error&quot;
+<span class="lineNum">     190 </span>            :         &quot; if the dimensions of these values change across loop iterations.&quot;,
+<span class="lineNum">     191 </span>            :         AttributeProto::GRAPH,
+<span class="lineNum">     192 </span>            :         true)
+<span class="lineNum">     193 </span><span class="lineCov">          5 :     .TypeConstraint(&quot;V&quot;, OpSchema::all_tensor_types(), &quot;All Tensor types&quot;)</span>
+<span class="lineNum">     194 </span><span class="lineCov">          5 :     .TypeConstraint(&quot;I&quot;, {&quot;int64&quot;}, &quot;Only int64&quot;)</span>
+<a name="195"><span class="lineNum">     195 </span><span class="lineCov">          5 :     .TypeConstraint(&quot;B&quot;, {&quot;bool&quot;}, &quot;Only bool&quot;);</span></a>
+<span class="lineNum">     196 </span>            : 
+<span class="lineNum">     197 </span><span class="lineCov">          7 : ONNX_OPERATOR_SCHEMA(LoopIndexTensor)</span>
+<span class="lineNum">     198 </span><span class="lineCov">          1 :     .SetSupportLevel(SupportType::EXPERIMENTAL)</span>
+<span class="lineNum">     199 </span><span class="lineCov">          1 :     .SetDoc(</span>
+<span class="lineNum">     200 </span><span class="lineCov">          1 :         &quot;This is a special operator only valid inside the loop that supports &quot;</span>
+<span class="lineNum">     201 </span>            :         &quot;the common case behavior of accessing the correct element of the input&quot;
+<span class="lineNum">     202 </span>            :         &quot; sequence in an RNN. This operator MUST be directly given the passed-&quot;
+<span class="lineNum">     203 </span>            :         &quot;in iteration number to the body of a Loop graph. This signals to back-&quot;
+<span class="lineNum">     204 </span>            :         &quot;ends that this is a direct indexing operation, with no transforms &quot;
+<span class="lineNum">     205 </span>            :         &quot;applied to the index.&quot;)
+<span class="lineNum">     206 </span><span class="lineCov">          4 :     .Input(0, &quot;T&quot;, &quot;Tensor to be indexed (has N dimensions)&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     207 </span><span class="lineCov">          4 :     .Input(1, &quot;loop_idx&quot;, &quot;Loop index provided as input to the body graph&quot;, &quot;I&quot;)</span>
+<span class="lineNum">     208 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     209 </span><span class="lineCov">          1 :         &quot;axis&quot;,</span>
+<span class="lineNum">     210 </span><span class="lineCov">          1 :         &quot;Axis on which to index&quot;,</span>
+<span class="lineNum">     211 </span>            :         AttributeProto::INT,
+<span class="lineNum">     212 </span><span class="lineCov">          1 :         static_cast&lt;int64_t&gt;(0))</span>
+<span class="lineNum">     213 </span><span class="lineCov">          4 :     .Output(0, &quot;O&quot;, &quot;Tensor of N - 1 dims that is a sub tensor of T&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     214 </span><span class="lineCov">          5 :     .TypeConstraint(&quot;T&quot;, OpSchema::all_tensor_types(), &quot;All Tensor types&quot;)</span>
+<span class="lineNum">     215 </span><span class="lineCov">          5 :     .TypeConstraint(&quot;I&quot;, {&quot;int32&quot;}, &quot;Indices&quot;);</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

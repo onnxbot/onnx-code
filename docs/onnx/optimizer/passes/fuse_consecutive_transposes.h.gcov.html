@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - onnx-coverage.info - onnx/optimizer/passes/fuse_consecutive_transposes.h</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">onnx/optimizer/passes</a> - fuse_consecutive_transposes.h<span style="font-size: 80%;"> (source / <a href="fuse_consecutive_transposes.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">onnx-coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">35</td>
+            <td class="headerCovTableEntry">35</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-05-11 14:21:51</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">9</td>
+            <td class="headerCovTableEntry">9</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : // ATTENTION: The code in this file is highly EXPERIMENTAL.</a>
+<span class="lineNum">       2 </span>            : // Adventurous users should note that the APIs will probably change.
+<span class="lineNum">       3 </span>            : 
+<span class="lineNum">       4 </span>            : #pragma once
+<span class="lineNum">       5 </span>            : 
+<span class="lineNum">       6 </span>            : #include &quot;onnx/optimizer/passes/optimize_pass.h&quot;
+<span class="lineNum">       7 </span>            : 
+<a name="8"><span class="lineNum">       8 </span>            : namespace ONNX_NAMESPACE { namespace optimization {</a>
+<a name="9"><span class="lineNum">       9 </span>            : </a>
+<span class="lineNum">      10 </span><span class="lineCov">          3 : struct FuseConsecutiveTransposes final : public OptimizePass {</span>
+<span class="lineNum">      11 </span>            :   explicit FuseConsecutiveTransposes()
+<span class="lineNum">      12 </span><span class="lineCov">          3 :     : OptimizePass(&quot;fuse_consecutive_transposes&quot;, API_TYPE::IR) {</span>
+<span class="lineNum">      13 </span><span class="lineCov">          2 :   }</span>
+<span class="lineNum">      14 </span>            : 
+<a name="15"><span class="lineNum">      15 </span>            :   // returns a vector `ret` such that transposing by `ret` is equivalent</a>
+<span class="lineNum">      16 </span>            :   // to transposing by `t1` and then by `t2`
+<span class="lineNum">      17 </span>            :   std::vector&lt;int64_t&gt; compose_transposes(const std::vector&lt;int64_t&gt; &amp; t1,
+<span class="lineNum">      18 </span>            :       const std::vector&lt;int64_t&gt; &amp; t2) {
+<span class="lineNum">      19 </span><span class="lineCov">          4 :     ONNX_ASSERT(t1.size() == t2.size());</span>
+<span class="lineNum">      20 </span><span class="lineCov">          4 :     std::vector&lt;int64_t&gt; ret;</span>
+<span class="lineNum">      21 </span><span class="lineCov">          4 :     ret.reserve(t1.size());</span>
+<span class="lineNum">      22 </span><span class="lineCov">         32 :     for (size_t i = 0; i &lt; t1.size(); i++) {</span>
+<span class="lineNum">      23 </span><span class="lineCov">         24 :       ONNX_ASSERT(   t1[i]  &lt; static_cast&lt;int64_t&gt;(t2.size()));</span>
+<span class="lineNum">      24 </span><span class="lineCov">         36 :       ONNX_ASSERT(t2[static_cast&lt;size_t&gt;(t1[i])] &lt; static_cast&lt;int64_t&gt;(t2.size()));</span>
+<span class="lineNum">      25 </span><span class="lineCov">         36 :       ret.push_back(t2[static_cast&lt;size_t&gt;(t1[i])]);</span>
+<span class="lineNum">      26 </span><span class="lineCov">         12 :     }</span>
+<span class="lineNum">      27 </span><span class="lineCov">          4 :     return ret;</span>
+<a name="28"><span class="lineNum">      28 </span><span class="lineCov">          8 :   }</span></a>
+<span class="lineNum">      29 </span>            : 
+<span class="lineNum">      30 </span>            :   void fuse_consecutive_transposes(Graph&amp; graph) {
+<a name="31"><span class="lineNum">      31 </span><span class="lineCov">         42 :     for (auto it = graph.begin(); it != graph.end(); ++it) {</span></a>
+<span class="lineNum">      32 </span><span class="lineCov">         16 :       auto* n = *it;</span>
+<span class="lineNum">      33 </span><span class="lineCov">         34 :       DescendOnGraphAttributes(n, [this](Graph&amp; g){fuse_consecutive_transposes(g);});</span>
+<span class="lineNum">      34 </span><span class="lineCov">         44 :       if (n-&gt;kind() == kTranspose &amp;&amp; n-&gt;input()-&gt;node()-&gt;kind() == kTranspose) {</span>
+<span class="lineNum">      35 </span><span class="lineCov">          6 :         auto origInput = n-&gt;input();</span>
+<span class="lineNum">      36 </span><span class="lineCov">         13 :         if (!n-&gt;hasAttribute(kperm) &amp;&amp; !origInput-&gt;node()-&gt;hasAttribute(kperm)) {</span>
+<span class="lineNum">      37 </span>            :           // One special case (two consecutive transposes with no perm,
+<span class="lineNum">      38 </span>            :           // since we do not have the shape information here, we have
+<span class="lineNum">      39 </span>            :           // to eliminate two transpose together.
+<span class="lineNum">      40 </span><span class="lineCov">          1 :           n-&gt;replaceAllUsesWith(origInput-&gt;node()-&gt;input()-&gt;node());</span>
+<span class="lineNum">      41 </span><span class="lineCov">          1 :           it.destroyCurrent();</span>
+<span class="lineNum">      42 </span><span class="lineCov">          1 :           it.destroyCurrent();</span>
+<span class="lineNum">      43 </span><span class="lineCov">          1 :           continue;</span>
+<span class="lineNum">      44 </span>            :         }
+<span class="lineNum">      45 </span><span class="lineCov">         15 :         if (!n-&gt;hasAttribute(kperm) || !origInput-&gt;node()-&gt;hasAttribute(kperm)) {</span>
+<span class="lineNum">      46 </span><span class="lineCov">          1 :           continue;</span>
+<span class="lineNum">      47 </span>            :         }
+<span class="lineNum">      48 </span><span class="lineCov">          8 :         n-&gt;is_(kperm, compose_transposes(origInput-&gt;node()-&gt;is(kperm), n-&gt;is(kperm)));</span>
+<span class="lineNum">      49 </span><span class="lineCov">          4 :         n-&gt;replaceInput(0, origInput-&gt;node()-&gt;input());</span>
+<span class="lineNum">      50 </span><span class="lineCov">          4 :         if (origInput-&gt;uses().size() == 0) {</span>
+<span class="lineNum">      51 </span><span class="lineCov">          4 :           origInput-&gt;node()-&gt;destroy();</span>
+<span class="lineNum">      52 </span><span class="lineCov">          4 :         }</span>
+<span class="lineNum">      53 </span><span class="lineCov">          4 :         continue;</span>
+<span class="lineNum">      54 </span>            :       }
+<span class="lineNum">      55 </span><span class="lineCov">         11 :     }</span>
+<a name="56"><span class="lineNum">      56 </span><span class="lineCov">          4 :   }</span></a>
+<span class="lineNum">      57 </span>            : 
+<span class="lineNum">      58 </span>            :   void optimize(Graph&amp; graph) override {
+<span class="lineNum">      59 </span><span class="lineCov">          3 :     fuse_consecutive_transposes(graph);</span>
+<span class="lineNum">      60 </span><span class="lineCov">          3 :   }</span>
+<span class="lineNum">      61 </span>            : };
+<span class="lineNum">      62 </span>            : 
+<span class="lineNum">      63 </span>            : }} // namespace ONNX_NAMESPACE::optimization
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

@@ -1,0 +1,482 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - onnx-coverage.info - onnx/defs/data_type_utils.cc</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">onnx/defs</a> - data_type_utils.cc<span style="font-size: 80%;"> (source / <a href="data_type_utils.cc.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">onnx-coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">119</td>
+            <td class="headerCovTableEntry">166</td>
+            <td class="headerCovTableEntryLo">71.7 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-05-11 14:21:51</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">33</td>
+            <td class="headerCovTableEntry">46</td>
+            <td class="headerCovTableEntryLo">71.7 %</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : #include &lt;cctype&gt;</a>
+<span class="lineNum">       2 </span>            : #include &lt;iostream&gt;
+<span class="lineNum">       3 </span>            : #include &lt;iterator&gt;
+<span class="lineNum">       4 </span>            : #include &lt;sstream&gt;
+<span class="lineNum">       5 </span>            : 
+<span class="lineNum">       6 </span>            : #include &quot;data_type_utils.h&quot;
+<span class="lineNum">       7 </span>            : 
+<span class="lineNum">       8 </span>            : namespace ONNX_NAMESPACE {
+<span class="lineNum">       9 </span>            : namespace Utils {
+<span class="lineNum">      10 </span>            : 
+<span class="lineNum">      11 </span>            : // Singleton wrapper around allowed data types.
+<span class="lineNum">      12 </span>            : // This implements construct on first use which is needed to ensure
+<span class="lineNum">      13 </span>            : // static objects are initialized before use. Ops registration does not work
+<span class="lineNum">      14 </span>            : // properly without this.
+<span class="lineNum">      15 </span>            : class TypesWrapper final {
+<span class="lineNum">      16 </span>            :  public:
+<span class="lineNum">      17 </span>            :   static TypesWrapper&amp; GetTypesWrapper();
+<span class="lineNum">      18 </span>            : 
+<span class="lineNum">      19 </span>            :   std::unordered_set&lt;std::string&gt;&amp; GetAllowedDataTypes();
+<span class="lineNum">      20 </span>            : 
+<span class="lineNum">      21 </span>            :   std::unordered_map&lt;std::string, int&gt;&amp; TypeStrToTensorDataType();
+<span class="lineNum">      22 </span>            : 
+<a name="23"><span class="lineNum">      23 </span>            :   std::unordered_map&lt;int, std::string&gt;&amp; TensorDataTypeToTypeStr();</a>
+<span class="lineNum">      24 </span>            : 
+<span class="lineNum">      25 </span><span class="lineCov">          2 :   ~TypesWrapper() = default;</span>
+<span class="lineNum">      26 </span>            :   TypesWrapper(const TypesWrapper&amp;) = delete;
+<span class="lineNum">      27 </span>            :   void operator=(const TypesWrapper&amp;) = delete;
+<span class="lineNum">      28 </span>            : 
+<span class="lineNum">      29 </span>            :  private:
+<span class="lineNum">      30 </span>            :   TypesWrapper();
+<span class="lineNum">      31 </span>            : 
+<span class="lineNum">      32 </span>            :   std::unordered_map&lt;std::string, int&gt; type_str_to_tensor_data_type_;
+<span class="lineNum">      33 </span>            :   std::unordered_map&lt;int, std::string&gt; tensor_data_type_to_type_str_;
+<span class="lineNum">      34 </span>            :   std::unordered_set&lt;std::string&gt; allowed_data_types_;
+<span class="lineNum">      35 </span>            : };
+<span class="lineNum">      36 </span>            : 
+<span class="lineNum">      37 </span>            : // Simple class which contains pointers to external string buffer and a size.
+<span class="lineNum">      38 </span>            : // This can be used to track a &quot;valid&quot; range/slice of the string.
+<span class="lineNum">      39 </span>            : // Caller should ensure StringRange is not used after external storage has
+<span class="lineNum">      40 </span>            : // been freed.
+<span class="lineNum">      41 </span>            : class StringRange final {
+<span class="lineNum">      42 </span>            :  public:
+<span class="lineNum">      43 </span>            :   StringRange();
+<span class="lineNum">      44 </span>            :   StringRange(const char* data, size_t size);
+<span class="lineNum">      45 </span>            :   StringRange(const std::string&amp; str);
+<span class="lineNum">      46 </span>            :   StringRange(const char* data);
+<span class="lineNum">      47 </span>            :   const char* Data() const;
+<span class="lineNum">      48 </span>            :   size_t Size() const;
+<span class="lineNum">      49 </span>            :   bool Empty() const;
+<span class="lineNum">      50 </span>            :   char operator[](size_t idx) const;
+<span class="lineNum">      51 </span>            :   void Reset();
+<span class="lineNum">      52 </span>            :   void Reset(const char* data, size_t size);
+<span class="lineNum">      53 </span>            :   void Reset(const std::string&amp; str);
+<span class="lineNum">      54 </span>            :   bool StartsWith(const StringRange&amp; str) const;
+<span class="lineNum">      55 </span>            :   bool EndsWith(const StringRange&amp; str) const;
+<span class="lineNum">      56 </span>            :   bool LStrip();
+<span class="lineNum">      57 </span>            :   bool LStrip(size_t size);
+<span class="lineNum">      58 </span>            :   bool LStrip(StringRange str);
+<span class="lineNum">      59 </span>            :   bool RStrip();
+<span class="lineNum">      60 </span>            :   bool RStrip(size_t size);
+<span class="lineNum">      61 </span>            :   bool RStrip(StringRange str);
+<span class="lineNum">      62 </span>            :   bool LAndRStrip();
+<span class="lineNum">      63 </span>            :   void ParensWhitespaceStrip();
+<span class="lineNum">      64 </span>            :   size_t Find(const char ch) const;
+<span class="lineNum">      65 </span>            : 
+<span class="lineNum">      66 </span>            :   // These methods provide a way to return the range of the string
+<span class="lineNum">      67 </span>            :   // which was discarded by LStrip(). i.e. We capture the string
+<span class="lineNum">      68 </span>            :   // range which was discarded.
+<span class="lineNum">      69 </span>            :   StringRange GetCaptured();
+<span class="lineNum">      70 </span>            :   void RestartCapture();
+<span class="lineNum">      71 </span>            : 
+<span class="lineNum">      72 </span>            :  private:
+<span class="lineNum">      73 </span>            :   // data_ + size tracks the &quot;valid&quot; range of the external string buffer.
+<span class="lineNum">      74 </span>            :   const char* data_;
+<span class="lineNum">      75 </span>            :   size_t size_;
+<span class="lineNum">      76 </span>            : 
+<span class="lineNum">      77 </span>            :   // start_ and end_ track the captured range.
+<span class="lineNum">      78 </span>            :   // end_ advances when LStrip() is called.
+<span class="lineNum">      79 </span>            :   const char* start_;
+<span class="lineNum">      80 </span>            :   const char* end_;
+<span class="lineNum">      81 </span>            : };
+<a name="82"><span class="lineNum">      82 </span>            : </a>
+<span class="lineNum">      83 </span>            : std::unordered_map&lt;std::string, TypeProto&gt;&amp;
+<span class="lineNum">      84 </span>            : DataTypeUtils::GetTypeStrToProtoMap() {
+<span class="lineNum">      85 </span><span class="lineCov">       3898 :   static std::unordered_map&lt;std::string, TypeProto&gt; map;</span>
+<span class="lineNum">      86 </span><span class="lineCov">       1948 :   return map;</span>
+<a name="87"><span class="lineNum">      87 </span>            : }</a>
+<span class="lineNum">      88 </span>            : 
+<span class="lineNum">      89 </span>            : std::mutex&amp; DataTypeUtils::GetTypeStrLock() {
+<span class="lineNum">      90 </span><span class="lineCov">       1292 :   static std::mutex lock;</span>
+<span class="lineNum">      91 </span><span class="lineCov">        645 :   return lock;</span>
+<a name="92"><span class="lineNum">      92 </span>            : }</a>
+<span class="lineNum">      93 </span>            : 
+<span class="lineNum">      94 </span>            : DataType DataTypeUtils::ToType(const TypeProto&amp; type_proto) {
+<span class="lineNum">      95 </span><span class="lineCov">       1935 :   auto typeStr = ToString(type_proto);</span>
+<span class="lineNum">      96 </span><span class="lineCov">       1290 :   std::lock_guard&lt;std::mutex&gt; lock(GetTypeStrLock());</span>
+<span class="lineNum">      97 </span><span class="lineCov">       3225 :   if (GetTypeStrToProtoMap().find(typeStr) == GetTypeStrToProtoMap().end()) {</span>
+<span class="lineNum">      98 </span><span class="lineCov">         39 :     GetTypeStrToProtoMap()[typeStr] = type_proto;</span>
+<span class="lineNum">      99 </span><span class="lineCov">         13 :   }</span>
+<span class="lineNum">     100 </span><span class="lineCov">       2580 :   return &amp;(GetTypeStrToProtoMap().find(typeStr)-&gt;first);</span>
+<a name="101"><span class="lineNum">     101 </span><span class="lineCov">        645 : }</span></a>
+<span class="lineNum">     102 </span>            : 
+<span class="lineNum">     103 </span>            : DataType DataTypeUtils::ToType(const std::string&amp; type_str) {
+<span class="lineNum">     104 </span><span class="lineCov">        645 :   TypeProto type;</span>
+<span class="lineNum">     105 </span><span class="lineCov">        645 :   FromString(type_str, type);</span>
+<span class="lineNum">     106 </span><span class="lineCov">        645 :   return ToType(type);</span>
+<a name="107"><span class="lineNum">     107 </span><span class="lineCov">        645 : }</span></a>
+<span class="lineNum">     108 </span>            : 
+<span class="lineNum">     109 </span>            : const TypeProto&amp; DataTypeUtils::ToTypeProto(const DataType&amp; data_type) {
+<span class="lineNum">     110 </span><span class="lineNoCov">          0 :   std::lock_guard&lt;std::mutex&gt; lock(GetTypeStrLock());</span>
+<span class="lineNum">     111 </span><span class="lineNoCov">          0 :   auto it = GetTypeStrToProtoMap().find(*data_type);</span>
+<span class="lineNum">     112 </span><span class="lineNoCov">          0 :   assert(it != GetTypeStrToProtoMap().end());</span>
+<span class="lineNum">     113 </span><span class="lineNoCov">          0 :   return it-&gt;second;</span>
+<a name="114"><span class="lineNum">     114 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     115 </span>            : 
+<span class="lineNum">     116 </span>            : std::string DataTypeUtils::ToString(
+<span class="lineNum">     117 </span>            :     const TypeProto&amp; type_proto,
+<span class="lineNum">     118 </span>            :     const std::string&amp; left,
+<span class="lineNum">     119 </span>            :     const std::string&amp; right) {
+<span class="lineNum">     120 </span><span class="lineCov">        645 :   switch (type_proto.value_case()) {</span>
+<span class="lineNum">     121 </span>            :     case TypeProto::ValueCase::kTensorType: {
+<span class="lineNum">     122 </span>            :         // Note: We do not distinguish tensors with zero rank (a shape consisting of
+<span class="lineNum">     123 </span>            :         // an empty sequence of dimensions) here.
+<span class="lineNum">     124 </span><span class="lineCov">       1935 :         return left + &quot;tensor(&quot; +</span>
+<span class="lineNum">     125 </span><span class="lineCov">       3225 :             ToDataTypeString(type_proto.tensor_type().elem_type()) + &quot;)&quot; +</span>
+<span class="lineNum">     126 </span><span class="lineCov">        645 :             right;</span>
+<span class="lineNum">     127 </span>            :     }
+<span class="lineNum">     128 </span>            : #ifdef ONNX_ML
+<span class="lineNum">     129 </span>            :     case TypeProto::ValueCase::kSequenceType: {
+<span class="lineNum">     130 </span>            :         return ToString(type_proto.sequence_type().elem_type(), left + &quot;seq(&quot;, &quot;)&quot; + right);
+<span class="lineNum">     131 </span>            :     }
+<span class="lineNum">     132 </span>            : 
+<span class="lineNum">     133 </span>            :     case TypeProto::ValueCase::kMapType: {
+<span class="lineNum">     134 </span>            :         std::string map_str = &quot;map(&quot; + ToDataTypeString(type_proto.map_type().key_type()) + &quot;,&quot;;
+<span class="lineNum">     135 </span>            :         return ToString(type_proto.map_type().value_type(), left + map_str, &quot;)&quot; + right);
+<span class="lineNum">     136 </span>            :     }
+<span class="lineNum">     137 </span>            : #endif
+<span class="lineNum">     138 </span>            :     default:
+<span class="lineNum">     139 </span><span class="lineNoCov">          0 :       assert(false);</span>
+<span class="lineNum">     140 </span>            :       return &quot;&quot;;
+<span class="lineNum">     141 </span>            :   }
+<a name="142"><span class="lineNum">     142 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     143 </span>            : 
+<span class="lineNum">     144 </span>            : std::string DataTypeUtils::ToDataTypeString(
+<span class="lineNum">     145 </span>            :     const TensorProto::DataType&amp; tensor_data_type) {
+<span class="lineNum">     146 </span><span class="lineCov">        645 :   TypesWrapper&amp; t = TypesWrapper::GetTypesWrapper();</span>
+<span class="lineNum">     147 </span><span class="lineCov">        645 :   auto iter = t.TensorDataTypeToTypeStr().find(tensor_data_type);</span>
+<span class="lineNum">     148 </span><span class="lineCov">       1290 :   assert(t.TensorDataTypeToTypeStr().end() != iter);</span>
+<span class="lineNum">     149 </span><span class="lineCov">        645 :   return iter-&gt;second;</span>
+<a name="150"><span class="lineNum">     150 </span>            : }</a>
+<span class="lineNum">     151 </span>            : 
+<span class="lineNum">     152 </span>            : void DataTypeUtils::FromString(
+<span class="lineNum">     153 </span>            :     const std::string&amp; type_str,
+<span class="lineNum">     154 </span>            :     TypeProto&amp; type_proto) {
+<span class="lineNum">     155 </span><span class="lineCov">        645 :   StringRange s(type_str);</span>
+<span class="lineNum">     156 </span><span class="lineCov">        645 :   type_proto.Clear();</span>
+<span class="lineNum">     157 </span>            : #ifdef ONNX_ML
+<span class="lineNum">     158 </span>            :   if (s.LStrip(&quot;seq&quot;)) {
+<span class="lineNum">     159 </span>            :       s.ParensWhitespaceStrip();
+<span class="lineNum">     160 </span>            :       return FromString(std::string(s.Data(), s.Size()), *type_proto.mutable_sequence_type()-&gt;mutable_elem_type());
+<span class="lineNum">     161 </span>            :   }
+<span class="lineNum">     162 </span>            :   else if (s.LStrip(&quot;map&quot;) ){
+<span class="lineNum">     163 </span>            :       s.ParensWhitespaceStrip();
+<span class="lineNum">     164 </span>            :       size_t key_size = s.Find(',');
+<span class="lineNum">     165 </span>            :       StringRange k(s.Data(), key_size);
+<span class="lineNum">     166 </span>            :       std::string key = std::string(k.Data(), k.Size());
+<span class="lineNum">     167 </span>            :       s.LStrip(key_size);
+<span class="lineNum">     168 </span>            :       s.LStrip(&quot;,&quot;);
+<span class="lineNum">     169 </span>            :       StringRange v(s.Data(), s.Size());
+<span class="lineNum">     170 </span>            :       TensorProto::DataType key_type;
+<span class="lineNum">     171 </span>            :       FromDataTypeString(key, key_type);
+<span class="lineNum">     172 </span>            :       type_proto.mutable_map_type()-&gt;set_key_type(key_type);
+<span class="lineNum">     173 </span>            :       return FromString(std::string(v.Data(), v.Size()), *type_proto.mutable_map_type()-&gt;mutable_value_type());
+<span class="lineNum">     174 </span>            :   }
+<span class="lineNum">     175 </span>            : #endif
+<span class="lineNum">     176 </span><span class="lineCov">        645 :   if (s.LStrip(&quot;tensor&quot;)) {</span>
+<span class="lineNum">     177 </span><span class="lineCov">        642 :     s.ParensWhitespaceStrip();</span>
+<span class="lineNum">     178 </span>            :     TensorProto::DataType e;
+<span class="lineNum">     179 </span><span class="lineCov">       1284 :     FromDataTypeString(std::string(s.Data(), s.Size()), e);</span>
+<span class="lineNum">     180 </span><span class="lineCov">        642 :     type_proto.mutable_tensor_type()-&gt;set_elem_type(e);</span>
+<span class="lineNum">     181 </span><span class="lineCov">        642 :   } else {</span>
+<span class="lineNum">     182 </span>            :     // Scalar
+<span class="lineNum">     183 </span>            :     TensorProto::DataType e;
+<span class="lineNum">     184 </span><span class="lineCov">          6 :     FromDataTypeString(std::string(s.Data(), s.Size()), e);</span>
+<span class="lineNum">     185 </span><span class="lineCov">          3 :     TypeProto::Tensor* t = type_proto.mutable_tensor_type();</span>
+<span class="lineNum">     186 </span><span class="lineCov">          3 :     t-&gt;set_elem_type(e);</span>
+<span class="lineNum">     187 </span>            :     // Call mutable_shape() to initialize a shape with no dimension.
+<span class="lineNum">     188 </span><span class="lineCov">          3 :     t-&gt;mutable_shape();</span>
+<span class="lineNum">     189 </span>            :   }
+<a name="190"><span class="lineNum">     190 </span><span class="lineCov">        645 : }</span></a>
+<span class="lineNum">     191 </span>            : 
+<span class="lineNum">     192 </span>            : bool DataTypeUtils::IsValidDataTypeString(const std::string&amp; type_str) {
+<span class="lineNum">     193 </span><span class="lineCov">        645 :   TypesWrapper&amp; t = TypesWrapper::GetTypesWrapper();</span>
+<span class="lineNum">     194 </span><span class="lineCov">        645 :   const auto&amp; allowedSet = t.GetAllowedDataTypes();</span>
+<span class="lineNum">     195 </span><span class="lineCov">        645 :   return (allowedSet.find(type_str) != allowedSet.end());</span>
+<a name="196"><span class="lineNum">     196 </span>            : }</a>
+<span class="lineNum">     197 </span>            : 
+<span class="lineNum">     198 </span>            : void DataTypeUtils::FromDataTypeString(
+<span class="lineNum">     199 </span>            :     const std::string&amp; type_str,
+<span class="lineNum">     200 </span>            :     TensorProto::DataType&amp; tensor_data_type) {
+<span class="lineNum">     201 </span><span class="lineCov">       1290 :   assert(IsValidDataTypeString(type_str));</span>
+<span class="lineNum">     202 </span>            : 
+<span class="lineNum">     203 </span><span class="lineCov">        645 :   TypesWrapper&amp; t = TypesWrapper::GetTypesWrapper();</span>
+<span class="lineNum">     204 </span><span class="lineCov">        645 :   tensor_data_type =</span>
+<span class="lineNum">     205 </span><span class="lineCov">        645 :       (TensorProto::DataType)t.TypeStrToTensorDataType()[type_str];</span>
+<a name="206"><span class="lineNum">     206 </span><span class="lineCov">        645 : }</span></a>
+<span class="lineNum">     207 </span>            : 
+<a name="208"><span class="lineNum">     208 </span><span class="lineNoCov">          0 : StringRange::StringRange() : data_(&quot;&quot;), size_(0), start_(data_), end_(data_) {}</span></a>
+<span class="lineNum">     209 </span>            : 
+<span class="lineNum">     210 </span>            : StringRange::StringRange(const char* p_data, size_t p_size)
+<span class="lineNum">     211 </span><span class="lineNoCov">          0 :     : data_(p_data), size_(p_size), start_(data_), end_(data_) {</span>
+<span class="lineNum">     212 </span><span class="lineNoCov">          0 :   assert(p_data != nullptr);</span>
+<span class="lineNum">     213 </span><span class="lineNoCov">          0 :   LAndRStrip();</span>
+<a name="214"><span class="lineNum">     214 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     215 </span>            : 
+<span class="lineNum">     216 </span>            : StringRange::StringRange(const std::string&amp; p_str)
+<span class="lineNum">     217 </span><span class="lineCov">       1290 :     : data_(p_str.data()), size_(p_str.size()), start_(data_), end_(data_) {</span>
+<span class="lineNum">     218 </span><span class="lineCov">        645 :   LAndRStrip();</span>
+<a name="219"><span class="lineNum">     219 </span><span class="lineCov">       1290 : }</span></a>
+<span class="lineNum">     220 </span>            : 
+<span class="lineNum">     221 </span>            : StringRange::StringRange(const char* p_data)
+<span class="lineNum">     222 </span><span class="lineCov">       3858 :     : data_(p_data), size_(strlen(p_data)), start_(data_), end_(data_) {</span>
+<span class="lineNum">     223 </span><span class="lineCov">       1929 :   LAndRStrip();</span>
+<a name="224"><span class="lineNum">     224 </span><span class="lineCov">       3858 : }</span></a>
+<span class="lineNum">     225 </span>            : 
+<span class="lineNum">     226 </span>            : const char* StringRange::Data() const {
+<span class="lineNum">     227 </span><span class="lineCov">        645 :   return data_;</span>
+<a name="228"><span class="lineNum">     228 </span>            : }</a>
+<span class="lineNum">     229 </span>            : 
+<span class="lineNum">     230 </span>            : size_t StringRange::Size() const {
+<span class="lineNum">     231 </span><span class="lineCov">        645 :   return size_;</span>
+<a name="232"><span class="lineNum">     232 </span>            : }</a>
+<span class="lineNum">     233 </span>            : 
+<span class="lineNum">     234 </span>            : bool StringRange::Empty() const {
+<span class="lineNum">     235 </span><span class="lineNoCov">          0 :   return size_ == 0;</span>
+<a name="236"><span class="lineNum">     236 </span>            : }</a>
+<span class="lineNum">     237 </span>            : 
+<span class="lineNum">     238 </span>            : char StringRange::operator[](size_t idx) const {
+<span class="lineNum">     239 </span><span class="lineNoCov">          0 :   return data_[idx];</span>
+<a name="240"><span class="lineNum">     240 </span>            : }</a>
+<span class="lineNum">     241 </span>            : 
+<span class="lineNum">     242 </span>            : void StringRange::Reset() {
+<span class="lineNum">     243 </span><span class="lineNoCov">          0 :   data_ = &quot;&quot;;</span>
+<span class="lineNum">     244 </span><span class="lineNoCov">          0 :   size_ = 0;</span>
+<span class="lineNum">     245 </span><span class="lineNoCov">          0 :   start_ = end_ = data_;</span>
+<a name="246"><span class="lineNum">     246 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     247 </span>            : 
+<span class="lineNum">     248 </span>            : void StringRange::Reset(const char* data, size_t size) {
+<span class="lineNum">     249 </span><span class="lineNoCov">          0 :   data_ = data;</span>
+<span class="lineNum">     250 </span><span class="lineNoCov">          0 :   size_ = size;</span>
+<span class="lineNum">     251 </span><span class="lineNoCov">          0 :   start_ = end_ = data_;</span>
+<a name="252"><span class="lineNum">     252 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     253 </span>            : 
+<span class="lineNum">     254 </span>            : void StringRange::Reset(const std::string&amp; str) {
+<span class="lineNum">     255 </span><span class="lineNoCov">          0 :   data_ = str.data();</span>
+<span class="lineNum">     256 </span><span class="lineNoCov">          0 :   size_ = str.size();</span>
+<span class="lineNum">     257 </span><span class="lineNoCov">          0 :   start_ = end_ = data_;</span>
+<a name="258"><span class="lineNum">     258 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     259 </span>            : 
+<span class="lineNum">     260 </span>            : bool StringRange::StartsWith(const StringRange&amp; str) const {
+<span class="lineNum">     261 </span><span class="lineCov">       3858 :   return ((size_ &gt;= str.size_) &amp;&amp; (memcmp(data_, str.data_, str.size_) == 0));</span>
+<a name="262"><span class="lineNum">     262 </span>            : }</a>
+<span class="lineNum">     263 </span>            : 
+<span class="lineNum">     264 </span>            : bool StringRange::EndsWith(const StringRange&amp; str) const {
+<span class="lineNum">     265 </span><span class="lineCov">        642 :   return (</span>
+<span class="lineNum">     266 </span><span class="lineCov">        642 :       (size_ &gt;= str.size_) &amp;&amp;</span>
+<span class="lineNum">     267 </span><span class="lineCov">        642 :       (memcmp(data_ + (size_ - str.size_), str.data_, str.size_) == 0));</span>
+<a name="268"><span class="lineNum">     268 </span>            : }</a>
+<span class="lineNum">     269 </span>            : 
+<span class="lineNum">     270 </span>            : bool StringRange::LStrip() {
+<span class="lineNum">     271 </span><span class="lineCov">       3858 :   size_t count = 0;</span>
+<span class="lineNum">     272 </span><span class="lineCov">       3858 :   const char* ptr = data_;</span>
+<span class="lineNum">     273 </span><span class="lineCov">      15432 :   while (count &lt; size_ &amp;&amp; isspace(*ptr)) {</span>
+<span class="lineNum">     274 </span><span class="lineNoCov">          0 :     count++;</span>
+<span class="lineNum">     275 </span><span class="lineNoCov">          0 :     ptr++;</span>
+<span class="lineNum">     276 </span>            :   }
+<span class="lineNum">     277 </span>            : 
+<span class="lineNum">     278 </span><span class="lineCov">       3858 :   if (count &gt; 0) {</span>
+<span class="lineNum">     279 </span><span class="lineNoCov">          0 :     return LStrip(count);</span>
+<span class="lineNum">     280 </span>            :   }
+<span class="lineNum">     281 </span><span class="lineCov">       3858 :   return false;</span>
+<a name="282"><span class="lineNum">     282 </span><span class="lineCov">       3858 : }</span></a>
+<span class="lineNum">     283 </span>            : 
+<span class="lineNum">     284 </span>            : bool StringRange::LStrip(size_t size) {
+<span class="lineNum">     285 </span><span class="lineCov">       1284 :   if (size &lt;= size_) {</span>
+<span class="lineNum">     286 </span><span class="lineCov">       1284 :     data_ += size;</span>
+<span class="lineNum">     287 </span><span class="lineCov">       1284 :     size_ -= size;</span>
+<span class="lineNum">     288 </span><span class="lineCov">       1284 :     end_ += size;</span>
+<span class="lineNum">     289 </span><span class="lineCov">       1284 :     return true;</span>
+<span class="lineNum">     290 </span>            :   }
+<span class="lineNum">     291 </span><span class="lineNoCov">          0 :   return false;</span>
+<a name="292"><span class="lineNum">     292 </span><span class="lineCov">       1284 : }</span></a>
+<span class="lineNum">     293 </span>            : 
+<span class="lineNum">     294 </span>            : bool StringRange::LStrip(StringRange str) {
+<span class="lineNum">     295 </span><span class="lineCov">       1287 :   if (StartsWith(str)) {</span>
+<span class="lineNum">     296 </span><span class="lineCov">       1284 :     return LStrip(str.size_);</span>
+<span class="lineNum">     297 </span>            :   }
+<span class="lineNum">     298 </span><span class="lineCov">          3 :   return false;</span>
+<a name="299"><span class="lineNum">     299 </span><span class="lineCov">       1287 : }</span></a>
+<span class="lineNum">     300 </span>            : 
+<span class="lineNum">     301 </span>            : bool StringRange::RStrip() {
+<span class="lineNum">     302 </span><span class="lineCov">       3858 :   size_t count = 0;</span>
+<span class="lineNum">     303 </span><span class="lineCov">       3858 :   const char* ptr = data_ + size_ - 1;</span>
+<span class="lineNum">     304 </span><span class="lineCov">      15432 :   while (count &lt; size_ &amp;&amp; isspace(*ptr)) {</span>
+<span class="lineNum">     305 </span><span class="lineNoCov">          0 :     ++count;</span>
+<span class="lineNum">     306 </span><span class="lineNoCov">          0 :     --ptr;</span>
+<span class="lineNum">     307 </span>            :   }
+<span class="lineNum">     308 </span>            : 
+<span class="lineNum">     309 </span><span class="lineCov">       3858 :   if (count &gt; 0) {</span>
+<span class="lineNum">     310 </span><span class="lineNoCov">          0 :     return RStrip(count);</span>
+<span class="lineNum">     311 </span>            :   }
+<span class="lineNum">     312 </span><span class="lineCov">       3858 :   return false;</span>
+<a name="313"><span class="lineNum">     313 </span><span class="lineCov">       3858 : }</span></a>
+<span class="lineNum">     314 </span>            : 
+<span class="lineNum">     315 </span>            : bool StringRange::RStrip(size_t size) {
+<span class="lineNum">     316 </span><span class="lineCov">        642 :   if (size_ &gt;= size) {</span>
+<span class="lineNum">     317 </span><span class="lineCov">        642 :     size_ -= size;</span>
+<span class="lineNum">     318 </span><span class="lineCov">        642 :     return true;</span>
+<span class="lineNum">     319 </span>            :   }
+<span class="lineNum">     320 </span><span class="lineNoCov">          0 :   return false;</span>
+<a name="321"><span class="lineNum">     321 </span><span class="lineCov">        642 : }</span></a>
+<span class="lineNum">     322 </span>            : 
+<span class="lineNum">     323 </span>            : bool StringRange::RStrip(StringRange str) {
+<span class="lineNum">     324 </span><span class="lineCov">        642 :   if (EndsWith(str)) {</span>
+<span class="lineNum">     325 </span><span class="lineCov">        642 :     return RStrip(str.size_);</span>
+<span class="lineNum">     326 </span>            :   }
+<span class="lineNum">     327 </span><span class="lineNoCov">          0 :   return false;</span>
+<a name="328"><span class="lineNum">     328 </span><span class="lineCov">        642 : }</span></a>
+<span class="lineNum">     329 </span>            : 
+<span class="lineNum">     330 </span>            : bool StringRange::LAndRStrip() {
+<span class="lineNum">     331 </span><span class="lineCov">       3216 :   bool l = LStrip();</span>
+<span class="lineNum">     332 </span><span class="lineCov">       3216 :   bool r = RStrip();</span>
+<span class="lineNum">     333 </span><span class="lineCov">       9648 :   return l || r;</span>
+<a name="334"><span class="lineNum">     334 </span>            : }</a>
+<span class="lineNum">     335 </span>            : 
+<span class="lineNum">     336 </span>            : void StringRange::ParensWhitespaceStrip() {
+<span class="lineNum">     337 </span><span class="lineCov">        642 :   LStrip();</span>
+<span class="lineNum">     338 </span><span class="lineCov">        642 :   LStrip(&quot;(&quot;);</span>
+<span class="lineNum">     339 </span><span class="lineCov">        642 :   LAndRStrip();</span>
+<span class="lineNum">     340 </span><span class="lineCov">        642 :   RStrip(&quot;)&quot;);</span>
+<span class="lineNum">     341 </span><span class="lineCov">        642 :   RStrip();</span>
+<a name="342"><span class="lineNum">     342 </span><span class="lineCov">        642 : }</span></a>
+<span class="lineNum">     343 </span>            : 
+<span class="lineNum">     344 </span>            : size_t StringRange::Find(const char ch) const {
+<span class="lineNum">     345 </span><span class="lineNoCov">          0 :   size_t idx = 0;</span>
+<span class="lineNum">     346 </span><span class="lineNoCov">          0 :   while (idx &lt; size_) {</span>
+<span class="lineNum">     347 </span><span class="lineNoCov">          0 :     if (data_[idx] == ch) {</span>
+<span class="lineNum">     348 </span><span class="lineNoCov">          0 :       return idx;</span>
+<span class="lineNum">     349 </span>            :     }
+<span class="lineNum">     350 </span><span class="lineNoCov">          0 :     idx++;</span>
+<span class="lineNum">     351 </span>            :   }
+<span class="lineNum">     352 </span><span class="lineNoCov">          0 :   return std::string::npos;</span>
+<a name="353"><span class="lineNum">     353 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     354 </span>            : 
+<span class="lineNum">     355 </span>            : void StringRange::RestartCapture() {
+<span class="lineNum">     356 </span><span class="lineNoCov">          0 :   start_ = data_;</span>
+<span class="lineNum">     357 </span><span class="lineNoCov">          0 :   end_ = data_;</span>
+<a name="358"><span class="lineNum">     358 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     359 </span>            : 
+<span class="lineNum">     360 </span>            : StringRange StringRange::GetCaptured() {
+<span class="lineNum">     361 </span><span class="lineNoCov">          0 :   return StringRange(start_, end_ - start_);</span>
+<a name="362"><span class="lineNum">     362 </span>            : }</a>
+<span class="lineNum">     363 </span>            : 
+<span class="lineNum">     364 </span>            : TypesWrapper&amp; TypesWrapper::GetTypesWrapper() {
+<span class="lineNum">     365 </span><span class="lineCov">       3873 :   static TypesWrapper types;</span>
+<span class="lineNum">     366 </span><span class="lineCov">       1935 :   return types;</span>
+<a name="367"><span class="lineNum">     367 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     368 </span>            : 
+<span class="lineNum">     369 </span>            : std::unordered_set&lt;std::string&gt;&amp; TypesWrapper::GetAllowedDataTypes() {
+<span class="lineNum">     370 </span><span class="lineCov">        645 :   return allowed_data_types_;</span>
+<a name="371"><span class="lineNum">     371 </span>            : }</a>
+<span class="lineNum">     372 </span>            : 
+<span class="lineNum">     373 </span>            : std::unordered_map&lt;std::string, int&gt;&amp; TypesWrapper::TypeStrToTensorDataType() {
+<span class="lineNum">     374 </span><span class="lineCov">        645 :   return type_str_to_tensor_data_type_;</span>
+<a name="375"><span class="lineNum">     375 </span>            : }</a>
+<span class="lineNum">     376 </span>            : 
+<span class="lineNum">     377 </span>            : std::unordered_map&lt;int, std::string&gt;&amp; TypesWrapper::TensorDataTypeToTypeStr() {
+<span class="lineNum">     378 </span><span class="lineCov">       1290 :   return tensor_data_type_to_type_str_;</span>
+<a name="379"><span class="lineNum">     379 </span>            : }</a>
+<span class="lineNum">     380 </span>            : 
+<span class="lineNum">     381 </span><span class="lineCov">          2 : TypesWrapper::TypesWrapper() {</span>
+<span class="lineNum">     382 </span>            :   // DataType strings. These should match the DataTypes defined in onnx.proto
+<span class="lineNum">     383 </span><span class="lineCov">          3 :   type_str_to_tensor_data_type_[&quot;float&quot;] = TensorProto_DataType_FLOAT;</span>
+<span class="lineNum">     384 </span><span class="lineCov">          3 :   type_str_to_tensor_data_type_[&quot;float16&quot;] = TensorProto_DataType_FLOAT16;</span>
+<span class="lineNum">     385 </span><span class="lineCov">          3 :   type_str_to_tensor_data_type_[&quot;double&quot;] = TensorProto_DataType_DOUBLE;</span>
+<span class="lineNum">     386 </span><span class="lineCov">          3 :   type_str_to_tensor_data_type_[&quot;int8&quot;] = TensorProto_DataType_INT8;</span>
+<span class="lineNum">     387 </span><span class="lineCov">          3 :   type_str_to_tensor_data_type_[&quot;int16&quot;] = TensorProto_DataType_INT16;</span>
+<span class="lineNum">     388 </span><span class="lineCov">          3 :   type_str_to_tensor_data_type_[&quot;int32&quot;] = TensorProto_DataType_INT32;</span>
+<span class="lineNum">     389 </span><span class="lineCov">          3 :   type_str_to_tensor_data_type_[&quot;int64&quot;] = TensorProto_DataType_INT64;</span>
+<span class="lineNum">     390 </span><span class="lineCov">          3 :   type_str_to_tensor_data_type_[&quot;uint8&quot;] = TensorProto_DataType_UINT8;</span>
+<span class="lineNum">     391 </span><span class="lineCov">          3 :   type_str_to_tensor_data_type_[&quot;uint16&quot;] = TensorProto_DataType_UINT16;</span>
+<span class="lineNum">     392 </span><span class="lineCov">          3 :   type_str_to_tensor_data_type_[&quot;uint32&quot;] = TensorProto_DataType_UINT32;</span>
+<span class="lineNum">     393 </span><span class="lineCov">          3 :   type_str_to_tensor_data_type_[&quot;uint64&quot;] = TensorProto_DataType_UINT64;</span>
+<span class="lineNum">     394 </span><span class="lineCov">          3 :   type_str_to_tensor_data_type_[&quot;complext64&quot;] = TensorProto_DataType_COMPLEX64;</span>
+<span class="lineNum">     395 </span><span class="lineCov">          3 :   type_str_to_tensor_data_type_[&quot;complext128&quot;] =</span>
+<span class="lineNum">     396 </span>            :       TensorProto_DataType_COMPLEX128;
+<span class="lineNum">     397 </span><span class="lineCov">          3 :   type_str_to_tensor_data_type_[&quot;string&quot;] = TensorProto_DataType_STRING;</span>
+<span class="lineNum">     398 </span><span class="lineCov">          3 :   type_str_to_tensor_data_type_[&quot;bool&quot;] = TensorProto_DataType_BOOL;</span>
+<span class="lineNum">     399 </span>            : 
+<span class="lineNum">     400 </span><span class="lineCov">        108 :   for (auto&amp; str_type_pair : type_str_to_tensor_data_type_) {</span>
+<span class="lineNum">     401 </span><span class="lineCov">         30 :     tensor_data_type_to_type_str_[str_type_pair.second] = str_type_pair.first;</span>
+<span class="lineNum">     402 </span><span class="lineCov">         30 :     allowed_data_types_.insert(str_type_pair.first);</span>
+<span class="lineNum">     403 </span>            :   }
+<span class="lineNum">     404 </span><span class="lineCov">          2 : }</span>
+<span class="lineNum">     405 </span>            : } // namespace Utils
+<span class="lineNum">     406 </span>            : } // namespace ONNX_NAMESPACE
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

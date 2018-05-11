@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - onnx-coverage.info - onnx/common/stl_backports.h</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">onnx/common</a> - stl_backports.h<span style="font-size: 80%;"> (source / <a href="stl_backports.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">onnx-coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntryLo">50.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-05-11 14:21:51</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">9</td>
+            <td class="headerCovTableEntry">9</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : #pragma once</a>
+<span class="lineNum">       2 </span>            : 
+<span class="lineNum">       3 </span>            : // This file contains backports of STL features for newer C++.
+<span class="lineNum">       4 </span>            : 
+<span class="lineNum">       5 </span>            : #include &lt;memory&gt;
+<span class="lineNum">       6 </span>            : #include &lt;type_traits&gt;
+<span class="lineNum">       7 </span>            : 
+<span class="lineNum">       8 </span>            : /*
+<span class="lineNum">       9 </span>            :  * Use MOVE_CAPTURE_IF_CPP14 in a lambda capture so it gets
+<span class="lineNum">      10 </span>            :  * copied in C++11 and moved in C++14.
+<span class="lineNum">      11 </span>            :  * Example:
+<span class="lineNum">      12 </span>            :  *   std::string mystring;
+<span class="lineNum">      13 </span>            :  *   auto lambda = [MOVE_CAPTURE_IF_CPP14(mystring)] {
+<span class="lineNum">      14 </span>            :  *     std::cout &lt;&lt; mystring;
+<span class="lineNum">      15 </span>            :  *   }
+<span class="lineNum">      16 </span>            :  */
+<span class="lineNum">      17 </span>            : #ifdef __cpp_init_captures
+<span class="lineNum">      18 </span>            :   #define MOVE_CAPTURE_IF_CPP14(variable) variable = std::move(variable)
+<span class="lineNum">      19 </span>            : #else
+<span class="lineNum">      20 </span>            :   #define MOVE_CAPTURE_IF_CPP14(variable) variable
+<span class="lineNum">      21 </span>            : #endif
+<span class="lineNum">      22 </span>            : 
+<span class="lineNum">      23 </span>            : 
+<span class="lineNum">      24 </span>            : /**
+<span class="lineNum">      25 </span>            :  * For exception safety and consistency with make_shared. Erase me when
+<span class="lineNum">      26 </span>            :  * we have std::make_unique().
+<span class="lineNum">      27 </span>            :  *
+<span class="lineNum">      28 </span>            :  * @author Louis Brandy (ldbrandy@fb.com)
+<span class="lineNum">      29 </span>            :  * @author Xu Ning (xning@fb.com)
+<span class="lineNum">      30 </span>            :  * @author Sebastian Messmer (messmer@fb.com)
+<span class="lineNum">      31 </span>            :  */
+<span class="lineNum">      32 </span>            : 
+<span class="lineNum">      33 </span>            : #if __cplusplus &gt;= 201402L || __cpp_lib_make_unique &gt;= 201304L || \
+<span class="lineNum">      34 </span>            :     (__ANDROID__ &amp;&amp; __cplusplus &gt;= 201300L) || _MSC_VER &gt;= 1900
+<span class="lineNum">      35 </span>            : 
+<span class="lineNum">      36 </span>            : namespace ONNX_NAMESPACE {
+<span class="lineNum">      37 </span>            :   using std::make_unique;
+<span class="lineNum">      38 </span>            : }
+<span class="lineNum">      39 </span>            : 
+<span class="lineNum">      40 </span>            : #else
+<span class="lineNum">      41 </span>            : 
+<span class="lineNum">      42 </span>            : namespace ONNX_NAMESPACE {
+<span class="lineNum">      43 </span>            : 
+<a name="44"><span class="lineNum">      44 </span>            : template &lt;typename T, typename... Args&gt;</a>
+<span class="lineNum">      45 </span>            : typename std::enable_if&lt;!std::is_array&lt;T&gt;::value, std::unique_ptr&lt;T&gt;&gt;::type
+<span class="lineNum">      46 </span>            : make_unique(Args&amp;&amp;... args) {
+<span class="lineNum">      47 </span><span class="lineCov">         27 :   return std::unique_ptr&lt;T&gt;(new T(std::forward&lt;Args&gt;(args)...));</span>
+<span class="lineNum">      48 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">      49 </span>            : 
+<span class="lineNum">      50 </span>            : // Allows 'make_unique&lt;T[]&gt;(10)'. (N3690 s20.9.1.4 p3-4)
+<span class="lineNum">      51 </span>            : template &lt;typename T&gt;
+<span class="lineNum">      52 </span>            : typename std::enable_if&lt;std::is_array&lt;T&gt;::value, std::unique_ptr&lt;T&gt;&gt;::type
+<span class="lineNum">      53 </span>            : make_unique(const size_t n) {
+<span class="lineNum">      54 </span>            :   return std::unique_ptr&lt;T&gt;(new typename std::remove_extent&lt;T&gt;::type[n]());
+<span class="lineNum">      55 </span>            : }
+<span class="lineNum">      56 </span>            : 
+<span class="lineNum">      57 </span>            : // Disallows 'make_unique&lt;T[10]&gt;()'. (N3690 s20.9.1.4 p5)
+<span class="lineNum">      58 </span>            : template &lt;typename T, typename... Args&gt;
+<span class="lineNum">      59 </span>            : typename std::enable_if&lt;
+<span class="lineNum">      60 </span>            :   std::extent&lt;T&gt;::value != 0, std::unique_ptr&lt;T&gt;&gt;::type
+<span class="lineNum">      61 </span>            : make_unique(Args&amp;&amp;...) = delete;
+<span class="lineNum">      62 </span>            : 
+<span class="lineNum">      63 </span>            : }
+<span class="lineNum">      64 </span>            : 
+<span class="lineNum">      65 </span>            : #endif
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

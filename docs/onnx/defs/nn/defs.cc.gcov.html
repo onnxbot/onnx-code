@@ -1,0 +1,937 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - onnx-coverage.info - onnx/defs/nn/defs.cc</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">onnx/defs/nn</a> - defs.cc<span style="font-size: 80%;"> (source / <a href="defs.cc.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">onnx-coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">465</td>
+            <td class="headerCovTableEntry">471</td>
+            <td class="headerCovTableEntryHi">98.7 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-05-11 14:21:51</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">50</td>
+            <td class="headerCovTableEntry">50</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : // Copyright (c) Facebook Inc. and Microsoft Corporation.</a>
+<span class="lineNum">       2 </span>            : // Licensed under the MIT license.
+<span class="lineNum">       3 </span>            : 
+<span class="lineNum">       4 </span>            : #include &quot;onnx/defs/schema.h&quot;
+<span class="lineNum">       5 </span>            : using namespace ONNX_NAMESPACE;
+<a name="6"><span class="lineNum">       6 </span>            : </a>
+<span class="lineNum">       7 </span>            : namespace ONNX_NAMESPACE {
+<span class="lineNum">       8 </span><span class="lineCov">          1 : static std::string pads_doc =</span>
+<span class="lineNum">       9 </span><span class="lineCov">          3 :     &quot;Padding for the beginning and ending along each axis, it can take any value greater &quot;</span>
+<span class="lineNum">      10 </span>            :     &quot;than or equal to 0. The value represent the number of pixels added to the beginning &quot;
+<span class="lineNum">      11 </span>            :     &quot;and end part of the corresponding axis. `pads` format should be as follow &quot;
+<span class="lineNum">      12 </span>            :     &quot;[x1_begin, x2_begin...x1_end, x2_end,...], where xi_begin the number of pixels &quot;
+<span class="lineNum">      13 </span>            :     &quot;added at the beginning of axis `i` and xi_end, the number of pixels added at &quot;
+<a name="14"><span class="lineNum">      14 </span>            :     &quot;the end of axis `i`. This attribute cannot be used simultaneously with &quot;</a>
+<span class="lineNum">      15 </span>            :     &quot;auto_pad attribute. If not present, the padding defaults to 0 along start and end of each axis.&quot;;
+<span class="lineNum">      16 </span><span class="lineCov">          1 : static std::string auto_pad_doc =</span>
+<span class="lineNum">      17 </span><span class="lineCov">          3 :     &quot;auto_pad must be either SAME_UPPER, SAME_LOWER or VALID. Where &quot;</span>
+<span class="lineNum">      18 </span>            :     &quot;SAME_UPPER or SAME_LOWER mean pad the input so that the output size match the input.&quot;
+<span class="lineNum">      19 </span>            :     &quot;In case of odd number add the extra padding at the end for SAME_UPPER and at the &quot;
+<span class="lineNum">      20 </span>            :     &quot;beginning for SAME_LOWER. VALID mean no padding. DEPRECATION NOTE: auto_pad is &quot;
+<span class="lineNum">      21 </span>            :     &quot;only intended to support legacy uses, and for framework authors, one is explicitly &quot;
+<span class="lineNum">      22 </span>            :     &quot;encouraged to use explicit padding specified in the pads attribute.&quot;;
+<span class="lineNum">      23 </span>            : } // namespace ONNX_NAMESPACE
+<span class="lineNum">      24 </span>            : 
+<a name="25"><span class="lineNum">      25 </span>            : namespace ONNX_NAMESPACE {</a>
+<span class="lineNum">      26 </span>            : 
+<span class="lineNum">      27 </span>            : void convPoolTypeAndShapeInference(InferenceContext&amp; ctx, bool use_dilation, bool require_kernel_shape) {
+<span class="lineNum">      28 </span><span class="lineCov">        527 :   propagateElemTypeFromInputToOutput(ctx, 0, 0);</span>
+<span class="lineNum">      29 </span>            : 
+<span class="lineNum">      30 </span><span class="lineCov">        527 :   if (!hasNInputShapes(ctx, 2)) {</span>
+<span class="lineNum">      31 </span><span class="lineCov">        477 :     return;</span>
+<span class="lineNum">      32 </span>            :   }
+<span class="lineNum">      33 </span>            : 
+<span class="lineNum">      34 </span>            :   // don't bother with legacy auto_pad for now
+<span class="lineNum">      35 </span><span class="lineCov">        100 :   if (ctx.getAttribute(&quot;auto_pad&quot;)) {</span>
+<span class="lineNum">      36 </span><span class="lineNoCov">          0 :     return;</span>
+<span class="lineNum">      37 </span>            :   }
+<span class="lineNum">      38 </span>            : 
+<span class="lineNum">      39 </span><span class="lineCov">         50 :   size_t n_input_dims = (size_t) (ctx.getInputType(0)-&gt;tensor_type().shape().dim_size() - 2);</span>
+<span class="lineNum">      40 </span>            : 
+<span class="lineNum">      41 </span>            :   // Pooling operations don't support dilation, only Conv. For
+<span class="lineNum">      42 </span>            :   // simplicity of the code, we just treat them as having all-1s
+<span class="lineNum">      43 </span>            :   // dilation.
+<span class="lineNum">      44 </span><span class="lineCov">         50 :   std::vector&lt;int64_t&gt; dilations;</span>
+<span class="lineNum">      45 </span><span class="lineCov">        300 :   if (use_dilation &amp;&amp; getRepeatedAttribute(ctx, &quot;dilations&quot;, dilations)) {</span>
+<span class="lineNum">      46 </span><span class="lineCov">         30 :     if (dilations.size() != n_input_dims) {</span>
+<span class="lineNum">      47 </span><span class="lineNoCov">          0 :       return;</span>
+<span class="lineNum">      48 </span>            :     }
+<span class="lineNum">      49 </span><span class="lineCov">         30 :   } else {</span>
+<span class="lineNum">      50 </span><span class="lineCov">         20 :     dilations.assign(n_input_dims, 1);</span>
+<span class="lineNum">      51 </span>            :   }
+<span class="lineNum">      52 </span>            : 
+<span class="lineNum">      53 </span><span class="lineCov">         50 :   std::vector&lt;int64_t&gt; kernel_shape;</span>
+<span class="lineNum">      54 </span><span class="lineCov">        150 :   if (getRepeatedAttribute(ctx, &quot;kernel_shape&quot;, kernel_shape)) {</span>
+<span class="lineNum">      55 </span><span class="lineCov">        210 :     if (kernel_shape.size() != static_cast&lt;size_t&gt;(ctx.getInputType(0)-&gt;tensor_type().shape().dim_size() - 2)) {</span>
+<span class="lineNum">      56 </span><span class="lineNoCov">          0 :       return;</span>
+<span class="lineNum">      57 </span>            :     }
+<span class="lineNum">      58 </span><span class="lineCov">         50 :   } else if (require_kernel_shape) {</span>
+<span class="lineNum">      59 </span><span class="lineNoCov">          0 :     return;</span>
+<span class="lineNum">      60 </span>            :   } else {
+<span class="lineNum">      61 </span><span class="lineCov">        150 :     for (int i = 2; i &lt; ctx.getInputType(1)-&gt;tensor_type().shape().dim_size(); ++i) {</span>
+<span class="lineNum">      62 </span><span class="lineCov">        108 :       if (!ctx.getInputType(1)-&gt;tensor_type().shape().dim(i).has_dim_value()) {</span>
+<span class="lineNum">      63 </span><span class="lineCov">          1 :         return;</span>
+<span class="lineNum">      64 </span>            :       }
+<span class="lineNum">      65 </span><span class="lineCov">        102 :       kernel_shape.push_back(ctx.getInputType(1)-&gt;tensor_type().shape().dim(i).dim_value());</span>
+<span class="lineNum">      66 </span><span class="lineCov">         17 :     }</span>
+<span class="lineNum">      67 </span>            :   }
+<span class="lineNum">      68 </span>            : 
+<span class="lineNum">      69 </span><span class="lineCov">         49 :   std::vector&lt;int64_t&gt; pads;</span>
+<span class="lineNum">      70 </span><span class="lineCov">        147 :   if (getRepeatedAttribute(ctx, &quot;pads&quot;, pads)) {</span>
+<span class="lineNum">      71 </span><span class="lineCov">         45 :     if (pads.size() != n_input_dims * 2) {</span>
+<span class="lineNum">      72 </span><span class="lineNoCov">          0 :       return;</span>
+<span class="lineNum">      73 </span>            :     }
+<span class="lineNum">      74 </span><span class="lineCov">         45 :   } else {</span>
+<span class="lineNum">      75 </span><span class="lineCov">          4 :     pads.assign(n_input_dims * 2, 0);</span>
+<span class="lineNum">      76 </span>            :   }
+<span class="lineNum">      77 </span>            : 
+<span class="lineNum">      78 </span><span class="lineCov">         49 :   std::vector&lt;int64_t&gt; strides;</span>
+<span class="lineNum">      79 </span><span class="lineCov">        147 :   if (getRepeatedAttribute(ctx, &quot;strides&quot;, strides)) {</span>
+<span class="lineNum">      80 </span><span class="lineCov">         43 :     if (strides.size() != n_input_dims) {</span>
+<span class="lineNum">      81 </span><span class="lineNoCov">          0 :       return;</span>
+<span class="lineNum">      82 </span>            :     }
+<span class="lineNum">      83 </span><span class="lineCov">         43 :   } else {</span>
+<span class="lineNum">      84 </span><span class="lineCov">          6 :     strides.assign(n_input_dims, 1);</span>
+<span class="lineNum">      85 </span>            :   }
+<span class="lineNum">      86 </span>            : 
+<span class="lineNum">      87 </span><span class="lineCov">        245 :   *ctx.getOutputType(0)-&gt;mutable_tensor_type()-&gt;mutable_shape()-&gt;add_dim() =</span>
+<span class="lineNum">      88 </span><span class="lineCov">        196 :     ctx.getInputType(0)-&gt;tensor_type().shape().dim(0);</span>
+<span class="lineNum">      89 </span><span class="lineCov">        245 :   *ctx.getOutputType(0)-&gt;mutable_tensor_type()-&gt;mutable_shape()-&gt;add_dim() =</span>
+<span class="lineNum">      90 </span><span class="lineCov">        196 :     ctx.getInputType(1)-&gt;tensor_type().shape().dim(0);</span>
+<span class="lineNum">      91 </span>            : 
+<span class="lineNum">      92 </span><span class="lineCov">        298 :   for (int i = 0; i &lt; static_cast&lt;int&gt;(kernel_shape.size()); ++i) {</span>
+<span class="lineNum">      93 </span><span class="lineCov">        500 :     auto newdim = ctx.getOutputType(0)-&gt;mutable_tensor_type()-&gt;mutable_shape()-&gt;add_dim();</span>
+<span class="lineNum">      94 </span><span class="lineCov">        600 :     if (!ctx.getInputType(0)-&gt;tensor_type().shape().dim(2 + i).has_dim_value()) {</span>
+<span class="lineNum">      95 </span><span class="lineCov">          1 :       continue;</span>
+<span class="lineNum">      96 </span>            :     }
+<span class="lineNum">      97 </span>            :     // how big is the input, including padding
+<span class="lineNum">      98 </span><span class="lineCov">        594 :     int64_t effective_input_size = ctx.getInputType(0)-&gt;tensor_type().shape().dim(2 + i).dim_value();</span>
+<span class="lineNum">      99 </span><span class="lineCov">        198 :     effective_input_size += pads[i];</span>
+<span class="lineNum">     100 </span><span class="lineCov">        198 :     effective_input_size += pads[i + static_cast&lt;int&gt;(kernel_shape.size())];</span>
+<span class="lineNum">     101 </span>            : 
+<span class="lineNum">     102 </span>            :     // accounting for dilation, how big is the kernel in this dimension
+<span class="lineNum">     103 </span><span class="lineCov">        198 :     int64_t effective_kernel_size = kernel_shape[i];</span>
+<span class="lineNum">     104 </span><span class="lineCov">        198 :     effective_kernel_size = (effective_kernel_size - 1) * dilations[i] + 1;</span>
+<span class="lineNum">     105 </span>            : 
+<span class="lineNum">     106 </span>            :     // how many times we can move the kernel from it's initial position, based on the stride
+<span class="lineNum">     107 </span><span class="lineCov">        198 :     int64_t strided_kernel_positions = (effective_input_size - effective_kernel_size) / strides[i];</span>
+<span class="lineNum">     108 </span>            : 
+<span class="lineNum">     109 </span>            :     // add in the initial position
+<span class="lineNum">     110 </span><span class="lineCov">         99 :     int64_t total_kernel_positions = 1 + strided_kernel_positions;</span>
+<span class="lineNum">     111 </span>            : 
+<span class="lineNum">     112 </span><span class="lineCov">         99 :     newdim-&gt;set_dim_value(total_kernel_positions);</span>
+<span class="lineNum">     113 </span><span class="lineCov">         99 :   }</span>
+<a name="114"><span class="lineNum">     114 </span><span class="lineCov">       1251 : }</span></a>
+<span class="lineNum">     115 </span>            : 
+<span class="lineNum">     116 </span>            : std::function&lt;void(OpSchema&amp;)&gt; PoolOpSchemaGenerator(
+<span class="lineNum">     117 </span>            :     const char* name,
+<a name="118"><span class="lineNum">     118 </span>            :     const char* opName,</a>
+<span class="lineNum">     119 </span>            :     const char* additionalDescription) {
+<span class="lineNum">     120 </span><span class="lineCov">          8 :   return [=](OpSchema&amp; schema) {</span>
+<span class="lineNum">     121 </span><span class="lineCov">          2 :     std::string doc = R&quot;DOC(</span>
+<span class="lineNum">     122 </span>            :  {name} consumes an input tensor X and applies {opName} pooling across the
+<span class="lineNum">     123 </span>            :  the tensor according to kernel sizes, stride sizes, and pad lengths.
+<span class="lineNum">     124 </span>            :  {opName} pooling consisting of computing the {opName} on all values of a
+<span class="lineNum">     125 </span>            :  subset of the input tensor according to the kernel size and downsampling the
+<span class="lineNum">     126 </span>            :  data into the output tensor Y for further processing. The output spatial shape will be following:
+<span class="lineNum">     127 </span>            :  ```
+<span class="lineNum">     128 </span>            :  output_spatial_shape[i] = floor((input_spatial_shape[i] + pad_shape[i] - kernel_spatial_shape[i]) / strides_spatial_shape[i] + 1)
+<span class="lineNum">     129 </span>            : 
+<span class="lineNum">     130 </span>            :  * pad_shape[i] is sum of pads along axis i
+<span class="lineNum">     131 </span>            :  ```
+<span class="lineNum">     132 </span>            : 
+<span class="lineNum">     133 </span>            :  `auto_pad` is a DEPRECATED attribute. If you are using them currently, the output spatial shape will be following:
+<span class="lineNum">     134 </span>            :  ```
+<span class="lineNum">     135 </span>            :  VALID: output_spatial_shape[i] = ceil((input_spatial_shape[i] - kernel_spatial_shape[i] + 1) / strides_spatial_shape[i])
+<span class="lineNum">     136 </span>            :  SAME_UPPER or SAME_LOWER: output_spatial_shape[i] = ceil(input_spatial_shape[i] / strides_spatial_shape[i])
+<span class="lineNum">     137 </span>            :  ```
+<span class="lineNum">     138 </span>            :  And pad shape will be following if `SAME_UPPER` or `SAME_LOWER`:
+<span class="lineNum">     139 </span>            :  ```
+<span class="lineNum">     140 </span>            :  pad_shape[i] = (output_spatial_shape[i] - 1) * strides_spatial_shape[i] + kernel_spatial_shape[i] - input_spatial_shape[i]
+<span class="lineNum">     141 </span>            :  ```
+<span class="lineNum">     142 </span>            :  {additionalDescription}
+<span class="lineNum">     143 </span>            :  )DOC&quot;;
+<span class="lineNum">     144 </span><span class="lineCov">          4 :     ReplaceAll(doc, &quot;{name}&quot;, name);</span>
+<span class="lineNum">     145 </span><span class="lineCov">          4 :     ReplaceAll(doc, &quot;{opName}&quot;, opName);</span>
+<span class="lineNum">     146 </span><span class="lineCov">          4 :     ReplaceAll(doc, &quot;{additionalDescription}&quot;, additionalDescription);</span>
+<span class="lineNum">     147 </span><span class="lineCov">          6 :     schema.SetDoc(doc);</span>
+<span class="lineNum">     148 </span><span class="lineCov">          6 :     schema.Attr(</span>
+<span class="lineNum">     149 </span><span class="lineCov">          2 :         &quot;kernel_shape&quot;,</span>
+<span class="lineNum">     150 </span><span class="lineCov">          2 :         &quot;The size of the kernel along each axis.&quot;,</span>
+<span class="lineNum">     151 </span>            :         AttributeProto::INTS);
+<span class="lineNum">     152 </span><span class="lineCov">          6 :     schema.Attr(</span>
+<span class="lineNum">     153 </span><span class="lineCov">          2 :         &quot;strides&quot;,</span>
+<span class="lineNum">     154 </span><span class="lineCov">          2 :         &quot;Stride along each axis. If not present, the stride defaults to 1 along each axis.&quot;,</span>
+<span class="lineNum">     155 </span>            :         AttributeProto::INTS,
+<span class="lineNum">     156 </span>            :         OPTIONAL);
+<span class="lineNum">     157 </span><span class="lineCov">          6 :     schema.Attr(</span>
+<span class="lineNum">     158 </span><span class="lineCov">          2 :         &quot;auto_pad&quot;,</span>
+<span class="lineNum">     159 </span><span class="lineCov">          2 :         auto_pad_doc.c_str(),</span>
+<span class="lineNum">     160 </span>            :         AttributeProto::STRING,
+<span class="lineNum">     161 </span><span class="lineCov">          2 :         std::string(&quot;NOTSET&quot;));</span>
+<span class="lineNum">     162 </span><span class="lineCov">          8 :     schema.Attr(&quot;pads&quot;, pads_doc.c_str(), AttributeProto::INTS, OPTIONAL);</span>
+<span class="lineNum">     163 </span><span class="lineCov">          6 :     schema.Input(</span>
+<span class="lineNum">     164 </span>            :         0,
+<span class="lineNum">     165 </span><span class="lineCov">          2 :         &quot;X&quot;,</span>
+<span class="lineNum">     166 </span><span class="lineCov">          2 :         &quot;Input data tensor from the previous operator; &quot;</span>
+<span class="lineNum">     167 </span>            :         &quot;dimensions for image case are (N x C x H x W), &quot;
+<span class="lineNum">     168 </span>            :         &quot;where N is the batch size, C is the number of &quot;
+<span class="lineNum">     169 </span>            :         &quot;channels, and H and W are the height and the &quot;
+<span class="lineNum">     170 </span>            :         &quot;width of the data. For non image case, the &quot;
+<span class="lineNum">     171 </span>            :         &quot;dimensions are in the form of &quot;
+<span class="lineNum">     172 </span>            :         &quot;(N x C x D1 x D2 ... Dn), where N is the batch &quot;
+<span class="lineNum">     173 </span>            :         &quot;size. Optionally, if dimension denotation is &quot;
+<span class="lineNum">     174 </span>            :         &quot;in effect, the operation expects the input &quot;
+<span class="lineNum">     175 </span>            :         &quot;data tensor to arrive with the dimension denotation &quot;
+<span class="lineNum">     176 </span>            :         &quot;of [DATA_BATCH, DATA_CHANNEL, DATA_FEATURE, DATA_FEATURE ...].&quot;,
+<span class="lineNum">     177 </span><span class="lineCov">          2 :         &quot;T&quot;);</span>
+<span class="lineNum">     178 </span><span class="lineCov">          6 :     schema.Output(</span>
+<span class="lineNum">     179 </span>            :         0,
+<span class="lineNum">     180 </span><span class="lineCov">          2 :         &quot;Y&quot;,</span>
+<span class="lineNum">     181 </span><span class="lineCov">          2 :         &quot;Output data tensor from average or max pooling across &quot;</span>
+<span class="lineNum">     182 </span>            :         &quot;the input tensor. Dimensions will vary based &quot;
+<span class="lineNum">     183 </span>            :         &quot;on various kernel, stride, and pad sizes. Floor value of &quot;
+<span class="lineNum">     184 </span>            :         &quot;the dimension is used&quot;,
+<span class="lineNum">     185 </span><span class="lineCov">          2 :         &quot;T&quot;);</span>
+<span class="lineNum">     186 </span><span class="lineCov">         14 :     schema.TypeConstraint(</span>
+<span class="lineNum">     187 </span><span class="lineCov">          2 :         &quot;T&quot;,</span>
+<a name="188"><span class="lineNum">     188 </span><span class="lineCov">          8 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span></a>
+<span class="lineNum">     189 </span><span class="lineCov">          2 :         &quot;Constrain input and output types to float tensors.&quot;);</span>
+<span class="lineNum">     190 </span><span class="lineCov">        178 :     schema.TypeAndShapeInferenceFunction([](InferenceContext&amp; ctx) { convPoolTypeAndShapeInference(ctx, false, true); });</span>
+<span class="lineNum">     191 </span><span class="lineCov">          2 :   };</span>
+<a name="192"><span class="lineNum">     192 </span>            : }</a>
+<span class="lineNum">     193 </span>            : 
+<span class="lineNum">     194 </span><span class="lineCov">          5 : ONNX_OPERATOR_SCHEMA(AveragePool)</span>
+<span class="lineNum">     195 </span><span class="lineCov">          2 :     .FillUsing(PoolOpSchemaGenerator(</span>
+<span class="lineNum">     196 </span>            :         &quot;AveragePool&quot;,
+<span class="lineNum">     197 </span>            :         &quot;average&quot;,
+<a name="198"><span class="lineNum">     198 </span>            :         &quot;The output of each pooling window is divided by the number of elements exclude pad.&quot;));</a>
+<span class="lineNum">     199 </span>            : 
+<span class="lineNum">     200 </span><span class="lineCov">          7 : ONNX_OPERATOR_SCHEMA(MaxPool).FillUsing(PoolOpSchemaGenerator(</span>
+<span class="lineNum">     201 </span>            :     &quot;MaxPool&quot;,
+<span class="lineNum">     202 </span>            :     &quot;max&quot;,
+<span class="lineNum">     203 </span>            :     &quot;The output of each pooling window is maximum number of elements exclude pad.&quot;));
+<span class="lineNum">     204 </span>            : 
+<span class="lineNum">     205 </span>            : } // namespace ONNX_NAMESPACE
+<a name="206"><span class="lineNum">     206 </span>            : </a>
+<a name="207"><span class="lineNum">     207 </span>            : namespace ONNX_NAMESPACE {</a>
+<span class="lineNum">     208 </span>            : std::function&lt;void(OpSchema&amp;)&gt; LpPoolOpSchemaGenerator(const char* name) {
+<span class="lineNum">     209 </span><span class="lineCov">          2 :   return [=](OpSchema&amp; schema) {</span>
+<span class="lineNum">     210 </span><span class="lineCov">          1 :     std::string doc = R&quot;DOC(</span>
+<span class="lineNum">     211 </span>            :  {name} consumes an input tensor X and applies Lp pooling across the
+<span class="lineNum">     212 </span>            :  the tensor according to kernel sizes, stride sizes, and pad lengths.
+<span class="lineNum">     213 </span>            :  Lp pooling consisting of computing the Lp norm on all values of a subset
+<span class="lineNum">     214 </span>            :  of the input tensor according to the kernel size and downsampling the
+<span class="lineNum">     215 </span>            :  data into the output tensor Y for further processing.)DOC&quot;;
+<span class="lineNum">     216 </span><span class="lineCov">          2 :     ReplaceAll(doc, &quot;{name}&quot;, name);</span>
+<span class="lineNum">     217 </span><span class="lineCov">          3 :     schema.SetDoc(doc);</span>
+<span class="lineNum">     218 </span><span class="lineCov">          1 :     schema.SinceVersion(2);</span>
+<span class="lineNum">     219 </span><span class="lineCov">          3 :     schema.Attr(</span>
+<span class="lineNum">     220 </span><span class="lineCov">          1 :         &quot;kernel_shape&quot;,</span>
+<span class="lineNum">     221 </span><span class="lineCov">          1 :         &quot;The size of the kernel along each axis.&quot;,</span>
+<span class="lineNum">     222 </span>            :         AttributeProto::INTS);
+<span class="lineNum">     223 </span><span class="lineCov">          3 :     schema.Attr(</span>
+<span class="lineNum">     224 </span><span class="lineCov">          1 :         &quot;strides&quot;,</span>
+<span class="lineNum">     225 </span><span class="lineCov">          1 :         &quot;Stride along each axis. If not present, the stride defaults to 0 along each axis.&quot;,</span>
+<span class="lineNum">     226 </span>            :         AttributeProto::INTS,
+<span class="lineNum">     227 </span>            :         OPTIONAL);
+<span class="lineNum">     228 </span><span class="lineCov">          3 :     schema.Attr(</span>
+<span class="lineNum">     229 </span><span class="lineCov">          1 :         &quot;auto_pad&quot;,</span>
+<span class="lineNum">     230 </span><span class="lineCov">          1 :         auto_pad_doc.c_str(),</span>
+<span class="lineNum">     231 </span>            :         AttributeProto::STRING,
+<span class="lineNum">     232 </span><span class="lineCov">          1 :         std::string(&quot;NOTSET&quot;));</span>
+<span class="lineNum">     233 </span><span class="lineCov">          4 :     schema.Attr(&quot;pads&quot;, pads_doc.c_str(), AttributeProto::INTS, OPTIONAL);</span>
+<span class="lineNum">     234 </span><span class="lineCov">          3 :     schema.Attr(</span>
+<span class="lineNum">     235 </span><span class="lineCov">          1 :         &quot;p&quot;,</span>
+<span class="lineNum">     236 </span><span class="lineCov">          1 :         &quot;p value of the Lp norm used to pool over the input data, default is 2.&quot;,</span>
+<span class="lineNum">     237 </span>            :         AttributeProto::INT,
+<span class="lineNum">     238 </span><span class="lineCov">          1 :         static_cast&lt;int64_t&gt;(2));</span>
+<span class="lineNum">     239 </span><span class="lineCov">          3 :     schema.Input(</span>
+<span class="lineNum">     240 </span>            :         0,
+<span class="lineNum">     241 </span><span class="lineCov">          1 :         &quot;X&quot;,</span>
+<span class="lineNum">     242 </span><span class="lineCov">          1 :         &quot;Input data tensor from the previous operator; &quot;</span>
+<span class="lineNum">     243 </span>            :         &quot;dimensions for image case are (N x C x H x W), &quot;
+<span class="lineNum">     244 </span>            :         &quot;where N is the batch size, C is the number of &quot;
+<span class="lineNum">     245 </span>            :         &quot;channels, and H and W are the height and the &quot;
+<span class="lineNum">     246 </span>            :         &quot;width of the data. For non image case, the &quot;
+<span class="lineNum">     247 </span>            :         &quot;dimensions are in the form of &quot;
+<span class="lineNum">     248 </span>            :         &quot;(N x C x D1 x D2 ... Dn), where N is the &quot;
+<span class="lineNum">     249 </span>            :         &quot;batch size.&quot;,
+<span class="lineNum">     250 </span><span class="lineCov">          1 :         &quot;T&quot;);</span>
+<span class="lineNum">     251 </span><span class="lineCov">          3 :     schema.Output(</span>
+<span class="lineNum">     252 </span>            :         0,
+<span class="lineNum">     253 </span><span class="lineCov">          1 :         &quot;Y&quot;,</span>
+<span class="lineNum">     254 </span><span class="lineCov">          1 :         &quot;Output data tensor from Lp pooling across the input &quot;</span>
+<span class="lineNum">     255 </span>            :         &quot;tensor. Dimensions will vary based on various kernel, stride, and pad &quot;
+<span class="lineNum">     256 </span>            :         &quot;sizes.&quot;,
+<span class="lineNum">     257 </span><span class="lineCov">          1 :         &quot;T&quot;);</span>
+<span class="lineNum">     258 </span><span class="lineCov">          7 :     schema.TypeConstraint(</span>
+<span class="lineNum">     259 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     260 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span>
+<span class="lineNum">     261 </span><span class="lineCov">          1 :         &quot;Constrain input and output types to float tensors.&quot;);</span>
+<span class="lineNum">     262 </span><span class="lineCov">          1 :   };</span>
+<a name="263"><span class="lineNum">     263 </span>            : }</a>
+<span class="lineNum">     264 </span>            : 
+<span class="lineNum">     265 </span><span class="lineCov">          7 : ONNX_OPERATOR_SCHEMA(LpPool).FillUsing(LpPoolOpSchemaGenerator(&quot;LpPool&quot;));</span>
+<span class="lineNum">     266 </span>            : 
+<span class="lineNum">     267 </span>            : } // namespace ONNX_NAMESPACE
+<a name="268"><span class="lineNum">     268 </span>            : </a>
+<a name="269"><span class="lineNum">     269 </span>            : namespace ONNX_NAMESPACE {</a>
+<span class="lineNum">     270 </span>            : std::function&lt;void(OpSchema&amp;)&gt; RoiPoolOpSchemaGenerator(const char* name) {
+<span class="lineNum">     271 </span><span class="lineCov">          2 :   return [=](OpSchema&amp; schema) {</span>
+<span class="lineNum">     272 </span><span class="lineCov">          1 :     std::string doc = R&quot;DOC(</span>
+<span class="lineNum">     273 </span>            :  ROI {name} pool consumes an input tensor X and region of interests (RoIs) to
+<span class="lineNum">     274 </span>            :  apply {name} pooling across each RoI, to produce output 4-D tensor of shape
+<span class="lineNum">     275 </span>            :  (num_rois, channels, pooled_shape[0], pooled_shape[1]).)DOC&quot;;
+<span class="lineNum">     276 </span><span class="lineCov">          2 :     ReplaceAll(doc, &quot;{name}&quot;, name);</span>
+<span class="lineNum">     277 </span><span class="lineCov">          3 :     schema.SetDoc(doc);</span>
+<span class="lineNum">     278 </span><span class="lineCov">          3 :     schema.Attr(</span>
+<span class="lineNum">     279 </span><span class="lineCov">          1 :         &quot;pooled_shape&quot;,</span>
+<span class="lineNum">     280 </span><span class="lineCov">          1 :         &quot;ROI pool output shape (height, width).&quot;,</span>
+<span class="lineNum">     281 </span>            :         AttributeProto::INTS);
+<span class="lineNum">     282 </span><span class="lineCov">          3 :     schema.Attr(</span>
+<span class="lineNum">     283 </span><span class="lineCov">          1 :         &quot;spatial_scale&quot;,</span>
+<span class="lineNum">     284 </span><span class="lineCov">          1 :         &quot;Multiplicative spatial scale factor to translate ROI coordinates from their input scale to the scale used when pooling, default is 1.0f.&quot;,</span>
+<span class="lineNum">     285 </span>            :         AttributeProto::FLOAT,
+<span class="lineNum">     286 </span><span class="lineCov">          1 :         1.f);</span>
+<span class="lineNum">     287 </span><span class="lineCov">          3 :     schema.Input(</span>
+<span class="lineNum">     288 </span>            :         0,
+<span class="lineNum">     289 </span><span class="lineCov">          1 :         &quot;X&quot;,</span>
+<span class="lineNum">     290 </span><span class="lineCov">          1 :         &quot;Input data tensor from the previous operator; &quot;</span>
+<span class="lineNum">     291 </span>            :         &quot;dimensions for image case are (N x C x H x W), &quot;
+<span class="lineNum">     292 </span>            :         &quot;where N is the batch size, C is the number of &quot;
+<span class="lineNum">     293 </span>            :         &quot;channels, and H and W are the height and the &quot;
+<span class="lineNum">     294 </span>            :         &quot;width of the data.&quot;,
+<span class="lineNum">     295 </span><span class="lineCov">          1 :         &quot;T&quot;);</span>
+<span class="lineNum">     296 </span><span class="lineCov">          3 :     schema.Input(</span>
+<span class="lineNum">     297 </span>            :         1,
+<span class="lineNum">     298 </span><span class="lineCov">          1 :         &quot;rois&quot;,</span>
+<span class="lineNum">     299 </span><span class="lineCov">          1 :         &quot;RoIs (Regions of Interest) to pool over. Should &quot;</span>
+<span class="lineNum">     300 </span>            :         &quot;be a 2-D tensor of shape (num_rois, 5) given as &quot;
+<span class="lineNum">     301 </span>            :         &quot;[[batch_id, x1, y1, x2, y2], ...].&quot;,
+<span class="lineNum">     302 </span><span class="lineCov">          1 :         &quot;T&quot;);</span>
+<span class="lineNum">     303 </span><span class="lineCov">          3 :     schema.Output(</span>
+<span class="lineNum">     304 </span>            :         0,
+<span class="lineNum">     305 </span><span class="lineCov">          1 :         &quot;Y&quot;,</span>
+<span class="lineNum">     306 </span><span class="lineCov">          1 :         &quot;RoI pooled output 4-D tensor of shape (num_rois, channels, pooled_shape[0], pooled_shape[1]).&quot;,</span>
+<span class="lineNum">     307 </span><span class="lineCov">          1 :         &quot;T&quot;);</span>
+<span class="lineNum">     308 </span><span class="lineCov">          7 :     schema.TypeConstraint(</span>
+<span class="lineNum">     309 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     310 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span>
+<span class="lineNum">     311 </span><span class="lineCov">          1 :         &quot;Constrain input and output types to float tensors.&quot;);</span>
+<span class="lineNum">     312 </span><span class="lineCov">          1 :   };</span>
+<a name="313"><span class="lineNum">     313 </span>            : }</a>
+<span class="lineNum">     314 </span>            : 
+<span class="lineNum">     315 </span><span class="lineCov">          7 : ONNX_OPERATOR_SCHEMA(MaxRoiPool).FillUsing(RoiPoolOpSchemaGenerator(&quot;max&quot;));</span>
+<span class="lineNum">     316 </span>            : } // namespace ONNX_NAMESPACE
+<a name="317"><span class="lineNum">     317 </span>            : </a>
+<a name="318"><span class="lineNum">     318 </span>            : namespace ONNX_NAMESPACE {</a>
+<span class="lineNum">     319 </span>            : std::function&lt;void(OpSchema&amp;)&gt; ConvOpSchemaGenerator(const char* filter_desc) {
+<span class="lineNum">     320 </span><span class="lineCov">          2 :   return [=](OpSchema&amp; schema) {</span>
+<span class="lineNum">     321 </span><span class="lineCov">          1 :     std::string doc = R&quot;DOC(</span>
+<span class="lineNum">     322 </span>            : The convolution operator consumes an input tensor and {filter_desc}, and
+<span class="lineNum">     323 </span>            : computes the output.)DOC&quot;;
+<span class="lineNum">     324 </span><span class="lineCov">          2 :     ReplaceAll(doc, &quot;{filter_desc}&quot;, filter_desc);</span>
+<span class="lineNum">     325 </span><span class="lineCov">          3 :     schema.SetDoc(doc);</span>
+<span class="lineNum">     326 </span><span class="lineCov">          3 :     schema.Input(</span>
+<span class="lineNum">     327 </span>            :         0,
+<span class="lineNum">     328 </span><span class="lineCov">          1 :         &quot;X&quot;,</span>
+<span class="lineNum">     329 </span><span class="lineCov">          1 :         &quot;Input data tensor from previous layer; &quot;</span>
+<span class="lineNum">     330 </span>            :         &quot;has size (N x C x H x W), where N is the batch size, &quot;
+<span class="lineNum">     331 </span>            :         &quot;C is the number of channels, and H and W are the &quot;
+<span class="lineNum">     332 </span>            :         &quot;height and width. Note that this is for the 2D image. &quot;
+<span class="lineNum">     333 </span>            :         &quot;Otherwise the size is (N x C x D1 x D2 ... x Dn). &quot;
+<span class="lineNum">     334 </span>            :         &quot;Optionally, if dimension denotation is &quot;
+<span class="lineNum">     335 </span>            :         &quot;in effect, the operation expects input data tensor &quot;
+<span class="lineNum">     336 </span>            :         &quot;to arrive with the dimension denotation of [DATA_BATCH, &quot;
+<span class="lineNum">     337 </span>            :         &quot;DATA_CHANNEL, DATA_FEATURE, DATA_FEATURE ...].&quot;,
+<span class="lineNum">     338 </span><span class="lineCov">          1 :         &quot;T&quot;);</span>
+<span class="lineNum">     339 </span><span class="lineCov">          3 :     schema.Input(</span>
+<span class="lineNum">     340 </span>            :         1,
+<span class="lineNum">     341 </span><span class="lineCov">          1 :         &quot;W&quot;,</span>
+<span class="lineNum">     342 </span><span class="lineCov">          1 :         &quot;The weight tensor that will be used in the &quot;</span>
+<span class="lineNum">     343 </span>            :         &quot;convolutions; has size (M x C x kH x kW), where C &quot;
+<span class="lineNum">     344 </span>            :         &quot;is the number of channels, and kH and kW are the &quot;
+<span class="lineNum">     345 </span>            :         &quot;height and width of the kernel, and M is the number &quot;
+<span class="lineNum">     346 </span>            :         &quot;of feature maps. For more than 2 dimensions, the &quot;
+<span class="lineNum">     347 </span>            :         &quot;kernel shape will be (M x C x k1 x k2 x ... x kn), &quot;
+<span class="lineNum">     348 </span>            :         &quot;where (k1 x k2 x ... kn) is the dimension of the kernel. &quot;
+<span class="lineNum">     349 </span>            :         &quot;Optionally, if dimension denotation is in effect, &quot;
+<span class="lineNum">     350 </span>            :         &quot;the operation expects the weight tensor to arrive &quot;
+<span class="lineNum">     351 </span>            :         &quot;with the dimension denotation of [FILTER_IN_CHANNEL, &quot;
+<span class="lineNum">     352 </span>            :         &quot;FILTER_OUT_CHANNEL, FILTER_SPATIAL, FILTER_SPATIAL ...].&quot;,
+<span class="lineNum">     353 </span><span class="lineCov">          1 :         &quot;T&quot;);</span>
+<span class="lineNum">     354 </span><span class="lineCov">          3 :     schema.Input(</span>
+<span class="lineNum">     355 </span>            :         2,
+<span class="lineNum">     356 </span><span class="lineCov">          1 :         &quot;B&quot;,</span>
+<span class="lineNum">     357 </span><span class="lineCov">          1 :         &quot;Optional 1D bias to be added to the convolution, has size of M.&quot;,</span>
+<span class="lineNum">     358 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     359 </span>            :         OpSchema::Optional);
+<span class="lineNum">     360 </span><span class="lineCov">          3 :     schema.Output(</span>
+<span class="lineNum">     361 </span>            :         0,
+<span class="lineNum">     362 </span><span class="lineCov">          1 :         &quot;Y&quot;,</span>
+<span class="lineNum">     363 </span><span class="lineCov">          1 :         &quot;Output data tensor that contains the result of the &quot;</span>
+<span class="lineNum">     364 </span>            :         &quot;convolution. The output dimensions are functions &quot;
+<span class="lineNum">     365 </span>            :         &quot;of the kernel size, stride size, and pad lengths.&quot;,
+<span class="lineNum">     366 </span><span class="lineCov">          1 :         &quot;T&quot;);</span>
+<span class="lineNum">     367 </span><span class="lineCov">          7 :     schema.TypeConstraint(</span>
+<span class="lineNum">     368 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     369 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span>
+<span class="lineNum">     370 </span><span class="lineCov">          1 :         &quot;Constrain input and output types to float tensors.&quot;);</span>
+<span class="lineNum">     371 </span><span class="lineCov">          3 :     schema.Attr(</span>
+<span class="lineNum">     372 </span><span class="lineCov">          1 :         &quot;kernel_shape&quot;,</span>
+<span class="lineNum">     373 </span><span class="lineCov">          1 :         &quot;The shape of the convolution kernel. If not present, should be inferred from input W.&quot;,</span>
+<span class="lineNum">     374 </span>            :         AttributeProto::INTS,
+<span class="lineNum">     375 </span>            :         OPTIONAL);
+<span class="lineNum">     376 </span><span class="lineCov">          3 :     schema.Attr(</span>
+<span class="lineNum">     377 </span><span class="lineCov">          1 :         &quot;dilations&quot;,</span>
+<span class="lineNum">     378 </span><span class="lineCov">          1 :         &quot;dilation value along each axis of the filter. If not present, the dilation defaults to 1 along each axis.&quot;,</span>
+<span class="lineNum">     379 </span>            :         AttributeProto::INTS,
+<span class="lineNum">     380 </span>            :         OPTIONAL);
+<span class="lineNum">     381 </span><span class="lineCov">          3 :     schema.Attr(</span>
+<span class="lineNum">     382 </span><span class="lineCov">          1 :         &quot;strides&quot;,</span>
+<span class="lineNum">     383 </span><span class="lineCov">          1 :         &quot;Stride along each axis. If not present, the stride defaults to 1 along each axis.&quot;,</span>
+<span class="lineNum">     384 </span>            :         AttributeProto::INTS,
+<span class="lineNum">     385 </span>            :         OPTIONAL);
+<span class="lineNum">     386 </span><span class="lineCov">          3 :     schema.Attr(</span>
+<span class="lineNum">     387 </span><span class="lineCov">          1 :         &quot;auto_pad&quot;,</span>
+<span class="lineNum">     388 </span><span class="lineCov">          1 :         auto_pad_doc.c_str(),</span>
+<span class="lineNum">     389 </span>            :         AttributeProto::STRING,
+<span class="lineNum">     390 </span><span class="lineCov">          1 :         std::string(&quot;NOTSET&quot;));</span>
+<span class="lineNum">     391 </span><span class="lineCov">          4 :     schema.Attr(&quot;pads&quot;, pads_doc.c_str(), AttributeProto::INTS, OPTIONAL);</span>
+<span class="lineNum">     392 </span><span class="lineCov">          3 :     schema.Attr(</span>
+<span class="lineNum">     393 </span><span class="lineCov">          1 :         &quot;group&quot;,</span>
+<span class="lineNum">     394 </span><span class="lineCov">          1 :         &quot;number of groups input channels and output channels are divided into, default is 1.&quot;,</span>
+<a name="395"><span class="lineNum">     395 </span>            :         AttributeProto::INT,</a>
+<span class="lineNum">     396 </span><span class="lineCov">          1 :         static_cast&lt;int64_t&gt;(1));</span>
+<span class="lineNum">     397 </span><span class="lineCov">        885 :     schema.TypeAndShapeInferenceFunction([](InferenceContext&amp; ctx) { convPoolTypeAndShapeInference(ctx, true, false); });</span>
+<span class="lineNum">     398 </span><span class="lineCov">          1 :   };</span>
+<a name="399"><span class="lineNum">     399 </span>            : }</a>
+<span class="lineNum">     400 </span>            : 
+<span class="lineNum">     401 </span><span class="lineCov">          7 : ONNX_OPERATOR_SCHEMA(Conv).FillUsing(ConvOpSchemaGenerator(&quot;a filter&quot;));</span>
+<span class="lineNum">     402 </span>            : 
+<span class="lineNum">     403 </span>            : } // namespace ONNX_NAMESPACE
+<a name="404"><span class="lineNum">     404 </span>            : </a>
+<span class="lineNum">     405 </span>            : namespace ONNX_NAMESPACE {
+<a name="406"><span class="lineNum">     406 </span>            : std::function&lt;void(OpSchema&amp;)&gt; ConvTransposeOpSchemaGenerator(</a>
+<span class="lineNum">     407 </span>            :     const char* filter_desc) {
+<span class="lineNum">     408 </span><span class="lineCov">          2 :   return [=](OpSchema&amp; schema) {</span>
+<span class="lineNum">     409 </span><span class="lineCov">          1 :     std::string doc = R&quot;DOC(</span>
+<span class="lineNum">     410 </span>            : The convolution transpose operator consumes an input tensor and {filter_desc},
+<span class="lineNum">     411 </span>            : and computes the output.)DOC&quot;;
+<span class="lineNum">     412 </span><span class="lineCov">          2 :     ReplaceAll(doc, &quot;{filter_desc}&quot;, filter_desc);</span>
+<span class="lineNum">     413 </span><span class="lineCov">          3 :     schema.SetDoc(doc);</span>
+<span class="lineNum">     414 </span><span class="lineCov">          3 :     schema.Input(</span>
+<span class="lineNum">     415 </span>            :         0,
+<span class="lineNum">     416 </span><span class="lineCov">          1 :         &quot;X&quot;,</span>
+<span class="lineNum">     417 </span><span class="lineCov">          1 :         &quot;Input data tensor from previous layer; has size (N x C x H x W)&quot;</span>
+<span class="lineNum">     418 </span>            :         &quot;, where N is the batch size, C is the number of channels, and&quot;
+<span class="lineNum">     419 </span>            :         &quot; H and W are the height and width. Note that this is for the 2D image.&quot;
+<span class="lineNum">     420 </span>            :         &quot;Otherwise the size is (N x D1 x D2 ... x Dn)&quot;,
+<span class="lineNum">     421 </span><span class="lineCov">          1 :         &quot;T&quot;);</span>
+<span class="lineNum">     422 </span><span class="lineCov">          3 :     schema.Input(</span>
+<span class="lineNum">     423 </span>            :         1,
+<span class="lineNum">     424 </span><span class="lineCov">          1 :         &quot;W&quot;,</span>
+<span class="lineNum">     425 </span><span class="lineCov">          1 :         &quot;The weight tensor that will be used in the &quot;</span>
+<span class="lineNum">     426 </span>            :         &quot;convolutions; has size (C x M x kH x kW), where C &quot;
+<span class="lineNum">     427 </span>            :         &quot;is the number of channels, and kH and kW are the &quot;
+<span class="lineNum">     428 </span>            :         &quot;height and width of the kernel, and M is the number &quot;
+<span class="lineNum">     429 </span>            :         &quot;of feature maps. For more than 2 dimensions, the &quot;
+<span class="lineNum">     430 </span>            :         &quot;weight shape will be (C x M x k1 x k2 x ... x kn), &quot;
+<span class="lineNum">     431 </span>            :         &quot;where (k1 x k2 x ... x kn) is the dimension of the kernel&quot;,
+<span class="lineNum">     432 </span><span class="lineCov">          1 :         &quot;T&quot;);</span>
+<span class="lineNum">     433 </span><span class="lineCov">          3 :     schema.Input(</span>
+<span class="lineNum">     434 </span>            :         2,
+<span class="lineNum">     435 </span><span class="lineCov">          1 :         &quot;B&quot;,</span>
+<span class="lineNum">     436 </span><span class="lineCov">          1 :         &quot;Optional 1D bias to be added to the convolution, has size of C.&quot;,</span>
+<span class="lineNum">     437 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     438 </span>            :         OpSchema::Optional);
+<span class="lineNum">     439 </span><span class="lineCov">          3 :     schema.Output(</span>
+<span class="lineNum">     440 </span>            :         0,
+<span class="lineNum">     441 </span><span class="lineCov">          1 :         &quot;Y&quot;,</span>
+<span class="lineNum">     442 </span><span class="lineCov">          1 :         &quot;Output data tensor that contains the result of the convolution. The &quot;</span>
+<span class="lineNum">     443 </span>            :         &quot;output dimensions are functions of the kernel size, stride size, &quot;
+<span class="lineNum">     444 </span>            :         &quot;and pad lengths.&quot;,
+<span class="lineNum">     445 </span><span class="lineCov">          1 :         &quot;T&quot;);</span>
+<span class="lineNum">     446 </span><span class="lineCov">          7 :     schema.TypeConstraint(</span>
+<span class="lineNum">     447 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     448 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span>
+<span class="lineNum">     449 </span><span class="lineCov">          1 :         &quot;Constrain input and output types to float tensors.&quot;);</span>
+<span class="lineNum">     450 </span><span class="lineCov">          3 :     schema.Attr(</span>
+<span class="lineNum">     451 </span><span class="lineCov">          1 :         &quot;kernel_shape&quot;,</span>
+<span class="lineNum">     452 </span><span class="lineCov">          1 :         &quot;The shape of the convolution kernel. If not present, should be inferred from input W.&quot;,</span>
+<span class="lineNum">     453 </span>            :         AttributeProto::INTS,
+<span class="lineNum">     454 </span>            :         OPTIONAL);
+<span class="lineNum">     455 </span><span class="lineCov">          3 :     schema.Attr(</span>
+<span class="lineNum">     456 </span><span class="lineCov">          1 :         &quot;output_shape&quot;,</span>
+<span class="lineNum">     457 </span><span class="lineCov">          1 :         &quot;The shape of the output.&quot;</span>
+<span class="lineNum">     458 </span>            :         &quot; output_shape[i] = stride[i] * (input_size[i] - 1) + output_padding[i] +&quot;
+<span class="lineNum">     459 </span>            :         &quot; kernel_shape[i] - pads[start_i] - pads[end_i]&quot;,
+<span class="lineNum">     460 </span>            :         AttributeProto::INTS,
+<span class="lineNum">     461 </span>            :         OPTIONAL);
+<span class="lineNum">     462 </span><span class="lineCov">          3 :     schema.Attr(</span>
+<span class="lineNum">     463 </span><span class="lineCov">          1 :         &quot;output_padding&quot;,</span>
+<span class="lineNum">     464 </span><span class="lineCov">          1 :         &quot;The zero-padding added to one side of the output.&quot;</span>
+<span class="lineNum">     465 </span>            :         &quot; This is also called adjs/adjustment in some frameworks.&quot;
+<span class="lineNum">     466 </span>            :         &quot; If output_shape is set, this attribute will be ignored.&quot;,
+<span class="lineNum">     467 </span>            :         AttributeProto::INTS,
+<span class="lineNum">     468 </span>            :         OPTIONAL);
+<span class="lineNum">     469 </span><span class="lineCov">          3 :     schema.Attr(</span>
+<span class="lineNum">     470 </span><span class="lineCov">          1 :         &quot;dilations&quot;,</span>
+<span class="lineNum">     471 </span><span class="lineCov">          1 :         &quot;dilation value along each axis of the filter. If not present, the dilation defaults to 1 along each axis.&quot;,</span>
+<span class="lineNum">     472 </span>            :         AttributeProto::INTS,
+<span class="lineNum">     473 </span>            :         OPTIONAL);
+<span class="lineNum">     474 </span><span class="lineCov">          3 :     schema.Attr(</span>
+<span class="lineNum">     475 </span><span class="lineCov">          1 :         &quot;strides&quot;,</span>
+<span class="lineNum">     476 </span><span class="lineCov">          1 :         &quot;Stride along each axis. If not present, the stride defaults to 1 along each axis.&quot;,</span>
+<span class="lineNum">     477 </span>            :         AttributeProto::INTS,
+<span class="lineNum">     478 </span>            :         OPTIONAL);
+<span class="lineNum">     479 </span><span class="lineCov">          3 :     schema.Attr(</span>
+<span class="lineNum">     480 </span><span class="lineCov">          1 :         &quot;auto_pad&quot;,</span>
+<span class="lineNum">     481 </span><span class="lineCov">          1 :         auto_pad_doc.c_str(),</span>
+<span class="lineNum">     482 </span>            :         AttributeProto::STRING,
+<span class="lineNum">     483 </span><span class="lineCov">          1 :         std::string(&quot;NOTSET&quot;));</span>
+<span class="lineNum">     484 </span><span class="lineCov">          4 :     schema.Attr(&quot;pads&quot;, pads_doc.c_str(), AttributeProto::INTS, OPTIONAL);</span>
+<span class="lineNum">     485 </span><span class="lineCov">          3 :     schema.Attr(</span>
+<span class="lineNum">     486 </span><span class="lineCov">          1 :         &quot;group&quot;,</span>
+<span class="lineNum">     487 </span><span class="lineCov">          1 :         &quot;number of groups input channels and output channels are divided into, default is 1.&quot;,</span>
+<span class="lineNum">     488 </span>            :         AttributeProto::INT,
+<span class="lineNum">     489 </span><span class="lineCov">          1 :         static_cast&lt;int64_t&gt;(1));</span>
+<span class="lineNum">     490 </span><span class="lineCov">          1 :   };</span>
+<a name="491"><span class="lineNum">     491 </span>            : }</a>
+<span class="lineNum">     492 </span>            : 
+<span class="lineNum">     493 </span><span class="lineCov">          5 : ONNX_OPERATOR_SCHEMA(ConvTranspose)</span>
+<span class="lineNum">     494 </span><span class="lineCov">          2 :     .FillUsing(ConvTransposeOpSchemaGenerator(&quot;a filter&quot;));</span>
+<span class="lineNum">     495 </span>            : 
+<span class="lineNum">     496 </span>            : } // namespace ONNX_NAMESPACE
+<a name="497"><span class="lineNum">     497 </span>            : </a>
+<span class="lineNum">     498 </span>            : namespace ONNX_NAMESPACE {
+<span class="lineNum">     499 </span>            : std::function&lt;void(OpSchema&amp;)&gt; GlobalPoolingOpSchemaGenerator(
+<a name="500"><span class="lineNum">     500 </span>            :     const char* op_type,</a>
+<span class="lineNum">     501 </span>            :     const char* op) {
+<span class="lineNum">     502 </span><span class="lineCov">          6 :   return [=](OpSchema&amp; schema) {</span>
+<span class="lineNum">     503 </span><span class="lineCov">          2 :     std::string doc = R&quot;DOC(</span>
+<span class="lineNum">     504 </span>            :  Global{op_type} consumes an input tensor X and applies {op} pooling across the
+<span class="lineNum">     505 </span>            :  the values in the same channel. This is equivalent to {op_type} with kernel size
+<span class="lineNum">     506 </span>            :  equal to the spatial dimension of input tensor.)DOC&quot;;
+<span class="lineNum">     507 </span><span class="lineCov">          4 :     ReplaceAll(doc, &quot;{op_type}&quot;, op_type);</span>
+<span class="lineNum">     508 </span><span class="lineCov">          4 :     ReplaceAll(doc, &quot;{op}&quot;, op);</span>
+<span class="lineNum">     509 </span><span class="lineCov">          6 :     schema.SetDoc(doc);</span>
+<span class="lineNum">     510 </span><span class="lineCov">          6 :     schema.Input(</span>
+<span class="lineNum">     511 </span>            :         0,
+<span class="lineNum">     512 </span><span class="lineCov">          2 :         &quot;X&quot;,</span>
+<span class="lineNum">     513 </span><span class="lineCov">          2 :         &quot;Input data tensor from the previous operator; &quot;</span>
+<span class="lineNum">     514 </span>            :         &quot;dimensions for image case are (N x C x H x W), &quot;
+<span class="lineNum">     515 </span>            :         &quot;where N is the batch size, C is the number of &quot;
+<span class="lineNum">     516 </span>            :         &quot;channels, and H and W are the height and the width &quot;
+<span class="lineNum">     517 </span>            :         &quot;of the data. For non image case, the dimensions are &quot;
+<span class="lineNum">     518 </span>            :         &quot;in the form of (N x C x D1 x D2 ... Dn), &quot;
+<span class="lineNum">     519 </span>            :         &quot;where N is the batch size.&quot;,
+<span class="lineNum">     520 </span><span class="lineCov">          2 :         &quot;T&quot;);</span>
+<span class="lineNum">     521 </span><span class="lineCov">          6 :     schema.Output(</span>
+<span class="lineNum">     522 </span>            :         0,
+<span class="lineNum">     523 </span><span class="lineCov">          2 :         &quot;Y&quot;,</span>
+<span class="lineNum">     524 </span><span class="lineCov">          2 :         &quot;Output data tensor from pooling across the input &quot;</span>
+<span class="lineNum">     525 </span>            :         &quot;tensor. Dimensions will be N x C x 1 x 1&quot;,
+<span class="lineNum">     526 </span><span class="lineCov">          2 :         &quot;T&quot;);</span>
+<span class="lineNum">     527 </span><span class="lineCov">         14 :     schema.TypeConstraint(</span>
+<span class="lineNum">     528 </span><span class="lineCov">          2 :         &quot;T&quot;,</span>
+<span class="lineNum">     529 </span><span class="lineCov">          8 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span>
+<span class="lineNum">     530 </span><span class="lineCov">          2 :         &quot;Constrain input and output types to float tensors.&quot;);</span>
+<span class="lineNum">     531 </span><span class="lineCov">          6 :     schema.SetDoc(doc);</span>
+<a name="532"><span class="lineNum">     532 </span><span class="lineCov">          2 :   };</span></a>
+<span class="lineNum">     533 </span>            : }
+<a name="534"><span class="lineNum">     534 </span><span class="lineCov">          5 : ONNX_OPERATOR_SCHEMA(GlobalAveragePool)</span></a>
+<span class="lineNum">     535 </span><span class="lineCov">          2 :     .FillUsing(GlobalPoolingOpSchemaGenerator(&quot;AveragePool&quot;, &quot;average&quot;));</span>
+<span class="lineNum">     536 </span><span class="lineCov">          5 : ONNX_OPERATOR_SCHEMA(GlobalMaxPool)</span>
+<span class="lineNum">     537 </span><span class="lineCov">          2 :     .FillUsing(GlobalPoolingOpSchemaGenerator(&quot;MaxPool&quot;, &quot;max&quot;));</span>
+<span class="lineNum">     538 </span>            : } // namespace ONNX_NAMESPACE
+<a name="539"><span class="lineNum">     539 </span>            : </a>
+<span class="lineNum">     540 </span>            : namespace ONNX_NAMESPACE {
+<span class="lineNum">     541 </span>            : std::function&lt;void(OpSchema&amp;)&gt; GlobalLpPoolingOpSchemaGenerator(
+<a name="542"><span class="lineNum">     542 </span>            :     const char* op_type,</a>
+<span class="lineNum">     543 </span>            :     const char* op) {
+<span class="lineNum">     544 </span><span class="lineCov">          3 :   return [=](OpSchema&amp; schema) {</span>
+<span class="lineNum">     545 </span><span class="lineCov">          1 :     std::string doc = R&quot;DOC(</span>
+<span class="lineNum">     546 </span>            :  Global{op_type} consumes an input tensor X and applies {op} pooling across the
+<span class="lineNum">     547 </span>            :  the values in the same channel. This is equivalent to {op_type} with kernel size
+<span class="lineNum">     548 </span>            :  equal to the spatial dimension of input tensor.)DOC&quot;;
+<span class="lineNum">     549 </span><span class="lineCov">          2 :     ReplaceAll(doc, &quot;{op_type}&quot;, op_type);</span>
+<span class="lineNum">     550 </span><span class="lineCov">          2 :     ReplaceAll(doc, &quot;{op}&quot;, op);</span>
+<span class="lineNum">     551 </span><span class="lineCov">          3 :     schema.SetDoc(doc);</span>
+<span class="lineNum">     552 </span><span class="lineCov">          1 :     schema.SinceVersion(2);</span>
+<span class="lineNum">     553 </span><span class="lineCov">          3 :     schema.Attr(</span>
+<span class="lineNum">     554 </span><span class="lineCov">          1 :         &quot;p&quot;,</span>
+<span class="lineNum">     555 </span><span class="lineCov">          1 :         &quot;p value of the Lp norm used to pool over the input data, default is 2.&quot;,</span>
+<span class="lineNum">     556 </span>            :         AttributeProto::INT,
+<span class="lineNum">     557 </span><span class="lineCov">          1 :         static_cast&lt;int64_t&gt;(2));</span>
+<span class="lineNum">     558 </span><span class="lineCov">          3 :     schema.Input(</span>
+<span class="lineNum">     559 </span>            :         0,
+<span class="lineNum">     560 </span><span class="lineCov">          1 :         &quot;X&quot;,</span>
+<span class="lineNum">     561 </span><span class="lineCov">          1 :         &quot;Input data tensor from the previous operator; &quot;</span>
+<span class="lineNum">     562 </span>            :         &quot;dimensions for image case are (N x C x H x W), &quot;
+<span class="lineNum">     563 </span>            :         &quot;where N is the batch size, C is the number of &quot;
+<span class="lineNum">     564 </span>            :         &quot;channels, and H and W are the height and the width &quot;
+<span class="lineNum">     565 </span>            :         &quot;of the data. For non image case, the dimensions are &quot;
+<span class="lineNum">     566 </span>            :         &quot;in the form of (N x C x D1 x D2 ... Dn), &quot;
+<span class="lineNum">     567 </span>            :         &quot;where N is the batch size.&quot;,
+<span class="lineNum">     568 </span><span class="lineCov">          1 :         &quot;T&quot;);</span>
+<span class="lineNum">     569 </span><span class="lineCov">          3 :     schema.Output(</span>
+<span class="lineNum">     570 </span>            :         0,
+<span class="lineNum">     571 </span><span class="lineCov">          1 :         &quot;Y&quot;,</span>
+<span class="lineNum">     572 </span><span class="lineCov">          1 :         &quot;Output data tensor from pooling across the input &quot;</span>
+<span class="lineNum">     573 </span>            :         &quot;tensor. Dimensions will be N x C x 1 x 1&quot;,
+<span class="lineNum">     574 </span><span class="lineCov">          1 :         &quot;T&quot;);</span>
+<span class="lineNum">     575 </span><span class="lineCov">          7 :     schema.TypeConstraint(</span>
+<span class="lineNum">     576 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     577 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span>
+<span class="lineNum">     578 </span><span class="lineCov">          1 :         &quot;Constrain input and output types to float tensors.&quot;);</span>
+<span class="lineNum">     579 </span><span class="lineCov">          3 :     schema.SetDoc(doc);</span>
+<span class="lineNum">     580 </span><span class="lineCov">          1 :   };</span>
+<a name="581"><span class="lineNum">     581 </span>            : }</a>
+<span class="lineNum">     582 </span>            : 
+<span class="lineNum">     583 </span><span class="lineCov">          5 : ONNX_OPERATOR_SCHEMA(GlobalLpPool)</span>
+<span class="lineNum">     584 </span><span class="lineCov">          2 :     .FillUsing(GlobalLpPoolingOpSchemaGenerator(&quot;LpPool&quot;, &quot;lp pool&quot;));</span>
+<a name="585"><span class="lineNum">     585 </span>            : } // namespace ONNX_NAMESPACE</a>
+<span class="lineNum">     586 </span>            : 
+<span class="lineNum">     587 </span><span class="lineCov">          9 : ONNX_OPERATOR_SCHEMA(BatchNormalization)</span>
+<span class="lineNum">     588 </span><span class="lineCov">          1 :     .SinceVersion(6)</span>
+<span class="lineNum">     589 </span><span class="lineCov">          2 :     .NumOutputs({1, 5})</span>
+<span class="lineNum">     590 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(</span>
+<span class="lineNum">     591 </span>            : Carries out batch normalization as described in the paper
+<span class="lineNum">     592 </span>            : https://arxiv.org/abs/1502.03167. Depending on the mode it is being run,
+<span class="lineNum">     593 </span>            : there are multiple cases for the number of outputs, which we list below:
+<span class="lineNum">     594 </span>            : 
+<span class="lineNum">     595 </span>            : Output case #1: Y, mean, var, saved_mean, saved_var (training mode)
+<span class="lineNum">     596 </span>            : Output case #2: Y (test mode)
+<span class="lineNum">     597 </span>            :     )DOC&quot;)
+<span class="lineNum">     598 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     599 </span><span class="lineCov">          1 :         &quot;spatial&quot;,</span>
+<span class="lineNum">     600 </span><span class="lineCov">          1 :         &quot;If true, compute the mean and variance across all spatial elements &quot;</span>
+<span class="lineNum">     601 </span>            :         &quot;If false, compute the mean and variance across per feature.&quot;
+<span class="lineNum">     602 </span>            :         &quot;Default is 1.&quot;,
+<span class="lineNum">     603 </span>            :         AttributeProto::INT,
+<span class="lineNum">     604 </span><span class="lineCov">          1 :         static_cast&lt;int64_t&gt;(1))</span>
+<span class="lineNum">     605 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     606 </span><span class="lineCov">          1 :         &quot;is_test&quot;,</span>
+<span class="lineNum">     607 </span><span class="lineCov">          1 :         &quot;If set to nonzero, run spatial batch normalization in test mode, default is 0.&quot;,</span>
+<span class="lineNum">     608 </span>            :         AttributeProto::INT,
+<span class="lineNum">     609 </span><span class="lineCov">          1 :         static_cast&lt;int64_t&gt;(0))</span>
+<span class="lineNum">     610 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     611 </span><span class="lineCov">          1 :         &quot;epsilon&quot;,</span>
+<span class="lineNum">     612 </span><span class="lineCov">          1 :         &quot;The epsilon value to use to avoid division by zero, default is 1e-5f.&quot;,</span>
+<span class="lineNum">     613 </span>            :         AttributeProto::FLOAT,
+<span class="lineNum">     614 </span><span class="lineCov">          1 :         1e-5f)</span>
+<span class="lineNum">     615 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     616 </span><span class="lineCov">          1 :         &quot;momentum&quot;,</span>
+<span class="lineNum">     617 </span><span class="lineCov">          1 :         &quot;Factor used in computing the running mean and variance.&quot;</span>
+<span class="lineNum">     618 </span>            :         &quot;e.g., running_mean = running_mean * momentum + mean * (1 - momentum), default is 0.9f.&quot;,
+<span class="lineNum">     619 </span>            :         AttributeProto::FLOAT,
+<span class="lineNum">     620 </span><span class="lineCov">          1 :         0.9f)</span>
+<span class="lineNum">     621 </span><span class="lineCov">          1 :     .Input(</span>
+<span class="lineNum">     622 </span>            :         0,
+<span class="lineNum">     623 </span><span class="lineCov">          1 :         &quot;X&quot;,</span>
+<span class="lineNum">     624 </span><span class="lineCov">          1 :         &quot;Input data tensor from the previous operator; &quot;</span>
+<span class="lineNum">     625 </span>            :         &quot;dimensions for image case are (N x C x H x W), &quot;
+<span class="lineNum">     626 </span>            :         &quot;where N is the batch size, C is the number of &quot;
+<span class="lineNum">     627 </span>            :         &quot;channels, and H and W are the height and the &quot;
+<span class="lineNum">     628 </span>            :         &quot;width of the data. For non image case, the &quot;
+<span class="lineNum">     629 </span>            :         &quot;dimensions are in the form of &quot;
+<span class="lineNum">     630 </span>            :         &quot;(N x C x D1 x D2 ... Dn), where N is the batch &quot;
+<span class="lineNum">     631 </span>            :         &quot;size.&quot;,
+<span class="lineNum">     632 </span><span class="lineCov">          1 :         &quot;T&quot;)</span>
+<span class="lineNum">     633 </span><span class="lineCov">          1 :     .Input(</span>
+<span class="lineNum">     634 </span>            :         1,
+<span class="lineNum">     635 </span><span class="lineCov">          1 :         &quot;scale&quot;,</span>
+<span class="lineNum">     636 </span><span class="lineCov">          1 :         &quot;The scale as a 1-dimensional tensor of size C to be applied to the &quot;</span>
+<span class="lineNum">     637 </span>            :         &quot;output.&quot;,
+<span class="lineNum">     638 </span><span class="lineCov">          1 :         &quot;T&quot;)</span>
+<span class="lineNum">     639 </span><span class="lineCov">          1 :     .Input(</span>
+<span class="lineNum">     640 </span>            :         2,
+<span class="lineNum">     641 </span><span class="lineCov">          1 :         &quot;B&quot;,</span>
+<span class="lineNum">     642 </span><span class="lineCov">          1 :         &quot;The bias as a 1-dimensional tensor of size C to be applied to the &quot;</span>
+<span class="lineNum">     643 </span>            :         &quot;output.&quot;,
+<span class="lineNum">     644 </span><span class="lineCov">          1 :         &quot;T&quot;)</span>
+<span class="lineNum">     645 </span><span class="lineCov">          1 :     .Input(</span>
+<span class="lineNum">     646 </span>            :         3,
+<span class="lineNum">     647 </span><span class="lineCov">          1 :         &quot;mean&quot;,</span>
+<span class="lineNum">     648 </span><span class="lineCov">          1 :         &quot;The running mean (training) or the estimated mean (testing) &quot;</span>
+<span class="lineNum">     649 </span>            :         &quot;as a 1-dimensional tensor of size C.&quot;,
+<span class="lineNum">     650 </span><span class="lineCov">          1 :         &quot;T&quot;)</span>
+<span class="lineNum">     651 </span><span class="lineCov">          1 :     .Input(</span>
+<span class="lineNum">     652 </span>            :         4,
+<span class="lineNum">     653 </span><span class="lineCov">          1 :         &quot;var&quot;,</span>
+<span class="lineNum">     654 </span><span class="lineCov">          1 :         &quot;The running variance (training) or the estimated &quot;</span>
+<span class="lineNum">     655 </span>            :         &quot;variance (testing) as a 1-dimensional tensor of size C.&quot;,
+<span class="lineNum">     656 </span><span class="lineCov">          1 :         &quot;T&quot;)</span>
+<span class="lineNum">     657 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">     658 </span>            :         0,
+<span class="lineNum">     659 </span><span class="lineCov">          1 :         &quot;Y&quot;,</span>
+<span class="lineNum">     660 </span><span class="lineCov">          1 :         &quot;The output tensor of the same shape as X.&quot;,</span>
+<span class="lineNum">     661 </span><span class="lineCov">          1 :         &quot;T&quot;)</span>
+<span class="lineNum">     662 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">     663 </span>            :         1,
+<span class="lineNum">     664 </span><span class="lineCov">          1 :         &quot;mean&quot;,</span>
+<span class="lineNum">     665 </span><span class="lineCov">          1 :         &quot;The running mean after the BatchNormalization operator. Must be in-place &quot;</span>
+<span class="lineNum">     666 </span>            :         &quot;with the input mean. Should not be used for testing.&quot;,
+<span class="lineNum">     667 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     668 </span>            :         OpSchema::Optional)
+<span class="lineNum">     669 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">     670 </span>            :         2,
+<span class="lineNum">     671 </span><span class="lineCov">          1 :         &quot;var&quot;,</span>
+<span class="lineNum">     672 </span><span class="lineCov">          1 :         &quot;The running variance after the BatchNormalization operator. Must be &quot;</span>
+<span class="lineNum">     673 </span>            :         &quot;in-place with the input var. Should not be used for testing.&quot;,
+<span class="lineNum">     674 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     675 </span>            :         OpSchema::Optional)
+<span class="lineNum">     676 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">     677 </span>            :         3,
+<span class="lineNum">     678 </span><span class="lineCov">          1 :         &quot;saved_mean&quot;,</span>
+<span class="lineNum">     679 </span><span class="lineCov">          1 :         &quot;Saved mean used during training to speed up gradient &quot;</span>
+<span class="lineNum">     680 </span>            :         &quot;computation. Should not be used for testing.&quot;,
+<span class="lineNum">     681 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     682 </span>            :         OpSchema::Optional)
+<span class="lineNum">     683 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">     684 </span>            :         4,
+<span class="lineNum">     685 </span><span class="lineCov">          1 :         &quot;saved_var&quot;,</span>
+<span class="lineNum">     686 </span><span class="lineCov">          1 :         &quot;Saved variance used during training to speed up &quot;</span>
+<span class="lineNum">     687 </span>            :         &quot;gradient computation. Should not be used for testing.&quot;,
+<span class="lineNum">     688 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     689 </span>            :         OpSchema::Optional)
+<span class="lineNum">     690 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     691 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<a name="692"><span class="lineNum">     692 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span></a>
+<span class="lineNum">     693 </span><span class="lineCov">          1 :         &quot;Constrain input and output types to float tensors.&quot;)</span>
+<span class="lineNum">     694 </span><span class="lineCov">        303 :     .TypeAndShapeInferenceFunction([](InferenceContext&amp; ctx) {</span>
+<span class="lineNum">     695 </span><span class="lineCov">        299 :         propagateShapeAndTypeFromFirstInput(ctx);</span>
+<span class="lineNum">     696 </span>            :         // TODO in training mode, it may be possible to infer some of
+<span class="lineNum">     697 </span>            :         // the other outputs as well.
+<span class="lineNum">     698 </span><span class="lineCov">        299 :       });</span>
+<a name="699"><span class="lineNum">     699 </span>            : </a>
+<span class="lineNum">     700 </span>            : 
+<span class="lineNum">     701 </span><span class="lineCov">          9 : ONNX_OPERATOR_SCHEMA(InstanceNormalization)</span>
+<span class="lineNum">     702 </span><span class="lineCov">          1 :     .SinceVersion(6)</span>
+<span class="lineNum">     703 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(</span>
+<span class="lineNum">     704 </span>            : Carries out instance normalization as described in the paper
+<span class="lineNum">     705 </span>            : https://arxiv.org/abs/1607.08022.
+<span class="lineNum">     706 </span>            : 
+<span class="lineNum">     707 </span>            : y = scale * (x - mean) / sqrt(variance + epsilon) + B,
+<span class="lineNum">     708 </span>            : where mean and variance are computed per instance per channel.
+<span class="lineNum">     709 </span>            : 
+<span class="lineNum">     710 </span>            : )DOC&quot;)
+<span class="lineNum">     711 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     712 </span><span class="lineCov">          1 :         &quot;epsilon&quot;,</span>
+<span class="lineNum">     713 </span><span class="lineCov">          1 :         &quot;The epsilon value to use to avoid division by zero, default is 1e-5f.&quot;,</span>
+<span class="lineNum">     714 </span>            :         AttributeProto::FLOAT,
+<span class="lineNum">     715 </span><span class="lineCov">          1 :         1e-5f)</span>
+<span class="lineNum">     716 </span><span class="lineCov">          1 :     .Input(</span>
+<span class="lineNum">     717 </span>            :         0,
+<span class="lineNum">     718 </span><span class="lineCov">          1 :         &quot;input&quot;,</span>
+<span class="lineNum">     719 </span><span class="lineCov">          1 :         &quot;Input data tensor from the previous operator; &quot;</span>
+<span class="lineNum">     720 </span>            :         &quot;dimensions for image case are (N x C x H x W), &quot;
+<span class="lineNum">     721 </span>            :         &quot;where N is the batch size, C is the number of &quot;
+<span class="lineNum">     722 </span>            :         &quot;channels, and H and W are the height and the &quot;
+<span class="lineNum">     723 </span>            :         &quot;width of the data. For non image case, the &quot;
+<span class="lineNum">     724 </span>            :         &quot;dimensions are in the form of &quot;
+<span class="lineNum">     725 </span>            :         &quot;(N x C x D1 x D2 ... Dn), where N is the batch &quot;
+<span class="lineNum">     726 </span>            :         &quot;size.&quot;,
+<span class="lineNum">     727 </span><span class="lineCov">          1 :         &quot;T&quot;)</span>
+<span class="lineNum">     728 </span><span class="lineCov">          4 :     .Input(1, &quot;scale&quot;, &quot;The input 1-dimensional scale tensor of size C.&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     729 </span><span class="lineCov">          4 :     .Input(2, &quot;B&quot;, &quot;The input 1-dimensional bias tensor of size C.&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     730 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">     731 </span>            :         0,
+<span class="lineNum">     732 </span><span class="lineCov">          1 :         &quot;output&quot;,</span>
+<span class="lineNum">     733 </span><span class="lineCov">          1 :         &quot;The output tensor of the same shape as input.&quot;,</span>
+<span class="lineNum">     734 </span><span class="lineCov">          1 :         &quot;T&quot;)</span>
+<span class="lineNum">     735 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     736 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<a name="737"><span class="lineNum">     737 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span></a>
+<span class="lineNum">     738 </span><span class="lineCov">          1 :         &quot;Constrain input and output types to float tensors.&quot;)</span>
+<span class="lineNum">     739 </span><span class="lineCov">          6 :     .TypeAndShapeInferenceFunction([](InferenceContext&amp; ctx) {</span>
+<span class="lineNum">     740 </span><span class="lineCov">          2 :         propagateShapeAndTypeFromFirstInput(ctx);</span>
+<a name="741"><span class="lineNum">     741 </span><span class="lineCov">          2 :       });</span></a>
+<span class="lineNum">     742 </span>            : 
+<span class="lineNum">     743 </span><span class="lineCov">          9 : ONNX_OPERATOR_SCHEMA(LpNormalization)</span>
+<span class="lineNum">     744 </span><span class="lineCov">          4 :     .Input(0, &quot;input&quot;, &quot;Input matrix&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     745 </span><span class="lineCov">          4 :     .Output(0, &quot;output&quot;, &quot;Matrix after normalization&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     746 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     747 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     748 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span>
+<span class="lineNum">     749 </span><span class="lineCov">          1 :         &quot;Constrain input and output types to float tensors.&quot;)</span>
+<span class="lineNum">     750 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(</span>
+<span class="lineNum">     751 </span>            : Given a matrix, apply Lp-normalization along the provided axis.
+<span class="lineNum">     752 </span>            : )DOC&quot;)
+<span class="lineNum">     753 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     754 </span><span class="lineCov">          1 :         &quot;axis&quot;,</span>
+<span class="lineNum">     755 </span><span class="lineCov">          1 :         &quot;(int64, default -1) the axis on which to apply normalization, -1 mean last axis.&quot;,</span>
+<span class="lineNum">     756 </span>            :         AttributeProto::INT,
+<span class="lineNum">     757 </span><span class="lineCov">          1 :         static_cast&lt;int64_t&gt;(-1))</span>
+<span class="lineNum">     758 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     759 </span><span class="lineCov">          1 :         &quot;p&quot;,</span>
+<span class="lineNum">     760 </span><span class="lineCov">          1 :         &quot;(int64, default 2) the order of the normalization, only 1 or 2 are supported.&quot;,</span>
+<a name="761"><span class="lineNum">     761 </span>            :         AttributeProto::INT,</a>
+<span class="lineNum">     762 </span><span class="lineCov">          1 :         static_cast&lt;int64_t&gt;(2))</span>
+<span class="lineNum">     763 </span><span class="lineCov">          5 :     .TypeAndShapeInferenceFunction([](InferenceContext&amp; ctx) {</span>
+<span class="lineNum">     764 </span><span class="lineCov">          1 :         propagateShapeAndTypeFromFirstInput(ctx);</span>
+<a name="765"><span class="lineNum">     765 </span><span class="lineCov">          1 :       });</span></a>
+<span class="lineNum">     766 </span>            : 
+<span class="lineNum">     767 </span><span class="lineCov">          9 : ONNX_OPERATOR_SCHEMA(Dropout)</span>
+<span class="lineNum">     768 </span><span class="lineCov">          1 :     .SinceVersion(6)</span>
+<span class="lineNum">     769 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(</span>
+<span class="lineNum">     770 </span>            : Dropout takes one input data (Tensor&lt;float&gt;) and produces two Tensor outputs,
+<span class="lineNum">     771 </span>            : output (Tensor&lt;float&gt;) and mask (Tensor&lt;bool&gt;). Depending on whether it is in
+<span class="lineNum">     772 </span>            : test mode or not, the output Y will either be a random dropout, or a simple
+<span class="lineNum">     773 </span>            : copy of the input. Note that our implementation of Dropout does scaling in
+<span class="lineNum">     774 </span>            : the training phase, so during testing nothing needs to be done.
+<span class="lineNum">     775 </span>            : )DOC&quot;)
+<span class="lineNum">     776 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     777 </span><span class="lineCov">          1 :         &quot;ratio&quot;,</span>
+<span class="lineNum">     778 </span><span class="lineCov">          1 :         &quot;(float, default 0.5) the ratio of random dropout&quot;,</span>
+<span class="lineNum">     779 </span>            :         AttributeProto::FLOAT,
+<span class="lineNum">     780 </span><span class="lineCov">          1 :         0.5f)</span>
+<span class="lineNum">     781 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     782 </span><span class="lineCov">          1 :         &quot;is_test&quot;,</span>
+<span class="lineNum">     783 </span><span class="lineCov">          1 :         &quot;(int, default 0) if nonzero, run dropout in test mode where &quot;</span>
+<span class="lineNum">     784 </span>            :         &quot;the output is simply Y = X.&quot;,
+<span class="lineNum">     785 </span>            :         AttributeProto::INT,
+<span class="lineNum">     786 </span><span class="lineCov">          1 :         static_cast&lt;int64_t&gt;(0))</span>
+<span class="lineNum">     787 </span><span class="lineCov">          4 :     .Input(0, &quot;data&quot;, &quot;The input data as Tensor.&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     788 </span><span class="lineCov">          4 :     .Output(0, &quot;output&quot;, &quot;The output.&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     789 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">     790 </span>            :         1,
+<span class="lineNum">     791 </span><span class="lineCov">          1 :         &quot;mask&quot;,</span>
+<span class="lineNum">     792 </span><span class="lineCov">          1 :         &quot;The output mask. If is_test is nonzero, this output is not filled.&quot;,</span>
+<span class="lineNum">     793 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     794 </span>            :         OpSchema::Optional)
+<span class="lineNum">     795 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     796 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     797 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span>
+<span class="lineNum">     798 </span><span class="lineCov">          1 :         &quot;Constrain input and output types to float tensors.&quot;)</span>
+<a name="799"><span class="lineNum">     799 </span><span class="lineCov">          2 :     .TypeAndShapeInferenceFunction(propagateShapeAndTypeFromFirstInput);</span></a>
+<span class="lineNum">     800 </span>            : 
+<span class="lineNum">     801 </span><span class="lineCov">          9 : ONNX_OPERATOR_SCHEMA(Flatten)</span>
+<span class="lineNum">     802 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(</span>
+<span class="lineNum">     803 </span>            : Flattens the input tensor into a 2D matrix. If input tensor has shape
+<span class="lineNum">     804 </span>            : (d_0, d_1, ... d_n) then the output will have shape
+<span class="lineNum">     805 </span>            : (d_0 X d_1 ... d_(axis-1), d_axis X d_(axis+1) ... X dn).
+<span class="lineNum">     806 </span>            : )DOC&quot;)
+<span class="lineNum">     807 </span><span class="lineCov">          4 :     .Input(0, &quot;input&quot;, &quot;A tensor of rank &gt;= axis.&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     808 </span><span class="lineCov">          1 :     .Output(</span>
+<span class="lineNum">     809 </span>            :         0,
+<span class="lineNum">     810 </span><span class="lineCov">          1 :         &quot;output&quot;,</span>
+<span class="lineNum">     811 </span><span class="lineCov">          1 :         &quot;A 2D tensor with the contents of the input tensor, &quot;</span>
+<span class="lineNum">     812 </span>            :         &quot;with input dimensions up to axis flattened to the outer dimension &quot;
+<span class="lineNum">     813 </span>            :         &quot;of the output and remaining input dimensions flattened into the inner &quot;
+<span class="lineNum">     814 </span>            :         &quot;dimension of the output.&quot;,
+<span class="lineNum">     815 </span><span class="lineCov">          1 :         &quot;T&quot;)</span>
+<span class="lineNum">     816 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     817 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     818 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span>
+<span class="lineNum">     819 </span><span class="lineCov">          1 :         &quot;Constrain input and output types to float tensors.&quot;)</span>
+<span class="lineNum">     820 </span><span class="lineCov">          1 :     .Attr(</span>
+<span class="lineNum">     821 </span><span class="lineCov">          1 :         &quot;axis&quot;,</span>
+<span class="lineNum">     822 </span><span class="lineCov">          1 :         &quot;(Default to 1) Indicate up to which input dimensions &quot;</span>
+<span class="lineNum">     823 </span>            :         &quot;(exclusive) should be flattened to the outer dimension of the output. &quot;
+<span class="lineNum">     824 </span>            :         &quot;The value for axis must be in the range [0, R], where R is the rank of the input tensor. &quot;
+<span class="lineNum">     825 </span>            :         &quot;When axis = 0, the shape of the output tensor is (1, (d_0 X d_1 ... d_n), &quot;
+<span class="lineNum">     826 </span>            :         &quot;where the shape of the input tensor is (d_0, d_1, ... d_n). &quot;,
+<a name="827"><span class="lineNum">     827 </span>            :         AttributeProto::INT,</a>
+<span class="lineNum">     828 </span><span class="lineCov">          1 :         static_cast&lt;int64_t&gt;(1))</span>
+<span class="lineNum">     829 </span><span class="lineCov">         15 :         .TypeAndShapeInferenceFunction([](InferenceContext&amp; ctx) {</span>
+<span class="lineNum">     830 </span><span class="lineCov">         11 :             propagateElemTypeFromInputToOutput(ctx, 0, 0);</span>
+<span class="lineNum">     831 </span><span class="lineCov">         11 :             if (hasInputShape(ctx, 0)) {</span>
+<span class="lineNum">     832 </span><span class="lineCov">         11 :                   auto&amp; input_shape = getInputShape(ctx,0);</span>
+<span class="lineNum">     833 </span><span class="lineCov">         11 :                   int rank = static_cast&lt;int&gt; (input_shape.dim_size());</span>
+<span class="lineNum">     834 </span><span class="lineCov">         22 :                   int axis = static_cast&lt;int&gt; (getAttribute(ctx, &quot;axis&quot;, 1));</span>
+<span class="lineNum">     835 </span><span class="lineCov">         11 :                   if (axis &gt; rank) axis = rank;</span>
+<span class="lineNum">     836 </span>            :                   // TODO: is the operation defined for input-rank &lt; 2?
+<span class="lineNum">     837 </span><span class="lineCov">         66 :                   updateOutputShape(ctx, 0, {</span>
+<span class="lineNum">     838 </span><span class="lineCov">         11 :                           multiplyDims(input_shape, 0, axis),</span>
+<span class="lineNum">     839 </span><span class="lineCov">         11 :                           multiplyDims(input_shape, axis, rank)</span>
+<span class="lineNum">     840 </span>            :                   });
+<span class="lineNum">     841 </span><span class="lineCov">         11 :             }</span>
+<a name="842"><span class="lineNum">     842 </span><span class="lineCov">         11 :     });</span></a>
+<span class="lineNum">     843 </span>            : 
+<span class="lineNum">     844 </span><span class="lineCov">          9 : ONNX_OPERATOR_SCHEMA(LRN)</span>
+<span class="lineNum">     845 </span><span class="lineCov">          3 :     .Attr(&quot;size&quot;, &quot;The number of channels to sum over&quot;, AttributeProto::INT)</span>
+<span class="lineNum">     846 </span><span class="lineCov">          3 :     .Attr(&quot;alpha&quot;, &quot;Scaling parameter&quot;, AttributeProto::FLOAT)</span>
+<span class="lineNum">     847 </span><span class="lineCov">          3 :     .Attr(&quot;beta&quot;, &quot;The exponent&quot;, AttributeProto::FLOAT)</span>
+<span class="lineNum">     848 </span><span class="lineCov">          3 :     .Attr(&quot;bias&quot;, &quot;Default to 1.f&quot;, AttributeProto::FLOAT, 1.0f)</span>
+<span class="lineNum">     849 </span><span class="lineCov">          4 :     .Input(0, &quot;X&quot;, &quot;Input tensor&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     850 </span><span class="lineCov">          4 :     .Output(0, &quot;Y&quot;, &quot;Output tensor&quot;, &quot;T&quot;)</span>
+<span class="lineNum">     851 </span><span class="lineCov">          1 :     .TypeConstraint(</span>
+<span class="lineNum">     852 </span><span class="lineCov">          1 :         &quot;T&quot;,</span>
+<span class="lineNum">     853 </span><span class="lineCov">          4 :         {&quot;tensor(float16)&quot;, &quot;tensor(float)&quot;, &quot;tensor(double)&quot;},</span>
+<span class="lineNum">     854 </span><span class="lineCov">          1 :         &quot;Constrain input and output &quot;</span>
+<span class="lineNum">     855 </span>            :         &quot; types to float tensors.&quot;)
+<span class="lineNum">     856 </span><span class="lineCov">          2 :     .SetDoc(R&quot;DOC(</span>
+<span class="lineNum">     857 </span>            : Local Response Normalization. It normalizes over local input regions.
+<span class="lineNum">     858 </span>            : Each input value is divided by
+<span class="lineNum">     859 </span>            : (bias+(alpha/size)*sum(xi^2 for every xi in the local region))^beta.
+<span class="lineNum">     860 </span>            : )DOC&quot;)
+<span class="lineNum">     861 </span><span class="lineCov">          2 :     .TypeAndShapeInferenceFunction(propagateShapeAndTypeFromFirstInput);</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

@@ -1,0 +1,266 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - onnx-coverage.info - onnx/common/interned_strings.h</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">onnx/common</a> - interned_strings.h<span style="font-size: 80%;"> (source / <a href="interned_strings.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">onnx-coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">4</td>
+            <td class="headerCovTableEntry">4</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-05-11 14:21:51</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">5</td>
+            <td class="headerCovTableEntry">5</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : // ATTENTION: The code in this file is highly EXPERIMENTAL.</a>
+<span class="lineNum">       2 </span>            : // Adventurous users should note that the APIs will probably change.
+<span class="lineNum">       3 </span>            : 
+<span class="lineNum">       4 </span>            : #pragma once
+<span class="lineNum">       5 </span>            : #include &lt;vector&gt;
+<span class="lineNum">       6 </span>            : #include &lt;stdint.h&gt;
+<span class="lineNum">       7 </span>            : #include &lt;string&gt;
+<span class="lineNum">       8 </span>            : #include &lt;unordered_map&gt;
+<span class="lineNum">       9 </span>            : 
+<span class="lineNum">      10 </span>            : namespace ONNX_NAMESPACE {
+<span class="lineNum">      11 </span>            : 
+<span class="lineNum">      12 </span>            : #define FORALL_BUILTIN_SYMBOLS(_) \
+<span class="lineNum">      13 </span>            : _(PythonOp) \
+<span class="lineNum">      14 </span>            : _(CppOp) \
+<span class="lineNum">      15 </span>            : _(Param) \
+<span class="lineNum">      16 </span>            : _(Select) \
+<span class="lineNum">      17 </span>            : _(Return) \
+<span class="lineNum">      18 </span>            : _(Eval) \
+<span class="lineNum">      19 </span>            : _(add) \
+<span class="lineNum">      20 </span>            : _(Add) \
+<span class="lineNum">      21 </span>            : _(Div) \
+<span class="lineNum">      22 </span>            : _(Mul) \
+<span class="lineNum">      23 </span>            : _(Neg) \
+<span class="lineNum">      24 </span>            : _(Sub) \
+<span class="lineNum">      25 </span>            : _(Pow) \
+<span class="lineNum">      26 </span>            : _(Sigmoid) \
+<span class="lineNum">      27 </span>            : _(Tanh) \
+<span class="lineNum">      28 </span>            : _(mul) \
+<span class="lineNum">      29 </span>            : _(neg) \
+<span class="lineNum">      30 </span>            : _(sigmoid) \
+<span class="lineNum">      31 </span>            : _(tanh) \
+<span class="lineNum">      32 </span>            : _(Constant) \
+<span class="lineNum">      33 </span>            : _(cat) \
+<span class="lineNum">      34 </span>            : _(Slice) \
+<span class="lineNum">      35 </span>            : _(Squeeze) \
+<span class="lineNum">      36 </span>            : _(Undefined) \
+<span class="lineNum">      37 </span>            : _(FusionGroup) \
+<span class="lineNum">      38 </span>            : _(Gemm) \
+<span class="lineNum">      39 </span>            : _(Tile) \
+<span class="lineNum">      40 </span>            : _(SubConstant) \
+<span class="lineNum">      41 </span>            : _(Scale) \
+<span class="lineNum">      42 </span>            : _(Transpose) \
+<span class="lineNum">      43 </span>            : _(Reshape) \
+<span class="lineNum">      44 </span>            : _(split) \
+<span class="lineNum">      45 </span>            : _(chunk) \
+<span class="lineNum">      46 </span>            : _(Offset) \
+<span class="lineNum">      47 </span>            : _(value) \
+<span class="lineNum">      48 </span>            : _(Subgraph) \
+<span class="lineNum">      49 </span>            : _(BatchNormalization) \
+<span class="lineNum">      50 </span>            : _(Conv) \
+<span class="lineNum">      51 </span>            : _(ConvTranspose) \
+<span class="lineNum">      52 </span>            : _(is_test) \
+<span class="lineNum">      53 </span>            : _(epsilon) \
+<span class="lineNum">      54 </span>            : _(expand) \
+<span class="lineNum">      55 </span>            : _(Expand) \
+<span class="lineNum">      56 </span>            : _(order) \
+<span class="lineNum">      57 </span>            : _(momentum) \
+<span class="lineNum">      58 </span>            : _(consumed_inputs) \
+<span class="lineNum">      59 </span>            : _(kernels) \
+<span class="lineNum">      60 </span>            : _(kernel_shape) \
+<span class="lineNum">      61 </span>            : _(kernel) \
+<span class="lineNum">      62 </span>            : _(scale) \
+<span class="lineNum">      63 </span>            : _(strides) \
+<span class="lineNum">      64 </span>            : _(stride) \
+<span class="lineNum">      65 </span>            : _(pads) \
+<span class="lineNum">      66 </span>            : _(pad) \
+<span class="lineNum">      67 </span>            : _(beta) \
+<span class="lineNum">      68 </span>            : _(alpha) \
+<span class="lineNum">      69 </span>            : _(dilations) \
+<span class="lineNum">      70 </span>            : _(dilation) \
+<span class="lineNum">      71 </span>            : _(broadcast) \
+<span class="lineNum">      72 </span>            : _(axis) \
+<span class="lineNum">      73 </span>            : _(size) \
+<span class="lineNum">      74 </span>            : _(dim) \
+<span class="lineNum">      75 </span>            : _(perm) \
+<span class="lineNum">      76 </span>            : _(shape) \
+<span class="lineNum">      77 </span>            : _(axes) \
+<span class="lineNum">      78 </span>            : _(group) \
+<span class="lineNum">      79 </span>            : _(inplace) \
+<span class="lineNum">      80 </span>            : _(transA) \
+<span class="lineNum">      81 </span>            : _(transB) \
+<span class="lineNum">      82 </span>            : _(other) \
+<span class="lineNum">      83 </span>            : _(__and__) \
+<span class="lineNum">      84 </span>            : _(__lshift__) \
+<span class="lineNum">      85 </span>            : _(__or__) \
+<span class="lineNum">      86 </span>            : _(__rshift__) \
+<span class="lineNum">      87 </span>            : _(__xor__) \
+<span class="lineNum">      88 </span>            : _(abs) \
+<span class="lineNum">      89 </span>            : _(acos) \
+<span class="lineNum">      90 </span>            : _(asin) \
+<span class="lineNum">      91 </span>            : _(atan) \
+<span class="lineNum">      92 </span>            : _(atan2) \
+<span class="lineNum">      93 </span>            : _(ceil) \
+<span class="lineNum">      94 </span>            : _(clamp) \
+<span class="lineNum">      95 </span>            : _(cos) \
+<span class="lineNum">      96 </span>            : _(cosh) \
+<span class="lineNum">      97 </span>            : _(div) \
+<span class="lineNum">      98 </span>            : _(eq) \
+<span class="lineNum">      99 </span>            : _(equal) \
+<span class="lineNum">     100 </span>            : _(exp) \
+<span class="lineNum">     101 </span>            : _(expm1) \
+<span class="lineNum">     102 </span>            : _(floor) \
+<span class="lineNum">     103 </span>            : _(fmod) \
+<span class="lineNum">     104 </span>            : _(frac) \
+<span class="lineNum">     105 </span>            : _(ge) \
+<span class="lineNum">     106 </span>            : _(gt) \
+<span class="lineNum">     107 </span>            : _(le) \
+<span class="lineNum">     108 </span>            : _(lerp) \
+<span class="lineNum">     109 </span>            : _(lgamma) \
+<span class="lineNum">     110 </span>            : _(log) \
+<span class="lineNum">     111 </span>            : _(log1p) \
+<span class="lineNum">     112 </span>            : _(lt) \
+<span class="lineNum">     113 </span>            : _(max) \
+<span class="lineNum">     114 </span>            : _(min) \
+<span class="lineNum">     115 </span>            : _(ne) \
+<span class="lineNum">     116 </span>            : _(ones) \
+<span class="lineNum">     117 </span>            : _(pow) \
+<span class="lineNum">     118 </span>            : _(reciprocal) \
+<span class="lineNum">     119 </span>            : _(remainder) \
+<span class="lineNum">     120 </span>            : _(round) \
+<span class="lineNum">     121 </span>            : _(rsqrt) \
+<span class="lineNum">     122 </span>            : _(sin) \
+<span class="lineNum">     123 </span>            : _(sinh) \
+<span class="lineNum">     124 </span>            : _(sqrt) \
+<span class="lineNum">     125 </span>            : _(sub) \
+<span class="lineNum">     126 </span>            : _(tan) \
+<span class="lineNum">     127 </span>            : _(trunc) \
+<span class="lineNum">     128 </span>            : _(zeros) \
+<span class="lineNum">     129 </span>            : _(exponent) \
+<span class="lineNum">     130 </span>            : _(device) \
+<span class="lineNum">     131 </span>            : _(Identity) \
+<span class="lineNum">     132 </span>            : _(Loop) \
+<span class="lineNum">     133 </span>            : _(If) \
+<span class="lineNum">     134 </span>            : _(body) \
+<span class="lineNum">     135 </span>            : _(then_branch) \
+<span class="lineNum">     136 </span>            : _(else_branch) \
+<span class="lineNum">     137 </span>            : _(Captured) \
+<span class="lineNum">     138 </span>            : _(__control_inputs)
+<span class="lineNum">     139 </span>            : 
+<span class="lineNum">     140 </span>            : enum BuiltinSymbol {
+<span class="lineNum">     141 </span>            :   #define DEFINE_SYMBOL(s) \
+<span class="lineNum">     142 </span>            :     k##s,
+<span class="lineNum">     143 </span>            :   FORALL_BUILTIN_SYMBOLS(DEFINE_SYMBOL)
+<span class="lineNum">     144 </span>            :   #undef DEFINE_SYMBOL
+<span class="lineNum">     145 </span>            :   kLastSymbol, //where we start counting for new symbols
+<span class="lineNum">     146 </span>            : };
+<span class="lineNum">     147 </span>            : 
+<span class="lineNum">     148 </span>            : 
+<a name="149"><span class="lineNum">     149 </span>            : struct Symbol {</a>
+<span class="lineNum">     150 </span>            :   Symbol() {}
+<span class="lineNum">     151 </span>            :   /*implicit*/ Symbol(BuiltinSymbol value)
+<span class="lineNum">     152 </span><span class="lineCov">        342 :   : value(value) {}</span>
+<span class="lineNum">     153 </span>            :   explicit Symbol(const std::string &amp; s);
+<span class="lineNum">     154 </span>            :   explicit Symbol(uint32_t value)
+<a name="155"><span class="lineNum">     155 </span>            :   : value(value) {}</a>
+<span class="lineNum">     156 </span>            : 
+<span class="lineNum">     157 </span>            :   operator uint32_t() const {
+<span class="lineNum">     158 </span><span class="lineCov">       1096 :     return value;</span>
+<span class="lineNum">     159 </span>            :   }
+<span class="lineNum">     160 </span>            :   const char * toString() const;
+<span class="lineNum">     161 </span>            : private:
+<span class="lineNum">     162 </span>            :   uint32_t value;
+<a name="163"><span class="lineNum">     163 </span>            : };</a>
+<span class="lineNum">     164 </span>            : 
+<span class="lineNum">     165 </span>            : static inline bool operator==(Symbol lhs, Symbol rhs) {
+<span class="lineNum">     166 </span><span class="lineCov">        292 :   return static_cast&lt;uint32_t&gt;(lhs) == static_cast&lt;uint32_t&gt;(rhs);</span>
+<span class="lineNum">     167 </span>            : }
+<span class="lineNum">     168 </span>            : // necessary to prevent ambiguous overload resolutions
+<span class="lineNum">     169 </span>            : static inline bool operator==(BuiltinSymbol lhs, Symbol rhs) {
+<a name="170"><span class="lineNum">     170 </span>            :   return static_cast&lt;uint32_t&gt;(lhs) == static_cast&lt;uint32_t&gt;(rhs);</a>
+<span class="lineNum">     171 </span>            : }
+<span class="lineNum">     172 </span>            : static inline bool operator==(Symbol lhs, BuiltinSymbol rhs) {
+<span class="lineNum">     173 </span><span class="lineCov">        396 :   return static_cast&lt;uint32_t&gt;(lhs) == static_cast&lt;uint32_t&gt;(rhs);</span>
+<span class="lineNum">     174 </span>            : }
+<span class="lineNum">     175 </span>            : 
+<span class="lineNum">     176 </span>            : inline Symbol operator &quot;&quot; _sym(const char * s, size_t) {
+<span class="lineNum">     177 </span>            :   return Symbol(s);
+<span class="lineNum">     178 </span>            : }
+<span class="lineNum">     179 </span>            : 
+<span class="lineNum">     180 </span>            : } // namespace ONNX_NAMESPACE
+<span class="lineNum">     181 </span>            : 
+<span class="lineNum">     182 </span>            : // make symbol behave like an integer in hash tables
+<span class="lineNum">     183 </span>            : namespace std {
+<span class="lineNum">     184 </span>            :   template&lt;&gt;
+<span class="lineNum">     185 </span>            :   struct hash&lt;ONNX_NAMESPACE::Symbol&gt; {
+<span class="lineNum">     186 </span>            :     std::size_t operator()(ONNX_NAMESPACE::Symbol s) const {
+<span class="lineNum">     187 </span>            :       return std::hash&lt;uint32_t&gt;()(static_cast&lt;uint32_t&gt;(s));
+<span class="lineNum">     188 </span>            :     }
+<span class="lineNum">     189 </span>            :   };
+<span class="lineNum">     190 </span>            : } // namespace std
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>
